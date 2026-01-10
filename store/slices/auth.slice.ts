@@ -1,0 +1,170 @@
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { Query } from "react-native-appwrite";
+import { authService } from "../../services/appwrite/auth.service";
+import { COLLECTIONS } from "../../services/appwrite/collections";
+import { databaseService } from "../../services/appwrite/database.service";
+import { User } from "../../types";
+
+/* ---------- STATE TYPE ---------- */
+
+interface AuthState {
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  user: User | null;
+  role: User["role"] | null;
+  error: string | null;
+}
+
+const initialState: AuthState = {
+  isAuthenticated: false,
+  isLoading: true,
+  user: null,
+  role: null,
+  error: null,
+};
+
+export const signUp = createAsyncThunk(
+  "auth/signUp",
+  async (
+    payload: {
+      email: string;
+      password: string;
+      name: string;
+      role: User["role"];
+      institutionId: string;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      await authService.signUp(payload);
+      const account = await authService.getCurrentAccount();
+      if (!account) throw new Error("No session after signup");
+      const res = await databaseService.list<User>(
+        COLLECTIONS.USERS,
+        [Query.equal("userId", account!.$id)]
+      );
+
+      return res.documents[0];
+    } catch (err) {
+      return rejectWithValue((err as Error).message || "Signup failed");
+    }
+  }
+);
+
+
+/* ---------- ASYNC THUNKS ---------- */
+
+// Restore session on app start
+export const restoreSession = createAsyncThunk(
+  "auth/restoreSession",
+  async (_, { rejectWithValue }) => {
+    try {
+      const account = await authService.getCurrentAccount();
+      if (!account) return null;
+
+      const res = await databaseService.list<User>(
+        COLLECTIONS.USERS,
+        [Query.equal("userId", account.$id)]
+      );
+
+      return res.documents[0];
+    } catch (err) {
+      return rejectWithValue("Session restore failed");
+    }
+  }
+);
+
+// Login
+export const login = createAsyncThunk(
+  "auth/login",
+  async (
+    { email, password }: { email: string; password: string },
+    { rejectWithValue }
+  ) => {
+    try {
+      await authService.login(email, password);
+      const account = await authService.getCurrentAccount();
+      if (!account) throw new Error("No session");
+
+      const res = await databaseService.list<User>(
+        COLLECTIONS.USERS,
+        [Query.equal("userId", account.$id)]
+      );
+      console.log("Login user data:", res.documents[0]);
+      return res.documents[0];
+    } catch (err) {
+      return rejectWithValue((err as Error).message || "Invalid credentials");
+    }
+  }
+);
+
+// Logout
+export const logout = createAsyncThunk("auth/logout", async () => {
+  await authService.logout();
+});
+
+/* ---------- SLICE ---------- */
+
+const authSlice = createSlice({
+  name: "auth",
+  initialState,
+  reducers: {},
+  extraReducers: (builder) => {
+    builder
+
+      // Restore session
+      .addCase(restoreSession.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(restoreSession.fulfilled, (state, action) => {
+        state.isLoading = false;
+        console.log("Restored user:", action.payload);
+        if (action.payload) {
+          state.isAuthenticated = true;
+          state.user = action.payload;
+          state.role = action.payload.role;
+        } else {
+          state.isAuthenticated = false;
+        }
+      })
+      .addCase(restoreSession.rejected, (state) => {
+        state.isLoading = false;
+        state.isAuthenticated = false;
+      })
+
+      // Login
+      .addCase(login.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(login.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload as User;
+        state.role = "ADMIN";
+      })
+      .addCase(login.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+
+      // Logout
+      .addCase(logout.fulfilled, () => initialState)
+      .addCase(signUp.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(signUp.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload as User;
+        state.role = action.payload!.role;
+      })
+      .addCase(signUp.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
+
+  },
+});
+
+export default authSlice.reducer;
