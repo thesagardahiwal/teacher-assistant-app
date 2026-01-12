@@ -13,20 +13,16 @@ export interface Student extends Models.Document {
     currentYear: number;
     isActive: boolean;
     institution: Institution; // Institution ID
-    createdAt: string;
-    updatedAt: string;
 }
 
 
 export interface StudentPayload extends Models.Document {
     $id: string;
-    user: User;     // relationship
+    user: string;     // relationship
     rollNumber: string;
     course: string;
     class: string;
     currentYear: number;
     isActive: boolean;
     institution: string; // Institution ID
-    createdAt: string;
-    updatedAt: string;
 }

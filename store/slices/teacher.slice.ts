@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { teacherService } from "../../services/admin";
+import { teacherService } from "../../services";
 import { User } from "../../types";
 
 interface TeacherState {

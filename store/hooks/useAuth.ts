@@ -1,5 +1,6 @@
+import { UserPayload } from "../../types/user.type";
 import { useAppDispatch, useAppSelector } from "../hooks";
-import { login, logout, restoreSession, signUp } from "../slices/auth.slice";
+import { login, logout, restoreSession, signUp, updateUserProfile } from "../slices/auth.slice";
 
 export const useAuth = () => {
   const dispatch = useAppDispatch();
@@ -22,5 +23,8 @@ export const useAuth = () => {
     logout: () => dispatch(logout()),
 
     restoreSession: () => dispatch(restoreSession()),
+
+    updateProfile: (userId: string, data: Partial<UserPayload>) =>
+      dispatch(updateUserProfile({ userId, data })),
   };
 };

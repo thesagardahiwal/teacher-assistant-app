@@ -1,9 +1,5 @@
 import { useAppDispatch, useAppSelector } from "../hooks";
-import {
-    createAssignment,
-    deleteAssignment,
-    fetchAssignments,
-} from "../slices/assignment.slice";
+import { createAssignment, deleteAssignment, fetchAssignments } from "../slices/assignment.slice";
 
 export const useAssignments = () => {
   const dispatch = useAppDispatch();

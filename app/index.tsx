@@ -12,11 +12,14 @@ export default function Index() {
     case "PRINCIPAL":
       return <Redirect href="/(principal)/dashboard" />;
 
+    case "VICE_PRINCIPAL":
+      return <Redirect href="/(principal)/dashboard" />;
+
     case "ADMIN":
       return <Redirect href="/(admin)/dashboard" />;
 
     case "TEACHER":
-      return <Redirect href="/(teacher)/dashboard" />;
+      return <Redirect href="/(teacher)" />;
 
     case "STUDENT":
       return <Redirect href="/(student)/dashboard" />;

@@ -6,21 +6,17 @@ import { User } from "./user.type";
 
 export interface TeacherAssignment extends Models.Document {
     $id: string;
-    teacher: string | User;     // relationship
-    subject: string | Subject;
-    class: string | Class;
+    teacher: User;     // relationship
+    subject: Subject;
+    class: Class;
     institution: Institution; // Institution ID
-    createdAt: string;
-    updatedAt: string;
 }
 
 
 export interface TeacherAssignmentPayload extends Models.Document {
     $id: string;
-    teacher: string | User;     // relationship
-    subject: string | Subject;
-    class: string | Class;
+    teacher: string;     // relationship
+    subject: string;
+    class: string;
     institution: string; // Institution ID
-    createdAt: string;
-    updatedAt: string;
 }

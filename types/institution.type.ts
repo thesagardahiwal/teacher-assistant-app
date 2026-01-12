@@ -5,6 +5,4 @@ export interface Institution extends Models.Document {
     name: string;
     code: string;
     isActive: boolean;
-    createdAt: string;
-    updatedAt: string;
 }

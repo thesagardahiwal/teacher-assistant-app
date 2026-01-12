@@ -3,7 +3,8 @@ import { Query } from "react-native-appwrite";
 import { authService } from "../../services/appwrite/auth.service";
 import { COLLECTIONS } from "../../services/appwrite/collections";
 import { databaseService } from "../../services/appwrite/database.service";
-import { User } from "../../types";
+import { userService } from "../../services/user.service";
+import { User, UserPayload } from "../../types/user.type";
 
 /* ---------- STATE TYPE ---------- */
 
@@ -98,10 +99,25 @@ export const login = createAsyncThunk(
   }
 );
 
-// Logout
 export const logout = createAsyncThunk("auth/logout", async () => {
   await authService.logout();
 });
+
+// Update User Profile
+export const updateUserProfile = createAsyncThunk(
+  "auth/updateProfile",
+  async (
+    { userId, data }: { userId: string; data: Partial<UserPayload> },
+    { rejectWithValue }
+  ) => {
+    try {
+      const updatedUser = await userService.update(userId, data as any);
+      return updatedUser;
+    } catch (err) {
+      return rejectWithValue((err as Error).message || "Update failed");
+    }
+  }
+);
 
 /* ---------- SLICE ---------- */
 
@@ -160,6 +176,21 @@ const authSlice = createSlice({
         state.role = action.payload!.role;
       })
       .addCase(signUp.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+
+      // Update Profile
+      .addCase(updateUserProfile.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(updateUserProfile.fulfilled, (state, action) => {
+        state.isLoading = false;
+        if (state.user) {
+          state.user = { ...state.user, ...action.payload };
+        }
+      })
+      .addCase(updateUserProfile.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       });

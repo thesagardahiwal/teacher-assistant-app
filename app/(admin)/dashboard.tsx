@@ -7,8 +7,8 @@ import { useStudents } from "@/store/hooks/useStudents";
 import { useTeachers } from "@/store/hooks/useTeachers";
 import { institutionStorage } from "@/utils/institutionStorage";
 import { useRouter } from "expo-router";
-import React, { useEffect } from "react";
-import { ScrollView, Text, View } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../../store/hooks/useAuth";
 
 const AdminDashboard = () => {
@@ -19,73 +19,104 @@ const AdminDashboard = () => {
   const { data: teachers, fetchTeachers } = useTeachers();
   const { data: students, fetchStudents } = useStudents();
 
-  useEffect(() => {
-    const loadDashboardData = async () => {
-      const institutionId =
-        user?.institution.$id ||
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadData = async () => {
+    const institutionId =
+      typeof user?.institution === "string" ? user?.institution : user?.institution?.$id ||
         (await institutionStorage.getInstitutionId());
 
-      if (!institutionId) return;
+    if (!institutionId) {
+      console.warn("No Institution ID found, skipping data fetch");
+      return;
+    }
 
-      fetchCourses(institutionId);
-      fetchClasses(institutionId);
-      fetchTeachers(institutionId);
-      fetchStudents(institutionId);
-    };
+    await Promise.all([
+      fetchCourses(institutionId),
+      fetchClasses(institutionId),
+      fetchTeachers(institutionId),
+      fetchStudents(institutionId)
+    ]);
+  };
 
-    loadDashboardData();
+  useEffect(() => {
+    loadData();
+  }, [user]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
   }, [user]);
 
   return (
-    <ScrollView className="flex-1 bg-background dark:bg-dark-background px-6 pt-6">
-      
-      {/* HEADER */}
-      <View className="mb-6">
-        <Text className="text-sm text-textSecondary dark:text-dark-textSecondary">
-          Welcome back,
+    <View className="flex-1 bg-background dark:bg-dark-background">
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 100 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+
+        {/* HEADER */}
+        <View className="mb-6 sticky top-0 z-10 flex-row items-center justify-between">
+          <View>
+            <Text className="text-sm text-textSecondary dark:text-dark-textSecondary">
+              Welcome back,
+            </Text>
+            <Text className="text-2xl font-bold text-textPrimary dark:text-dark-textPrimary">
+              {user?.name}
+            </Text>
+          </View>
+          <TouchableOpacity onPress={() => router.push("/(admin)/profile")} className="bg-card dark:bg-dark-card p-2 rounded-full border border-border dark:border-dark-border">
+            <View className="w-8 h-8 rounded-full bg-primary dark:bg-dark-primary items-center justify-center">
+              <Text className="text-white font-bold text-lg">{user?.name?.charAt(0)}</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        {/* STATS GRID */}
+        <View className="flex-row flex-wrap justify-between mb-6">
+          <StatCard onClick={() => router.navigate('/(admin)/courses')} title="Courses" value={`${courses?.length || 0}`} />
+          <StatCard onClick={() => router.navigate('/(admin)/classes')} title="Classes" value={`${classes?.length || 0}`} />
+          <StatCard onClick={() => router.navigate('/(admin)/teachers')} title="Teachers" value={`${teachers?.length || 0}`} />
+          <StatCard onClick={() => router.navigate('/(admin)/students')} title="Students" value={`${students?.length || 0}`} />
+        </View>
+
+        {/* QUICK ACTIONS */}
+        <Text className="text-lg font-semibold text-textPrimary dark:text-dark-textPrimary mb-3">
+          Quick Actions
         </Text>
-        <Text className="text-2xl font-bold text-textPrimary dark:text-dark-textPrimary">
-          {user?.name}
+
+        <View className="bg-card dark:bg-dark-card rounded-2xl p-4 mb-6 border border-border dark:border-dark-border">
+          <ActionButton onClick={() => router.navigate('/(admin)/academic-years')} icon="calendar-outline" label="Academic Years" />
+          <ActionButton onClick={() => router.navigate('/(admin)/courses/create')} icon="book-outline" label="Add Course" />
+          <ActionButton onClick={() => router.navigate('/(admin)/subjects/create')} icon="library-outline" label="Add Subject" />
+          <ActionButton onClick={() => router.navigate('/(admin)/classes/create')} icon="school-outline" label="Create Class" />
+          <ActionButton onClick={() => router.navigate('/(admin)/teachers/create')} icon="person-add-outline" label="Add Teacher" />
+          <ActionButton onClick={() => router.navigate('/(admin)/students/create')} icon="person-outline" label="Add Student" />
+          <ActionButton onClick={() => router.navigate('/(admin)/assignments/create')} icon="link-outline" label="Assign Teacher" />
+        </View>
+
+        {/* SYSTEM STATUS */}
+        <Text className="text-lg font-semibold text-textPrimary dark:text-dark-textPrimary mb-3">
+          System Status
         </Text>
-      </View>
 
-      {/* STATS GRID */}
-      <View className="flex-row flex-wrap justify-between mb-6">
-        <StatCard onClick={() => router.navigate('/(admin)/courses')} title="Courses" value={`${courses?.length || 0}`} />
-        <StatCard onClick={() => router.navigate('/(admin)/classes')} title="Classes" value={`${classes?.length || 0}`} />
-        <StatCard onClick={() => router.navigate('/(admin)/teachers')} title="Teachers" value={`${teachers?.length || 0}`} />
-        <StatCard onClick={() => router.navigate('/(admin)/students')} title="Students" value={`${students?.length || 0}`} />
-      </View>
+        <View className="bg-card dark:bg-dark-card rounded-2xl p-4 border border-border dark:border-dark-border">
+          <StatusRow label="Institution Setup" status="Completed" />
+          <StatusRow label="Academic Year" status="Active" />
+          <StatusRow label="Data Sync" status="Healthy" />
+        </View>
 
-      {/* QUICK ACTIONS */}
-      <Text className="text-lg font-semibold text-textPrimary dark:text-dark-textPrimary mb-3">
-        Quick Actions
-      </Text>
-
-      <View className="bg-card dark:bg-dark-card rounded-2xl p-4 mb-6 border border-border dark:border-dark-border">
-        <ActionButton onClick={() => router.navigate('/(admin)/courses/create')} icon="book-outline" label="Add Course" />
-        <ActionButton onClick={() => router.navigate('/(admin)/classes/create')} icon="school-outline" label="Create Class" />
-        <ActionButton onClick={() => router.navigate('/(admin)/teachers/create')} icon="person-add-outline" label="Add Teacher" />
-        <ActionButton onClick={() => router.navigate('/(admin)/students/create')} icon="person-outline" label="Add Student" />
-        <ActionButton onClick={() => {}} icon="link-outline" label="Assign Teacher" />
-      </View>
-
-      {/* SYSTEM STATUS */}
-      <Text className="text-lg font-semibold text-textPrimary dark:text-dark-textPrimary mb-3">
-        System Status
-      </Text>
-
-      <View className="bg-card dark:bg-dark-card rounded-2xl p-4 border border-border dark:border-dark-border">
-        <StatusRow label="Institution Setup" status="Completed" />
-        <StatusRow label="Academic Year" status="Active" />
-        <StatusRow label="Data Sync" status="Healthy" />
-      </View>
-
-      {/* FOOTER */}
-      <Text className="text-xs text-muted dark:text-dark-muted text-center mt-8">
-        Teachora · Secure Academic Management Platform
-      </Text>
-    </ScrollView>
+        {/* FOOTER */}
+        <Text className="text-xs text-muted dark:text-dark-muted text-center mt-8">
+          Teachora · Secure Academic Management Platform
+        </Text>
+      </ScrollView>
+    </View>
   );
 };
 

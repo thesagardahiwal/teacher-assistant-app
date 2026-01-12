@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { subjectService } from "../../services/admin";
+import { subjectService } from "../../services";
 import { Subject, SubjectPayload } from "../../types";
 
 interface SubjectState {

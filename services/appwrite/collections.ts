@@ -1,4 +1,6 @@
-export const DATABASE_ID = "695e34f00025ef1fb9c9";
+import { APPWRITE_DATABASE_ID } from "@/config/env";
+
+export const DATABASE_ID = APPWRITE_DATABASE_ID;
 
 export const COLLECTIONS = {
   USERS: "users",
@@ -12,3 +14,4 @@ export const COLLECTIONS = {
   ATTENDANCE_RECORDS: "attendance_records",
   INSTITUTIONS: "institutions",
 };
+

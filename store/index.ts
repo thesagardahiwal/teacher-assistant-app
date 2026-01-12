@@ -9,6 +9,8 @@ import studentReducer from "./slices/student.slice";
 import subjectsReducer from "./slices/subject.slice";
 import teacherReducer from "./slices/teacher.slice";
 
+import attendanceReducer from "./slices/attendance.slice";
+
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -19,6 +21,7 @@ export const store = configureStore({
     teachers: teacherReducer,
     students: studentReducer,
     assignments: assignmentReducer,
+    attendance: attendanceReducer,
     adminOnboarding: adminOnboardingReducer
   },
   middleware: (getDefaultMiddleware) =>

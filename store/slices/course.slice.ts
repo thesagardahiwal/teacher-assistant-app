@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { courseService } from "../../services/admin";
+import { courseService } from "../../services";
 import { Course, CoursePayload } from "../../types";
 
 interface CourseState {

@@ -1,7 +1,7 @@
 import { Query } from "react-native-appwrite";
-import { User } from "../../types";
-import { COLLECTIONS } from "../appwrite/collections";
-import { databaseService } from "../appwrite/database.service";
+import { User, UserPayload } from "../types/user.type";
+import { COLLECTIONS } from "./appwrite/collections";
+import { databaseService } from "./appwrite/database.service";
 
 export const teacherService = {
   list(institutionId: string) {
@@ -14,11 +14,18 @@ export const teacherService = {
     );
   },
 
-  update(teacherId: string, data: Partial<User>) {
+  get(teacherId: string) {
+    return databaseService.get<User>(
+      COLLECTIONS.USERS,
+      teacherId
+    );
+  },
+
+  update(teacherId: string, data: Partial<UserPayload>) {
     return databaseService.update<User>(
       COLLECTIONS.USERS,
       teacherId,
-      data
+      data as any
     );
   },
 };

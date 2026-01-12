@@ -1,13 +1,23 @@
 import { Query } from "react-native-appwrite";
-import { Student, StudentPayload } from "../../types";
-import { COLLECTIONS } from "../appwrite/collections";
-import { databaseService } from "../appwrite/database.service";
+import { Student, StudentPayload } from "../types";
+import { COLLECTIONS } from "./appwrite/collections";
+import { databaseService } from "./appwrite/database.service";
 
 export const studentService = {
   list(institutionId: string) {
     return databaseService.list<Student>(
       COLLECTIONS.STUDENTS,
-      [Query.equal("institution", institutionId)]
+      [
+        Query.equal("institution", institutionId),
+        Query.select(["*", "user.*", "course.*", "class.*", "institution.*"])
+      ]
+    );
+  },
+
+  get(studentId: string) {
+    return databaseService.get<Student>(
+      COLLECTIONS.STUDENTS,
+      studentId
     );
   },
 
@@ -18,11 +28,11 @@ export const studentService = {
     );
   },
 
-  update(studentId: string, data: Partial<Student>) {
+  update(studentId: string, data: Partial<StudentPayload>) {
     return databaseService.update<Student>(
       COLLECTIONS.STUDENTS,
       studentId,
-      data
+      data as any
     );
   },
 

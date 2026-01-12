@@ -8,8 +8,6 @@ export interface Course extends Models.Document {
     durationYears: number;
     isActive: boolean;
     institution: Institution;
-    createdAt: string;
-    updatedAt: string;
 }
 
 export interface CoursePayload extends Models.Document {
@@ -19,6 +17,4 @@ export interface CoursePayload extends Models.Document {
     durationYears: number;
     isActive: boolean;
     institution: string;
-    createdAt: string;
-    updatedAt: string;
 }

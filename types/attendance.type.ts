@@ -6,11 +6,18 @@ import { User } from "./user.type";
 
 export interface Attendance extends Models.Document {
   $id: string;
-  class: string | Class;
-  subject: string | Subject;
-  teacher: string | User;
+  class: Class;
+  subject: Subject;
+  teacher: User;
   date: string; // YYYY-MM-DD
   institution: Institution;
-  createdAt: string;
-  updatedAt: string;
+}
+
+export interface AttendancePayload extends Models.Document {
+  $id: string;
+  class: string;
+  subject: string;
+  teacher: string;
+  date: string; // YYYY-MM-DD
+  institution: string;
 }

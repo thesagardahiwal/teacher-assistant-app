@@ -9,7 +9,7 @@ export const useInstitutionId = () => {
   useEffect(() => {
     const load = async () => {
       if (user?.institution) {
-        setInstitutionId(user.institution.$id);
+        setInstitutionId(typeof user.institution === "string" ? user.institution : user.institution.$id);
       } else {
         const stored = await institutionStorage.getInstitutionId();
         setInstitutionId(stored);

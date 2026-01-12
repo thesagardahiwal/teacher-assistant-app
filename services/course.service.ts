@@ -1,7 +1,7 @@
 import { Query } from "react-native-appwrite";
-import { Course, CoursePayload } from "../../types";
-import { COLLECTIONS } from "../appwrite/collections";
-import { databaseService } from "../appwrite/database.service";
+import { Course, CoursePayload } from "../types";
+import { COLLECTIONS } from "./appwrite/collections";
+import { databaseService } from "./appwrite/database.service";
 
 export const courseService = {
   list(institutionId: string) {
@@ -25,7 +25,7 @@ export const courseService = {
     );
   },
 
-  update(courseId: string, data: Partial<Course>) {
+  update(courseId: string, data: Partial<CoursePayload>) {
     return databaseService.update<Course>(
       COLLECTIONS.COURSES,
       courseId,

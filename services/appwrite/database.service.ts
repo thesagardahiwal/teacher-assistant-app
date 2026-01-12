@@ -21,12 +21,14 @@ export const databaseService = {
 
   get<T extends Models.Document>(
     collectionId: string,
-    documentId: string
+    documentId: string,
+    queries?: string[]
   ) {
     return databases.getDocument<T>(
       DATABASE_ID,
       collectionId,
-      documentId
+      documentId,
+      queries
     );
   },
 

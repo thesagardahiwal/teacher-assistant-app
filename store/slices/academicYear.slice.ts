@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { academicYearService } from "../../services/admin";
+import { academicYearService } from "../../services";
 import { AcademicYear } from "../../types";
 
 const initialState = {

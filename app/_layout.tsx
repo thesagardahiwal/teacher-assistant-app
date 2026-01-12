@@ -1,14 +1,17 @@
 import SafeAreaProtector from "@/components/SafeAreaProtector";
+import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { Stack } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { Provider } from "react-redux";
 import "../global.css";
+import { useThemeMode } from "../hooks/useThemeMode";
 import { store } from "../store";
 import { useAuth } from "../store/hooks/useAuth";
 
 function RootLayoutInner() {
   const { restoreSession, isLoading } = useAuth();
+  const { isDark } = useThemeMode();
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -17,7 +20,7 @@ function RootLayoutInner() {
       setReady(true);
     };
     init();
-  }, []);
+  }, [restoreSession]);
 
   if (!ready || isLoading) {
     return (
@@ -27,11 +30,14 @@ function RootLayoutInner() {
     );
   }
 
+
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      {/* Expo Router handles redirection via index.tsx */}
-      <Stack.Screen name="index" />
-    </Stack>
+    <ThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
+      <Stack screenOptions={{ headerShown: false }}>
+        {/* Expo Router handles redirection via index.tsx */}
+        <Stack.Screen name="index" />
+      </Stack>
+    </ThemeProvider>
   );
 }
 

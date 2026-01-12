@@ -6,6 +6,11 @@ export interface AcademicYear extends Models.Document {
   label: string; // e.g. "2024-2025"
   isCurrent: boolean;
   institution: Institution;
-  createdAt: string;
-  updatedAt: string;
+}
+
+export interface AcademicYearPayload extends Models.Document {
+  $id: string;
+  label: string; // e.g. "2024-2025"
+  isCurrent: boolean;
+  institution: string;
 }

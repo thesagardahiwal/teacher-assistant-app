@@ -5,11 +5,17 @@ import { Student } from "./student.type";
 
 export interface AttendanceRecord extends Models.Document {
   $id: string;
-  attendance: string | Attendance;
-  student: string | Student;
+  attendance: Attendance;
+  student: Student;
   present: boolean;
   institution: Institution;
-  createdAt: string;
-  updatedAt: string;
+}
+
+export interface AttendanceRecordPayload extends Models.Document {
+  $id: string;
+  attendance: string;
+  student: string;
+  present: boolean;
+  institution: string;
 
 }

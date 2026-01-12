@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { classService } from "../../services/admin";
+import { classService } from "../../services";
 import { Class } from "../../types";
 
 export const fetchClasses = createAsyncThunk(
