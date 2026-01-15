@@ -9,7 +9,19 @@ export const studentService = {
       COLLECTIONS.STUDENTS,
       [
         Query.equal("institution", institutionId),
-        Query.select(["*", "user.*", "course.*", "class.*", "institution.*"])
+        Query.select(["*", "course.*", "class.*", "institution.*"])
+      ]
+    );
+  },
+
+  listByClasses(institutionId: string, classIds: string[]) {
+    if (classIds.length === 0) return Promise.resolve({ documents: [], total: 0 });
+    return databaseService.list<Student>(
+      COLLECTIONS.STUDENTS,
+      [
+        Query.equal("institution", institutionId),
+        Query.equal("class", classIds),
+        Query.select(["*", "course.*", "class.*", "institution.*"])
       ]
     );
   },
@@ -17,7 +29,15 @@ export const studentService = {
   get(studentId: string) {
     return databaseService.get<Student>(
       COLLECTIONS.STUDENTS,
-      studentId
+      studentId,
+      [
+        Query.select([
+          "*",
+          "course.*",
+          "class.*",
+          "institution.*"
+        ])
+      ]
     );
   },
 

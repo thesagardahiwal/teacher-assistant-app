@@ -14,6 +14,17 @@ export const classService = {
     );
   },
 
+  listByAcademicYear(institutionId: string, academicYearId: string) {
+    return databaseService.list<Class>(
+      COLLECTIONS.CLASSES,
+      [
+        Query.equal("institution", institutionId),
+        Query.equal("academicYear", academicYearId),
+        Query.select(["*", "course.*", "academicYear.*", "institution.*"])
+      ]
+    );
+  },
+
   get(id: string) {
     return databaseService.get<Class>(
       COLLECTIONS.CLASSES,

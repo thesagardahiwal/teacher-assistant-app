@@ -2,23 +2,23 @@ import { Models } from "react-native-appwrite";
 import { Class } from "./class.type";
 import { Course } from "./course.type";
 import { Institution } from "./institution.type";
-import { User } from "./user.type";
 
 export interface Student extends Models.Document {
     $id: string;
-    user: User;     // relationship
+    name: string;
     rollNumber: string;
     course: Course;
     class: Class;
     currentYear: number;
     isActive: boolean;
+    email?: string;
     institution: Institution; // Institution ID
 }
 
 
 export interface StudentPayload extends Models.Document {
     $id: string;
-    user: string;     // relationship
+    name: string;
     rollNumber: string;
     course: string;
     class: string;

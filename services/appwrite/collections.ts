@@ -13,5 +13,6 @@ export const COLLECTIONS = {
   ATTENDANCE: "attendance",
   ATTENDANCE_RECORDS: "attendance_records",
   INSTITUTIONS: "institutions",
+  CLASS_SCHEDULE: 'class_schedule'
 };
 

@@ -26,7 +26,6 @@ export default function CreateSubject() {
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [course, setCourse] = useState("");
-  const [year, setYear] = useState("");
   const [semester, setSemester] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -38,7 +37,7 @@ export default function CreateSubject() {
   }, [institutionId]);
 
   const handleSubmit = async () => {
-    if (!name || !code || !course || !year || !semester || !institutionId) {
+    if (!name || !code || !course || !semester || !institutionId) {
       Alert.alert("Error", "Please fill in all required fields");
       return;
     }
@@ -49,7 +48,6 @@ export default function CreateSubject() {
         name,
         code,
         course,
-        year: Number(year),
         semester: Number(semester),
         institution: institutionId,
       });
@@ -96,15 +94,6 @@ export default function CreateSubject() {
           />
 
           <View className="flex-row justify-between">
-            <View className="flex-1 mr-2">
-              <FormInput
-                label="Year"
-                placeholder="1"
-                value={year}
-                onChangeText={setYear}
-                keyboardType="numeric"
-              />
-            </View>
             <View className="flex-1 ml-2">
               <FormInput
                 label="Semester"

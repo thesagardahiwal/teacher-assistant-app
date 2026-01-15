@@ -29,7 +29,7 @@ export const courseService = {
     return databaseService.update<Course>(
       COLLECTIONS.COURSES,
       courseId,
-      data
+      data as any
     );
   },
 

@@ -25,6 +25,17 @@ export const attendanceRecordService = {
         );
     },
 
+    listByStudent(studentId: string) {
+        return databaseService.list<AttendanceRecord>(
+            COLLECTIONS.ATTENDANCE_RECORDS,
+            [
+                Query.equal("student", studentId),
+                Query.select(["*", "attendance.*", "attendance.subject.*", "student.*", "institution.*"]),
+                Query.orderDesc("$createdAt"), // Show recent first
+            ]
+        );
+    },
+
     create(data: Omit<AttendanceRecord, keyof AttendanceRecord | "$id"> & Partial<AttendanceRecord>) {
         return databaseService.create<AttendanceRecord>(
             COLLECTIONS.ATTENDANCE_RECORDS,

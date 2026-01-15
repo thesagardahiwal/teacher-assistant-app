@@ -2,7 +2,6 @@ import { FormInput } from "@/components/admin/ui/FormInput";
 import { FormSelect } from "@/components/admin/ui/FormSelect";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { studentService } from "@/services";
-import { userService } from "@/services/user.service";
 import { useAuth } from "@/store/hooks/useAuth";
 import { useClasses } from "@/store/hooks/useClasses";
 import { useCourses } from "@/store/hooks/useCourses";
@@ -31,12 +30,11 @@ export default function EditStudent() {
     const { fetchStudents } = useStudents();
     const { data: courses, fetchCourses } = useCourses();
     const { data: classes, fetchClasses } = useClasses();
-
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [roll, setRoll] = useState("");
     const [course, setCourse] = useState("");
-    const [selectedClass, setSelectedClass] = useState("");
+    const [selectedClass, setSelectedClass] = useState<string>("");
     const [userId, setUserId] = useState("");
 
     const [loading, setLoading] = useState(true);
@@ -60,19 +58,18 @@ export default function EditStudent() {
             const doc = await studentService.get(id as string);
             setRoll(doc.rollNumber);
             setCourse(doc.course?.$id || "");
-            setSelectedClass(doc.class?.$id || "");
+            setSelectedClass(doc.class.$id);
 
             // Load User Details
-            if (doc.user) {
-                setUserId(doc.user.$id);
-                // In case doc.user is not fully populated with email, fetch it
+            if (doc) {
+                setUserId(doc.$id);
                 try {
-                    const userDoc = await userService.get(doc.user.$id);
+                    const userDoc = await studentService.get(doc.$id);
                     setName(userDoc.name);
-                    setEmail(userDoc.email);
+                    setEmail(userDoc.email || '');
                 } catch {
-                    setName(doc.user.name);
-                    setEmail(doc.user.email);
+                    setName(doc.name);
+                    setEmail(doc.email || '');
                 }
             }
         } catch (error) {
@@ -119,7 +116,7 @@ export default function EditStudent() {
 
             // Update User Document (Name)
             if (userId) {
-                await userService.update(userId, { name });
+                await studentService.update(userId, { name });
             }
 
             if (institutionId) await fetchStudents(institutionId);
@@ -132,9 +129,14 @@ export default function EditStudent() {
     };
 
     const courseOptions = courses.map(c => ({ label: `${c.name} (${c.code})`, value: c.$id }));
+
+    // Improved Filtering: Check for object or string ID safely
     const classOptions = classes
-        .filter(c => c.course?.$id === course)
-        .map(c => ({ label: `Year ${c.year} - ${c.division}`, value: c.$id }));
+        .filter(c => {
+            const courseId = typeof c.course === 'object' ? c.course?.$id : c.course;
+            return courseId === course;
+        })
+        .map(c => ({ label: c.name, value: c.$id }));
 
     if (loading) {
         return (
@@ -161,7 +163,12 @@ export default function EditStudent() {
             />
 
             <ScrollView showsVerticalScrollIndicator={false}>
-                <View className={`p-6 rounded-2xl mb-6 ${isDark ? "bg-gray-800" : "bg-white"}`}>
+
+                {/* Personal Info Card */}
+                <View className={`p-6 rounded-2xl mb-4 ${isDark ? "bg-gray-800" : "bg-white"}`}>
+                    <Text className={`text-lg font-bold mb-4 ${isDark ? "text-gray-200" : "text-gray-800"}`}>
+                        Personal Information
+                    </Text>
 
                     <FormInput
                         label="Full Name"
@@ -171,13 +178,20 @@ export default function EditStudent() {
                         editable={isAdmin}
                     />
 
-                    <View className="opacity-50">
+                    <View className="opacity-60">
                         <FormInput
                             label="Email Address"
                             value={email}
                             editable={false}
                         />
                     </View>
+                </View>
+
+                {/* Academic Info Card */}
+                <View className={`p-6 rounded-2xl mb-6 ${isDark ? "bg-gray-800" : "bg-white"}`}>
+                    <Text className={`text-lg font-bold mb-4 ${isDark ? "text-gray-200" : "text-gray-800"}`}>
+                        Academic Details
+                    </Text>
 
                     <FormInput
                         label="Roll Number"
@@ -190,7 +204,10 @@ export default function EditStudent() {
                     <FormSelect
                         label="Course"
                         value={course}
-                        onChange={setCourse}
+                        onChange={(val) => {
+                            setCourse(val);
+                            setSelectedClass(""); // Reset class when course changes
+                        }}
                         options={courseOptions}
                         placeholder="Select Course"
                         editable={isAdmin}
@@ -201,11 +218,10 @@ export default function EditStudent() {
                         value={selectedClass}
                         onChange={setSelectedClass}
                         options={classOptions}
-                        placeholder="Select Class"
+                        placeholder={course ? "Select Class" : "Select Course first"}
                         error={course && classOptions.length === 0 ? "No classes found for this course" : undefined}
                         editable={isAdmin}
                     />
-
                 </View>
 
                 {isAdmin && (

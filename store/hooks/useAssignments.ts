@@ -7,8 +7,8 @@ export const useAssignments = () => {
 
   return {
     ...state,
-    fetchAssignments: (institutionId: string) =>
-      dispatch(fetchAssignments(institutionId)),
+    fetchAssignments: (institutionId: string, teacherId?: string) =>
+      dispatch(fetchAssignments({ institutionId, teacherId })),
     createAssignment: (data: Partial<any>) =>
       dispatch(createAssignment(data)),
     deleteAssignment: (id: string) =>

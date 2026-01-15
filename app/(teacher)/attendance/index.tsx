@@ -27,7 +27,7 @@ export default function AttendanceHistoryScreen() {
                 <View>
                     <Text className={`text-lg font-bold ${isDark ? "text-white" : "text-gray-900"}`}>{item.subject?.name || "Subject"}</Text>
                     <Text className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>
-                        {item.class?.division ? `Class ${item.class.year}-${item.class.division}` : "Class N/A"}
+                        {item.class?.name ? `Class ${item.class.name}` : "Class N/A"}
                     </Text>
                 </View>
                 <View className={`px-2 py-1 rounded-md ${isDark ? "bg-green-900/50" : "bg-green-50"}`}>

@@ -28,14 +28,14 @@ export const authService = {
         try {
             await AsyncStorage.clear();
         } catch (e) {
-            // Logging but not blocking, since clearing app cache might fail independently
             console.error("Failed to clear AsyncStorage on logout:", e);
         }
         try {
             return await account.deleteSession("current");
         } catch (error) {
-            console.error("Logout failed:", error);
-            throw error;
+            // If session is already missing or valid, just ignore
+            console.log("Logout cleanup: session might be already inactive", error);
+            return;
         }
     },
 

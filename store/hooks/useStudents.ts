@@ -7,8 +7,8 @@ export const useStudents = () => {
 
   return {
     ...state,
-    fetchStudents: (institutionId: string) =>
-      dispatch(fetchStudents(institutionId)),
+    fetchStudents: (institutionId: string, classIds?: string[]) =>
+      dispatch(fetchStudents({ institutionId, classIds })),
     createStudent: (data: Partial<any>) =>
       dispatch(createStudent(data)),
   };

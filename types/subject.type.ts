@@ -6,8 +6,7 @@ export interface Subject extends Models.Document {
     $id: string;
     name: string;
     code: string;
-    course: Course;   // relationship
-    year: number;
+    course: Course;
     semester: number;
     institution: Institution;
 }
@@ -17,8 +16,7 @@ export interface SubjectPayload extends Models.Document {
     $id: string;
     name: string;
     code: string;
-    course: string;   // relationship
-    year: number;
+    course: string;
     semester: number;
     institution: string;
 }

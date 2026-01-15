@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { UserPayload } from "../../types/user.type";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import { login, logout, restoreSession, signUp, updateUserProfile } from "../slices/auth.slice";
@@ -9,22 +10,22 @@ export const useAuth = () => {
   return {
     ...auth,
 
-    login: (email: string, password: string) =>
-      dispatch(login({ email, password })),
+    login: useCallback((email: string, password: string, type?: "student" | "teacher") =>
+      dispatch(login({ email, password, type })), [dispatch]),
 
-    signUp: (data: {
+    signUp: useCallback((data: {
       email: string;
       password: string;
       name: string;
       role: any;
       institutionId: string;
-    }) => dispatch(signUp(data)),
+    }) => dispatch(signUp(data)), [dispatch]),
 
-    logout: () => dispatch(logout()),
+    logout: useCallback(() => dispatch(logout()), [dispatch]),
 
-    restoreSession: () => dispatch(restoreSession()),
+    restoreSession: useCallback(() => dispatch(restoreSession()), [dispatch]),
 
-    updateProfile: (userId: string, data: Partial<UserPayload>) =>
-      dispatch(updateUserProfile({ userId, data })),
+    updateProfile: useCallback((userId: string, data: Partial<UserPayload>) =>
+      dispatch(updateUserProfile({ userId, data })), [dispatch]),
   };
 };

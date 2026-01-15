@@ -1,12 +1,14 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, FlatList, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import StudentDetailsModal from "../../../components/Student/StudentDetailsModal";
 import { attendanceRecordService, attendanceService } from "../../../services";
 import { useAssignments } from "../../../store/hooks/useAssignments";
 import { useAuth } from "../../../store/hooks/useAuth";
 import { useStudents } from "../../../store/hooks/useStudents";
 import { useTheme } from "../../../store/hooks/useTheme";
+import { Student } from "../../../types";
 import { useInstitutionId } from "../../../utils/useInstitutionId";
 
 export default function TakeAttendanceScreen() {
@@ -25,6 +27,10 @@ export default function TakeAttendanceScreen() {
   const [studentStatus, setStudentStatus] = useState<Record<string, boolean>>({});
   const [submitting, setSubmitting] = useState(false);
 
+  // Modal State
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+
   useEffect(() => {
     if (institutionId) {
       if (assignments.length === 0) fetchAssignments(institutionId);
@@ -35,10 +41,6 @@ export default function TakeAttendanceScreen() {
   // Derived Data
   const filteredStudents = useMemo(() => {
     if (!selectedClassId) return [];
-    // Find the class details from assignments to get the actual class ID
-    // Note: This logic assumes assignments link to classes directly. 
-    // Ideally, we filter students who belong to the selected class.
-
     const selectedAssignment = assignments.find(a => a.class.$id === selectedClassId);
     if (!selectedAssignment) return [];
 
@@ -60,6 +62,11 @@ export default function TakeAttendanceScreen() {
       [studentId]: !prev[studentId]
     }));
   };
+
+  const handleLongPress = (student: Student) => {
+    setSelectedStudent(student);
+    setModalVisible(true);
+  }
 
   const handleSubmit = async () => {
     if (submitting) return;
@@ -111,8 +118,47 @@ export default function TakeAttendanceScreen() {
     return new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   };
 
+  const renderStudentItem = ({ item }: { item: Student }) => {
+    const isPresent = studentStatus[item.$id];
+    return (
+      <TouchableOpacity
+        onPress={() => toggleStatus(item.$id)}
+        onLongPress={() => handleLongPress(item)}
+        delayLongPress={500}
+        className={`flex-row items-center p-3 mb-2 rounded-xl border ${isPresent
+          ? (isDark ? "bg-gray-800 border-green-500/30" : "bg-white border-green-200")
+          : (isDark ? "bg-gray-800 border-red-500/30" : "bg-red-50 border-red-200")}`}
+      >
+        <View className={`w-10 h-10 rounded-full items-center justify-center mr-3 ${isPresent ? "bg-indigo-100 dark:bg-indigo-900" : "bg-red-100 dark:bg-red-900"}`}>
+          <Text className={`font-bold ${isPresent ? "text-indigo-600 dark:text-indigo-300" : "text-red-600 dark:text-red-300"}`}>
+            {item.name.charAt(0)}
+          </Text>
+        </View>
+        <View className="flex-1">
+          <Text className={`font-medium text-base ${isDark ? "text-white" : "text-gray-900"} ${!isPresent && "text-red-600 dark:text-red-400"}`}>
+            {item.name}
+          </Text>
+          <Text className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>Roll No: {item.rollNumber}</Text>
+        </View>
+        <View className={`w-8 h-8 rounded-full items-center justify-center ${isPresent ? "bg-green-100 dark:bg-green-900/50" : "bg-red-100 dark:bg-red-900/50"}`}>
+          <Ionicons
+            name={isPresent ? "checkmark" : "close"}
+            size={20}
+            color={isPresent ? "#16A34A" : "#DC2626"}
+          />
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+
+      <StudentDetailsModal
+        visible={modalVisible}
+        student={selectedStudent}
+        onClose={() => setModalVisible(false)}
+      />
 
       {/* Header */}
       <View className="flex-row items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
@@ -123,31 +169,33 @@ export default function TakeAttendanceScreen() {
         <Text className={`text-sm font-medium ${isDark ? "text-gray-400" : "text-gray-500"}`}>{getDayString()}</Text>
       </View>
 
-      <ScrollView className="flex-1 px-4 py-4">
+      <View className="flex-1 px-4 py-4 mb-20">
 
         {/* Class Selector */}
         <Text className={`text-sm font-bold mb-2 ml-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>SELECT CLASS</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-6">
-          {assignments.map((assignment) => (
-            <TouchableOpacity
-              key={assignment.$id}
-              onPress={() => {
-                setSelectedClassId(assignment.class.$id);
-                setSelectedSubjectId(assignment.subject.$id);
-              }}
-              className={`mr-3 p-4 rounded-xl border ${selectedClassId === assignment.class.$id
-                ? (isDark ? "bg-blue-900 border-blue-500" : "bg-blue-600 border-blue-600")
-                : (isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200")}`}
-            >
-              <Text className={`font-bold text-lg mb-1 ${selectedClassId === assignment.class.$id ? "text-white" : (isDark ? "text-white" : "text-gray-900")}`}>
-                {assignment.class.division ? `${assignment.class.year}-${assignment.class.division}` : "N/A"}
-              </Text>
-              <Text className={`${selectedClassId === assignment.class.$id ? "text-blue-200" : (isDark ? "text-gray-400" : "text-gray-500")}`}>
-                {assignment.subject.name}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+        <View className="h-24 mb-6">
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {assignments.map((assignment) => (
+              <TouchableOpacity
+                key={assignment.$id}
+                onPress={() => {
+                  setSelectedClassId(assignment.class.$id);
+                  setSelectedSubjectId(assignment.subject.$id);
+                }}
+                className={`mr-3 p-4 rounded-xl border w-40 justify-center h-20 ${selectedClassId === assignment.class.$id
+                  ? (isDark ? "bg-blue-900 border-blue-500" : "bg-blue-600 border-blue-600")
+                  : (isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200")}`}
+              >
+                <Text className={`font-bold text-lg mb-1 ${selectedClassId === assignment.class.$id ? "text-white" : (isDark ? "text-white" : "text-gray-900")}`}>
+                  {assignment.class.name ? `${assignment.class.name}` : "N/A"}
+                </Text>
+                <Text className={`${selectedClassId === assignment.class.$id ? "text-blue-200" : (isDark ? "text-gray-400" : "text-gray-500")}`} numberOfLines={1}>
+                  {assignment.subject.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
 
         {selectedClassId ? (
           <>
@@ -163,39 +211,16 @@ export default function TakeAttendanceScreen() {
               </View>
             </View>
 
-            {filteredStudents.map(student => {
-              const isPresent = studentStatus[student.$id];
-              return (
-                <TouchableOpacity
-                  key={student.$id}
-                  onPress={() => toggleStatus(student.$id)}
-                  className={`flex-row items-center p-3 mb-2 rounded-xl border ${isPresent
-                    ? (isDark ? "bg-gray-800 border-green-500/30" : "bg-white border-green-200")
-                    : (isDark ? "bg-gray-800 border-red-500/30" : "bg-red-50 border-red-200")}`}
-                >
-                  <View className={`w-10 h-10 rounded-full items-center justify-center mr-3 ${isPresent ? "bg-indigo-100 dark:bg-indigo-900" : "bg-red-100 dark:bg-red-900"}`}>
-                    <Text className={`font-bold ${isPresent ? "text-indigo-600 dark:text-indigo-300" : "text-red-600 dark:text-red-300"}`}>
-                      {student.user.name.charAt(0)}
-                    </Text>
-                  </View>
-                  <View className="flex-1">
-                    <Text className={`font-medium text-base ${isDark ? "text-white" : "text-gray-900"} ${!isPresent && "text-red-600 dark:text-red-400"}`}>
-                      {student.user.name}
-                    </Text>
-                    <Text className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>Roll No: {student.rollNumber}</Text>
-                  </View>
-                  <View className={`w-8 h-8 rounded-full items-center justify-center ${isPresent ? "bg-green-100 dark:bg-green-900/50" : "bg-red-100 dark:bg-red-900/50"}`}>
-                    <Ionicons
-                      name={isPresent ? "checkmark" : "close"}
-                      size={20}
-                      color={isPresent ? "#16A34A" : "#DC2626"}
-                    />
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-
-            <View className="h-24" />
+            <FlatList
+              data={filteredStudents}
+              keyExtractor={(item) => item.$id}
+              renderItem={renderStudentItem}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 100 }}
+              initialNumToRender={20}
+              maxToRenderPerBatch={20}
+              windowSize={10}
+            />
           </>
         ) : (
           <View className="items-center justify-center py-20">
@@ -205,7 +230,7 @@ export default function TakeAttendanceScreen() {
             </Text>
           </View>
         )}
-      </ScrollView>
+      </View>
 
       {/* Submit Button */}
       {selectedClassId && (

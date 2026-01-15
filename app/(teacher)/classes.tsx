@@ -2,6 +2,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useEffect } from "react";
 import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from "react-native";
 import { useAssignments } from "../../store/hooks/useAssignments";
+import { useAuth } from "../../store/hooks/useAuth";
 import { useTheme } from "../../store/hooks/useTheme";
 import { TeacherAssignment } from "../../types";
 import { useInstitutionId } from "../../utils/useInstitutionId";
@@ -9,20 +10,21 @@ import { useInstitutionId } from "../../utils/useInstitutionId";
 export default function ClassesScreen() {
     const { isDark } = useTheme();
     const { data: assignments, loading, fetchAssignments } = useAssignments();
+    const { user } = useAuth();
     const institutionId = useInstitutionId();
 
     useEffect(() => {
-        if (institutionId) {
-            fetchAssignments(institutionId);
+        if (institutionId && user?.$id) {
+            fetchAssignments(institutionId, user.$id);
         }
-    }, [institutionId, fetchAssignments]);
+    }, [institutionId, user?.$id, fetchAssignments]);
 
     const renderItem = ({ item }: { item: TeacherAssignment }) => (
         <TouchableOpacity className={`p-4 mb-3 rounded-xl border ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"} shadow-sm`}>
             <View className="flex-row justify-between items-start mb-2">
                 <View>
                     <Text className={`text-lg font-bold ${isDark ? "text-white" : "text-gray-900"}`}>{item.subject?.name || "Unknown Subject"}</Text>
-                    <Text className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>{item.class?.division ? `${item.class.year}-${item.class.division}` : "Class N/A"}</Text>
+                    <Text className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>{item.class?.name ? `${item.class.name} (Sem ${item.class.semester})` : "Class N/A"}</Text>
                 </View>
                 <View className={`px-2 py-1 rounded-md ${isDark ? "bg-blue-900/50" : "bg-blue-50"}`}>
                     <Text className="text-blue-500 font-medium text-xs">Room 101</Text>
@@ -40,12 +42,12 @@ export default function ClassesScreen() {
     const [refreshing, setRefreshing] = React.useState(false);
 
     const onRefresh = React.useCallback(async () => {
-        if (institutionId) {
+        if (institutionId && user?.$id) {
             setRefreshing(true);
-            await fetchAssignments(institutionId);
+            await fetchAssignments(institutionId, user.$id);
             setRefreshing(false);
         }
-    }, [institutionId]);
+    }, [institutionId, user?.$id]);
 
     return (
         <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>

@@ -1,13 +1,13 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { Tabs } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
 import { useAuthGuard } from "../../hooks/useAuthGuard";
 import { useTheme } from "../../store/hooks/useTheme";
 
 export default function TeacherLayout() {
-  const guard = useAuthGuard(["TEACHER"]);
+  const { isAuthorized } = useAuthGuard(["TEACHER"]);
   const { isDark } = useTheme();
 
-  if (guard) return guard;
+  if (!isAuthorized) return <Redirect href="/(auth)/login" />;
 
   return (
     <Tabs
@@ -50,7 +50,7 @@ export default function TeacherLayout() {
           ),
         }}
       />
-       <Tabs.Screen
+      <Tabs.Screen
         name="attendance"
         options={{
           title: "Attendance",
@@ -68,7 +68,7 @@ export default function TeacherLayout() {
           ),
         }}
       />
-     
+
     </Tabs>
   );
 }

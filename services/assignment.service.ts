@@ -14,6 +14,28 @@ export const assignmentService = {
     );
   },
 
+  listByTeacher(institutionId: string, teacherId: string) {
+    return databaseService.list<TeacherAssignment>(
+      COLLECTIONS.TEACHER_ASSIGNMENTS,
+      [
+        Query.equal("institution", institutionId),
+        Query.equal("teacher", teacherId),
+        Query.select(["*", "teacher.*", "subject.*", "class.*", "institution.*"])
+      ]
+    );
+  },
+
+  listByClass(institutionId: string, classId: string) {
+    return databaseService.list<TeacherAssignment>(
+      COLLECTIONS.TEACHER_ASSIGNMENTS,
+      [
+        Query.equal("institution", institutionId),
+        Query.equal("class", classId),
+        Query.select(["*", "teacher.*", "subject.*", "class.*", "institution.*"])
+      ]
+    );
+  },
+
   get(id: string) {
     return databaseService.get<TeacherAssignment>(
       COLLECTIONS.TEACHER_ASSIGNMENTS,

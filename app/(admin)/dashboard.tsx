@@ -98,6 +98,7 @@ const AdminDashboard = () => {
           <ActionButton onClick={() => router.navigate('/(admin)/teachers/create')} icon="person-add-outline" label="Add Teacher" />
           <ActionButton onClick={() => router.navigate('/(admin)/students/create')} icon="person-outline" label="Add Student" />
           <ActionButton onClick={() => router.navigate('/(admin)/assignments/create')} icon="link-outline" label="Assign Teacher" />
+          <ActionButton onClick={() => router.navigate('/(admin)/schedules')} icon="time-outline" label="Class Schedules" />
         </View>
 
         {/* SYSTEM STATUS */}

@@ -16,7 +16,12 @@ const initialState: StudentState = {
 
 export const fetchStudents = createAsyncThunk(
   "students/fetch",
-  async (institutionId: string) => {
+  async ({ institutionId, classIds }: { institutionId: string; classIds?: string[] }) => {
+    if (classIds && classIds.length >= 0) {
+      if (classIds.length === 0) return []; // Optimization
+      const res = await studentService.listByClasses(institutionId, classIds);
+      return res.documents;
+    }
     const res = await studentService.list(institutionId);
     return res.documents;
   }

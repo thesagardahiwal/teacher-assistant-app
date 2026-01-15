@@ -1,6 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, Text, TextInput, View } from "react-native";
+import { useAssignments } from "../../store/hooks/useAssignments";
+import { useAuth } from "../../store/hooks/useAuth";
 import { useStudents } from "../../store/hooks/useStudents";
 import { useTheme } from "../../store/hooks/useTheme";
 import { Student } from "../../types";
@@ -9,19 +11,32 @@ import { useInstitutionId } from "../../utils/useInstitutionId";
 export default function StudentsScreen() {
     const { isDark } = useTheme();
     const { data: students, loading, fetchStudents } = useStudents();
+    const { data: assignments, fetchAssignments } = useAssignments();
+    const { user } = useAuth();
     const institutionId = useInstitutionId();
     const [search, setSearch] = useState("");
 
     useEffect(() => {
-        if (institutionId) {
-            fetchStudents(institutionId);
-        }
-    }, [institutionId]);
+        const loadData = async () => {
+            if (institutionId && user?.$id) {
+                // First fetch teacher's assignments to get classes
+                const res = await fetchAssignments(institutionId, user.$id);
+                // Extract unique class IDs
+                const payload = (res as any).payload as any[];
+                const classIds = [...new Set(payload.map((a: any) => a.class?.$id).filter(Boolean))] as string[];
+                // Fetch students for these classes
+                if (classIds.length > 0) {
+                    fetchStudents(institutionId, classIds);
+                }
+            }
+        };
+        loadData();
+    }, [institutionId, user?.$id]);
 
     const filteredStudents = useMemo(() => {
         if (!students) return [];
         return students.filter(student =>
-            student.user?.name.toLowerCase().includes(search.toLowerCase()) ||
+            student.name.toLowerCase().includes(search.toLowerCase()) ||
             student.rollNumber.toLowerCase().includes(search.toLowerCase())
         );
     }, [students, search]);
@@ -29,14 +44,14 @@ export default function StudentsScreen() {
     const renderItem = ({ item }: { item: Student }) => (
         <View className={`flex-row items-center p-4 mb-3 rounded-xl border ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"} shadow-sm`}>
             <View className="w-10 h-10 rounded-full bg-indigo-500 items-center justify-center mr-4">
-                <Text className="text-white font-bold">{item.user?.name?.charAt(0) || "?"}</Text>
+                <Text className="text-white font-bold">{item.name?.charAt(0) || "?"}</Text>
             </View>
             <View className="flex-1">
-                <Text className={`font-bold text-lg ${isDark ? "text-white" : "text-gray-900"}`}>{item.user?.name}</Text>
+                <Text className={`font-bold text-lg ${isDark ? "text-white" : "text-gray-900"}`}>{item.name}</Text>
                 <Text className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>Roll No: {item.rollNumber}</Text>
             </View>
             <View className={`px-2 py-1 rounded-md ${isDark ? "bg-indigo-900/50" : "bg-indigo-50"}`}>
-                <Text className="text-indigo-500 font-medium text-xs">{item.class?.division ? `${item.class.year}-${item.class.division}` : "No Class"}</Text>
+                <Text className="text-indigo-500 font-medium text-xs">{item.class?.name ? `${item.class.name}` : "No Class"}</Text>
             </View>
         </View>
     );

@@ -36,6 +36,10 @@ function RootLayoutInner() {
       <Stack screenOptions={{ headerShown: false }}>
         {/* Expo Router handles redirection via index.tsx */}
         <Stack.Screen name="index" />
+        <Stack.Screen name="(teacher)" />
+        <Stack.Screen name="(student)" />
+        <Stack.Screen name="(admin)" />
+        <Stack.Screen name="(auth)" />
       </Stack>
     </ThemeProvider>
   );

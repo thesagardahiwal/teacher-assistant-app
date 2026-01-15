@@ -78,7 +78,7 @@ export default function CreateAssignment() {
 
     const classOptions = classes
         .filter(c => !course || c.course?.$id === course) // Filter by course if selected
-        .map(c => ({ label: `Year ${c.year} - Division ${c.division} (${c.course?.code})`, value: c.$id }));
+        .map(c => ({ label: `Semester ${c.semester} (${c.course?.code})`, value: c.$id }));
 
     const subjectOptions = subjects
         .filter(s => !course || s.course?.$id === course) // Filter by course if selected

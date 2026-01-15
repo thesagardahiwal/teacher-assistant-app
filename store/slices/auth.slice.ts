@@ -3,6 +3,7 @@ import { Query } from "react-native-appwrite";
 import { authService } from "../../services/appwrite/auth.service";
 import { COLLECTIONS } from "../../services/appwrite/collections";
 import { databaseService } from "../../services/appwrite/database.service";
+import { studentService } from "../../services/student.service";
 import { userService } from "../../services/user.service";
 import { User, UserPayload } from "../../types/user.type";
 
@@ -63,12 +64,30 @@ export const restoreSession = createAsyncThunk(
       const account = await authService.getCurrentAccount();
       if (!account) return null;
 
-      const res = await databaseService.list<User>(
-        COLLECTIONS.USERS,
-        [Query.equal("userId", account.$id)]
-      );
-
-      return res.documents[0];
+      // Try fetching as User (Teacher/Admin) first
+      try {
+        const user = await userService.get(account.$id);
+        return user;
+      } catch (error) {
+        // If not found, try as Student
+        try {
+          const student = await studentService.get(account.$id);
+          // Normalize student to match User interface
+          // If student.user is not expanded (because of removed select), we use account details
+          return {
+            ...student,
+            $id: student.$id,
+            userId: account.$id,
+            name: student.name || account.name,
+            email: student.email || account.email,
+            role: "STUDENT",
+            institution: student.institution
+          } as any as User;
+        } catch (innerError) {
+          console.error("Failed to restore session user", innerError);
+          return rejectWithValue("Session restore failed");
+        }
+      }
     } catch (err) {
       return rejectWithValue("Session restore failed");
     }
@@ -79,20 +98,53 @@ export const restoreSession = createAsyncThunk(
 export const login = createAsyncThunk(
   "auth/login",
   async (
-    { email, password }: { email: string; password: string },
+    { email, password, type }: { email: string; password: string; type?: "student" | "teacher" },
     { rejectWithValue }
   ) => {
     try {
+      // Prevent "Creation of a session is prohibited when a session is active"
+      try {
+        await authService.logout();
+      } catch (e) {
+        // Ignore if no session or failed
+      }
+
       await authService.login(email, password);
       const account = await authService.getCurrentAccount();
       if (!account) throw new Error("No session");
 
-      const res = await databaseService.list<User>(
-        COLLECTIONS.USERS,
-        [Query.equal("userId", account.$id)]
-      );
-      console.log("Login user data:", res.documents[0]);
-      return res.documents[0];
+      let user: User;
+
+      if (type === "student") {
+        const student = await studentService.get(account.$id);
+        user = {
+          ...student,
+          $id: student.$id,
+          userId: account.$id,
+          name: student.name || account.name,
+          email: student.email || account.email,
+          role: "STUDENT",
+          institution: student.institution
+        } as any as User;
+      } else {
+        try {
+          user = await userService.get(account.$id);
+        } catch (e) {
+          const student = await studentService.get(account.$id);
+          user = {
+            ...student,
+            $id: student.$id,
+            userId: account.$id,
+            name: student.name || account.name,
+            email: student.email || account.email,
+            role: "STUDENT",
+            institution: student.institution
+          } as any as User;
+        }
+      }
+
+      console.log("Login user data:", user);
+      return user;
     } catch (err) {
       return rejectWithValue((err as Error).message || "Invalid credentials");
     }

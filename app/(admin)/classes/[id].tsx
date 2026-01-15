@@ -31,11 +31,10 @@ export default function EditClass() {
     const { data: courses, fetchCourses } = useCourses();
     const { data: academicYears, fetchAcademicYears } = useAcademicYears();
 
-    const [year, setYear] = useState("");
-    const [division, setDivision] = useState("");
     const [semester, setSemester] = useState("");
     const [course, setCourse] = useState("");
     const [academicYear, setAcademicYear] = useState("");
+    const [name, setName] = useState("");
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -56,12 +55,10 @@ export default function EditClass() {
     const loadData = async () => {
         try {
             const doc = await classService.get(id as string);
-            console.log(doc);
-            setYear(doc.year as unknown as string || '');
-            setDivision(doc.division);
             setSemester(doc.semester as unknown as string || "");
             setCourse(doc.course.$id || "");
             setAcademicYear(doc.academicYear.$id || "");
+            setName(doc.name || "");
         } catch (error) {
             console.error("loadData Error:", error);
             Alert.alert("Error", "Failed to load class");
@@ -91,7 +88,7 @@ export default function EditClass() {
     }
 
     const handleSubmit = async () => {
-        if (!year || !division || !semester || !course || !academicYear) {
+        if (!semester || !course || !academicYear) {
             Alert.alert("Error", "Please fill in all required fields");
             return;
         }
@@ -99,10 +96,9 @@ export default function EditClass() {
         setSaving(true);
         try {
             await classService.update(id as string, {
-                year: Number(year),
-                division: division,
                 semester: Number(semester),
                 course: course,
+                name: name,
                 academicYear: academicYear, // Assuming this is passed as ID string (relationship)
             });
 
@@ -164,16 +160,6 @@ export default function EditClass() {
                     />
 
                     <View className="flex-row justify-between">
-                        <View className="flex-1 mr-2">
-                            <FormInput
-                                label="Year (e.g. 1)"
-                                placeholder="1"
-                                value={year}
-                                onChangeText={setYear}
-                                keyboardType="numeric"
-                                editable={isAdmin}
-                            />
-                        </View>
                         <View className="flex-1 ml-2">
                             <FormInput
                                 label="Semester"
@@ -184,15 +170,16 @@ export default function EditClass() {
                                 editable={isAdmin}
                             />
                         </View>
+                        <View className="flex-1 ml-2">
+                            <FormInput
+                                label="Name"
+                                placeholder="eg. 1st year"
+                                value={name}
+                                onChangeText={setName}
+                                editable={isAdmin}
+                            />
+                        </View>
                     </View>
-
-                    <FormInput
-                        label="Division (e.g. A)"
-                        placeholder="A"
-                        value={division}
-                        onChangeText={setDivision}
-                        editable={isAdmin}
-                    />
 
                 </View>
 

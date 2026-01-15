@@ -25,8 +25,7 @@ export default function CreateClass() {
   const { data: courses, fetchCourses } = useCourses();
   const { data: academicYears, fetchAcademicYears } = useAcademicYears();
 
-  const [year, setYear] = useState("");
-  const [division, setDivision] = useState("");
+  const [name, setName] = useState("");
   const [semester, setSemester] = useState("");
   const [course, setCourse] = useState("");
   const [academicYear, setAcademicYear] = useState("");
@@ -41,7 +40,7 @@ export default function CreateClass() {
   }, [institutionId]);
 
   const handleSubmit = async () => {
-    if (!year || !division || !semester || !course || !academicYear || !institutionId) {
+    if (!semester || !name || !course || !academicYear || !institutionId) {
       Alert.alert("Error", "Please fill in all required fields");
       return;
     }
@@ -49,12 +48,11 @@ export default function CreateClass() {
     setLoading(true);
     try {
       await classService.create({
-        year: Number(year),
-        division,
         semester: Number(semester),
         course,
         academicYear,
         institution: institutionId,
+        name: name,
       });
 
       Alert.alert("Success", "Class created successfully", [
@@ -94,15 +92,6 @@ export default function CreateClass() {
           />
 
           <View className="flex-row justify-between">
-            <View className="flex-1 mr-2">
-              <FormInput
-                label="Year (e.g. 1)"
-                placeholder="1"
-                value={year}
-                onChangeText={setYear}
-                keyboardType="numeric"
-              />
-            </View>
             <View className="flex-1 ml-2">
               <FormInput
                 label="Semester"
@@ -112,14 +101,15 @@ export default function CreateClass() {
                 keyboardType="numeric"
               />
             </View>
+            <View className="flex-1 ml-2">
+              <FormInput
+                label="Name"
+                placeholder="Class Name"
+                value={name}
+                onChangeText={setName}
+              />
+            </View>
           </View>
-
-          <FormInput
-            label="Division (e.g. A)"
-            placeholder="A"
-            value={division}
-            onChangeText={setDivision}
-          />
 
         </View>
 

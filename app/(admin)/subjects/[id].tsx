@@ -30,7 +30,6 @@ export default function EditSubject() {
     const [name, setName] = useState("");
     const [code, setCode] = useState("");
     const [course, setCourse] = useState("");
-    const [year, setYear] = useState("");
     const [semester, setSemester] = useState("");
 
     const [loading, setLoading] = useState(true);
@@ -53,7 +52,6 @@ export default function EditSubject() {
             const doc = await subjectService.get(id as string);
             setName(doc.name);
             setCode(doc.code);
-            setYear(doc.year.toString());
             setSemester(doc.semester.toString());
             setCourse(doc.course?.$id || "");
         } catch (error) {
@@ -84,7 +82,7 @@ export default function EditSubject() {
     }
 
     const handleSubmit = async () => {
-        if (!name || !code || !course || !year || !semester) {
+        if (!name || !code || !course || !semester) {
             Alert.alert("Error", "Please fill in all required fields");
             return;
         }
@@ -95,7 +93,6 @@ export default function EditSubject() {
                 name,
                 code,
                 course,
-                year: Number(year),
                 semester: Number(semester),
             });
 
@@ -155,15 +152,6 @@ export default function EditSubject() {
                     />
 
                     <View className="flex-row justify-between">
-                        <View className="flex-1 mr-2">
-                            <FormInput
-                                label="Year"
-                                placeholder="1"
-                                value={year}
-                                onChangeText={setYear}
-                                keyboardType="numeric"
-                            />
-                        </View>
                         <View className="flex-1 ml-2">
                             <FormInput
                                 label="Semester"

@@ -16,7 +16,11 @@ const initialState: AssignmentState = {
 
 export const fetchAssignments = createAsyncThunk(
   "assignments/fetch",
-  async (institutionId: string) => {
+  async ({ institutionId, teacherId }: { institutionId: string; teacherId?: string }) => {
+    if (teacherId) {
+      const res = await assignmentService.listByTeacher(institutionId, teacherId);
+      return res.documents;
+    }
     const res = await assignmentService.list(institutionId);
     return res.documents;
   }

@@ -2,6 +2,7 @@ import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { useAuth } from "@/store/hooks/useAuth";
 import { useStudents } from "@/store/hooks/useStudents";
 import { useTheme } from "@/store/hooks/useTheme";
+import { Student } from "@/types";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -28,7 +29,7 @@ export default function StudentsIndex() {
     }
   }, [institutionId]);
 
-  const renderItem = ({ item }: { item: any }) => (
+  const renderItem = ({ item }: { item: Student }) => (
     <TouchableOpacity
       onPress={() => router.push(`/(admin)/students/${item.$id}`)}
       className={`p-4 mb-3 rounded-xl border flex-row items-center justify-between ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"
@@ -36,13 +37,13 @@ export default function StudentsIndex() {
     >
       <View>
         <Text className={`text-lg font-bold mb-1 ${isDark ? "text-white" : "text-gray-900"}`}>
-          {item.user?.name || "Unknown"}
+          {item.name || "Unknown"}
         </Text>
         <Text className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-          Roll: {item.rollNumber} • {item.class?.course?.code || "No Course"}
+          Roll: {item.rollNumber} • {item.course?.code || "No Course"}
         </Text>
         <Text className={`text-xs mt-1 ${isDark ? "text-gray-500" : "text-gray-400"}`}>
-          Year {item.class?.year} - {item.class?.division}
+          Year {item.currentYear} - {item.class?.semester || '1'}
         </Text>
       </View>
       <Ionicons
