@@ -27,9 +27,9 @@ export default function TeacherDashboard() {
     const loadData = async () => {
         if (institutionId) {
             await Promise.all([
-                fetchAssignments(institutionId),
+                user?.$id ? fetchAssignments(institutionId, user.$id) : Promise.resolve(),
                 user?.$id ? fetchAttendance(institutionId, user.$id) : Promise.resolve(),
-                fetchStudents(institutionId)
+                assignments.length > 0 ? fetchStudents(institutionId, assignments.map((a) => a.class.$id)) : Promise.resolve(),
             ]);
 
             if (user?.$id) {
@@ -40,14 +40,22 @@ export default function TeacherDashboard() {
                 const currentTime = now.toTimeString().slice(0, 5); // HH:MM
 
                 try {
-                    const res = await scheduleService.getNextClassForTeacher(user.$id, currentDay, currentTime);
+                    // 1. Try Next Class (Future)
+                    let res = await scheduleService.getNextClassForTeacher(user.$id, currentDay, currentTime);
+
                     if (res && res.documents.length > 0) {
-                        setNextClass(res.documents[0]);
+                        setNextClass({ ...res.documents[0], status: 'Upcoming' } as any);
                     } else {
-                        setNextClass(null);
+                        // 2. Fallback to Previous/Current Class
+                        res = await scheduleService.getPreviousClassForTeacher(user.$id, currentDay, currentTime);
+                        if (res && res.documents.length > 0) {
+                            setNextClass({ ...res.documents[0], status: 'Previous' } as any);
+                        } else {
+                            setNextClass(null);
+                        }
                     }
                 } catch (error) {
-                    console.error("Error fetching next class:", error);
+                    console.error("Error fetching next/prev class:", error);
                 }
             }
         }
@@ -69,14 +77,38 @@ export default function TeacherDashboard() {
         { label: "Attendance", value: attendanceHistory.length, icon: "clipboard-check", color: "text-green-500", bg: "bg-green-100 dark:bg-green-900/30" },
     ];
 
-    const QuickAction = ({ icon, label, onPress, color }: any) => (
-        <TouchableOpacity onPress={onPress} className={`items-center justify-center p-4 rounded-xl flex-1 mx-2 ${isDark ? "bg-gray-800" : "bg-white"} shadow-sm`}>
-            <View className={`w-12 h-12 rounded-full ${color} items-center justify-center mb-2`}>
-                <MaterialCommunityIcons name={icon} size={24} color="white" />
+    const QuickAction = ({
+        icon,
+        label,
+        onPress,
+        bgColor,
+    }: {
+        icon: keyof typeof MaterialCommunityIcons.glyphMap;
+        label: string;
+        onPress: () => void;
+        bgColor: string;
+    }) => (
+        <TouchableOpacity
+            onPress={onPress}
+            activeOpacity={0.8}
+            className={`flex-1 p-4 rounded-2xl ${isDark ? "bg-gray-800" : "bg-white"
+                } shadow-sm`}
+        >
+            <View
+                className={`w-12 h-12 rounded-full ${bgColor} items-center justify-center mb-3`}
+            >
+                <MaterialCommunityIcons name={icon} size={22} color="white" />
             </View>
-            <Text className={`font-medium text-center ${isDark ? "text-gray-200" : "text-gray-700"}`}>{label}</Text>
+
+            <Text
+                className={`font-semibold text-sm ${isDark ? "text-gray-200" : "text-gray-700"
+                    }`}
+            >
+                {label}
+            </Text>
         </TouchableOpacity>
     );
+
 
     return (
         <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
@@ -84,123 +116,132 @@ export default function TeacherDashboard() {
                 contentContainerStyle={{ paddingBottom: 100 }}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
             >
-                <View>
 
-                    {/* Header */}
-                    <View className="flex-row justify-between items-center px-5 py-4">
-                        <View>
-                            <Text className={`text-lg font-medium ${isDark ? "text-gray-400" : "text-gray-500"}`}>Welcome back,</Text>
-                            <Text className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>{user?.name}</Text>
+                {/* Header */}
+                <View className="flex-row justify-between items-center px-5 py-4">
+                    <View>
+                        <Text className={`text-lg font-medium ${isDark ? "text-gray-400" : "text-gray-500"}`}>Welcome back,</Text>
+                        <Text className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>{user?.name}</Text>
+                    </View>
+                    <TouchableOpacity onPress={() => router.push("/(teacher)/profile")}>
+                        <View className="w-10 h-10 rounded-full bg-blue-600 items-center justify-center">
+                            <Text className="text-white font-bold text-lg">{user?.name?.charAt(0)}</Text>
                         </View>
-                        <TouchableOpacity onPress={() => router.push("/(teacher)/profile")}>
-                            <View className="w-10 h-10 rounded-full bg-blue-600 items-center justify-center">
-                                <Text className="text-white font-bold text-lg">{user?.name?.charAt(0)}</Text>
-                            </View>
-                        </TouchableOpacity>
-                    </View>
+                    </TouchableOpacity>
+                </View>
 
-                    {/* Stats Grid */}
-                    <View className="flex-row flex-wrap px-3 mb-6">
-                        {stats.map((stat, index) => (
-                            <View key={index} className="w-1/3 p-2">
-                                <View className={`p-3 rounded-xl items-center ${isDark ? "bg-gray-800" : "bg-white"} shadow-sm h-32 justify-center`}>
-                                    <View className={`w-10 h-10 rounded-full ${stat.bg} items-center justify-center mb-2`}>
-                                        <MaterialCommunityIcons name={stat.icon as any} size={20} color={'white'} className={stat.color} />
-                                    </View>
-                                    <Text className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>{stat.value}</Text>
-                                    <Text className={`text-xs text-center ${isDark ? "text-gray-400" : "text-gray-500"}`}>{stat.label}</Text>
+                {/* Stats Grid */}
+                <View className="flex-row flex-wrap px-3 mb-6">
+                    {stats.map((stat, index) => (
+                        <View key={index} className="w-1/3 p-2">
+                            <View className={`p-3 rounded-xl items-center ${isDark ? "bg-gray-800" : "bg-white"} shadow-sm h-32 justify-center`}>
+                                <View className={`w-10 h-10 rounded-full ${stat.bg} items-center justify-center mb-2`}>
+                                    <MaterialCommunityIcons name={stat.icon as any} size={20} color={'white'} className={stat.color} />
                                 </View>
+                                <Text className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>{stat.value}</Text>
+                                <Text className={`text-xs text-center ${isDark ? "text-gray-400" : "text-gray-500"}`}>{stat.label}</Text>
                             </View>
-                        ))}
-                    </View>
-
-                    {/* Next Class Card */}
-                    <View className="px-5 mb-8">
-                        <Text className={`text-lg font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>Next Class</Text>
-                        {nextClass ? (
-                            <View className={`p-5 rounded-2xl ${isDark ? "bg-blue-900" : "bg-blue-600"} shadow-lg relative overflow-hidden`}>
-                                {/* Background decorations */}
-                                <View className="absolute -right-10 -top-10 w-32 h-32 rounded-full bg-white/10" />
-                                <View className="absolute -left-10 -bottom-10 w-24 h-24 rounded-full bg-white/10" />
-
-                                <View className="flex-row justify-between items-start mb-4">
-                                    <View>
-                                        <Text className="text-blue-100 font-medium mb-1">Upcoming</Text>
-                                        <Text className="text-white text-2xl font-bold">{nextClass.subject?.name || "Subject"}</Text>
-                                        <Text className="text-blue-100">{nextClass.class?.name ? `Class ${nextClass.class.name}` : "Class N/A"}</Text>
-                                    </View>
-                                    <View className="bg-white/20 p-2 rounded-lg">
-                                        <Ionicons name="notifications" size={20} color="white" />
-                                    </View>
-                                </View>
-
-                                <View className="flex-row items-center bg-white/20 self-start px-3 py-1 rounded-full">
-                                    <Ionicons name="time-outline" size={16} color="white" />
-                                    <Text className="text-white ml-2 font-medium">{nextClass.startTime} - {nextClass.endTime}</Text>
-                                </View>
-                            </View>
-                        ) : (
-                            <View className={`p-6 rounded-2xl ${isDark ? "bg-gray-800" : "bg-gray-200"} items-center`}>
-                                <Text className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>No classes scheduled</Text>
-                            </View>
-                        )}
-                    </View>
-
-                    {/* Quick Actions */}
-                    <View className="px-5 mb-8">
-                        <Text className={`text-lg font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>Quick Actions</Text>
-                        <View className="flex-row -mx-2">
-                            <QuickAction
-                                icon="check-circle-outline"
-                                label="Take Attendance"
-                                color="bg-green-500"
-                                onPress={() => router.push("/(teacher)/attendance/create")}
-                            />
-                            <QuickAction
-                                icon="format-list-checks"
-                                label="Class List"
-                                color="bg-indigo-500"
-                                onPress={() => router.push("/(teacher)/classes")}
-                            />
-                            <QuickAction
-                                icon="format-list-checks"
-                                label="Class List"
-                                color="bg-indigo-500"
-                                onPress={() => router.push("/(teacher)/classes")}
-                            />
-                            <QuickAction
-                                icon="calendar-clock"
-                                label="Schedule"
-                                color="bg-purple-500"
-                                onPress={() => router.push("/(teacher)/schedule")}
-                            />
-                            <QuickAction
-                                icon="account-search"
-                                label="Find Student"
-                                color="bg-orange-500"
-                                onPress={() => router.push("/(teacher)/students")}
-                            />
                         </View>
-                    </View>
+                    ))}
+                </View>
 
-                    {/* Recent Activity */}
-                    <View className="px-5">
-                        <Text className={`text-lg font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>Recent Activity</Text>
-                        {attendanceHistory.slice(0, 3).map((item) => (
-                            <View key={item.$id} className={`flex-row items-center p-3 mb-3 rounded-xl ${isDark ? "bg-gray-800" : "bg-white"} shadow-sm`}>
-                                <View className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 items-center justify-center mr-3">
-                                    <MaterialCommunityIcons name="check" size={20} className="text-green-600 dark:text-green-400" />
-                                </View>
-                                <View className="flex-1">
-                                    <Text className={`font-bold ${isDark ? "text-white" : "text-gray-900"}`}>Attendance Taken</Text>
-                                    <Text className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-                                        {item.class?.name ? `Class ${item.class.name}` : ""} • {item.subject?.name}
+                {/* Next Class Card */}
+                <View className="px-5 mb-8">
+                    <Text className={`text-lg font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>Next Class</Text>
+                    {nextClass ? (
+                        <View className={`p-5 rounded-2xl ${isDark ? "bg-blue-900" : "bg-blue-600"} shadow-lg relative overflow-hidden`}>
+                            {/* Background decorations */}
+                            <View className="absolute -right-10 -top-10 w-32 h-32 rounded-full bg-white/10" />
+                            <View className="absolute -left-10 -bottom-10 w-24 h-24 rounded-full bg-white/10" />
+
+                            <View className="flex-row justify-between items-start mb-4">
+                                <View>
+                                    <Text className="text-blue-100 font-medium mb-1">
+                                        {(nextClass as any).status === 'Previous' ? "Previous / Current Class" : "Upcoming Class"}
                                     </Text>
+                                    <Text className="text-white text-2xl font-bold">{nextClass.subject?.name || "Subject"}</Text>
+                                    <Text className="text-blue-100">{nextClass.class?.name ? `Class ${nextClass.class.name}` : "Class N/A"}</Text>
                                 </View>
-                                <Text className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>{new Date(item.date).toLocaleDateString()}</Text>
+                                <View className="bg-white/20 p-2 rounded-lg">
+                                    <Ionicons name="notifications" size={20} color="white" />
+                                </View>
                             </View>
-                        ))}
+
+                            <View className="flex-row items-center bg-white/20 self-start px-3 py-1 rounded-full">
+                                <Ionicons name="time-outline" size={16} color="white" />
+                                <Text className="text-white ml-2 font-medium">{nextClass.startTime} - {nextClass.endTime}</Text>
+                            </View>
+                        </View>
+                    ) : (
+                        <View className={`p-6 rounded-2xl ${isDark ? "bg-gray-800" : "bg-gray-200"} items-center`}>
+                            <Text className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>No classes scheduled</Text>
+                        </View>
+                    )}
+                </View>
+
+                {/* Quick Actions */}
+                {/* Quick Actions */}
+                <View className="px-5 mb-8">
+                    <Text
+                        className={`text-lg font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"
+                            }`}
+                    >
+                        Quick Actions
+                    </Text>
+
+                    {/* Row 1 */}
+                    <View className="flex-row gap-4 mb-4">
+                        <QuickAction
+                            icon="check-circle-outline"
+                            label="Take Attendance"
+                            bgColor="bg-green-500"
+                            onPress={() => router.push("/(teacher)/attendance/create")}
+                        />
+
+                        <QuickAction
+                            icon="calendar-clock"
+                            label="My Schedule"
+                            bgColor="bg-purple-500"
+                            onPress={() => router.push("/(teacher)/schedule")}
+                        />
                     </View>
+
+                    {/* Row 2 */}
+                    <View className="flex-row gap-4">
+                        <QuickAction
+                            icon="format-list-bulleted"
+                            label="My Classes"
+                            bgColor="bg-indigo-500"
+                            onPress={() => router.push("/(teacher)/classes")}
+                        />
+
+                        <QuickAction
+                            icon="account-search"
+                            label="Find Student"
+                            bgColor="bg-orange-500"
+                            onPress={() => router.push("/(teacher)/students")}
+                        />
+                    </View>
+                </View>
+
+
+                {/* Recent Activity */}
+                <View className="px-5">
+                    <Text className={`text-lg font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>Recent Activity</Text>
+                    {attendanceHistory.slice(0, 3).map((item) => (
+                        <View key={item.$id} className={`flex-row items-center p-3 mb-3 rounded-xl ${isDark ? "bg-gray-800" : "bg-white"} shadow-sm`}>
+                            <View className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 items-center justify-center mr-3">
+                                <MaterialCommunityIcons name="check" size={20} className="text-green-600 dark:text-green-400" />
+                            </View>
+                            <View className="flex-1">
+                                <Text className={`font-bold ${isDark ? "text-white" : "text-gray-900"}`}>Attendance Taken</Text>
+                                <Text className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                                    {item.class?.name ? `Class ${item.class.name}` : ""} • {item.subject?.name}
+                                </Text>
+                            </View>
+                            <Text className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>{new Date(item.date).toLocaleDateString()}</Text>
+                        </View>
+                    ))}
                 </View>
             </ScrollView>
         </View>

@@ -217,7 +217,19 @@ const authSlice = createSlice({
       })
 
       // Logout
-      .addCase(logout.fulfilled, () => initialState)
+      .addCase(logout.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(logout.fulfilled, (state) => {
+        state.isAuthenticated = false;
+        state.user = null;
+        state.role = null;
+        state.isLoading = false;
+        state.error = null;
+      })
+      .addCase(logout.rejected, (state) => {
+        state.isLoading = false;
+      })
       .addCase(signUp.pending, (state) => {
         state.isLoading = true;
       })

@@ -67,32 +67,80 @@ export default function EditSchedule() {
 
         (async () => {
             try {
-                const res = await scheduleService.listByInstitution(institutionId!);
-                const schedule = res.documents.find((s) => s.$id === scheduleId);
+                const schedule = await scheduleService.get(scheduleId);
 
-                if (!schedule) throw new Error("Schedule not found");
+                // Helper to extract ID safely from Object, Array, or String
+                const getID = (item: any): string => {
+                    if (!item) return "";
+                    if (Array.isArray(item)) return item.length > 0 ? getID(item[0]) : "";
+                    if (typeof item === 'object') return item.$id || "";
+                    return String(item);
+                };
 
-                setAcademicYear(schedule.academicYear.$id);
-                setSelectedClass(schedule.class.$id);
-                setTeacher(schedule.teacher.$id);
-                setSubject(schedule.subject.$id);
+                const ayId = getID(schedule.academicYear);
+                const classId = getID(schedule.class);
+                const teacherId = getID(schedule.teacher);
+                const subjectId = getID(schedule.subject);
+
+                setAcademicYear(ayId);
+                setSelectedClass(classId);
+                setTeacher(teacherId);
+                setSubject(subjectId);
                 setDayOfWeek(schedule.dayOfWeek);
                 setStartTime(schedule.startTime);
                 setEndTime(schedule.endTime);
                 setIsActive(schedule.isActive);
-            } catch {
+
+                // --- SEED OPTIONS IMMEDIATELY ---
+                // Populates dropdowns with current values so they aren't empty while lists load
+
+                if (schedule.class) {
+                    const cItem = Array.isArray(schedule.class) ? schedule.class[0] : schedule.class;
+                    if (cItem && typeof cItem === 'object') {
+                        setClassOptions([{
+                            label: cItem.name || `Class ${cItem.year}-${cItem.division}`,
+                            value: cItem.$id
+                        }]);
+                    }
+                }
+
+                if (schedule.teacher) {
+                    const tItem = Array.isArray(schedule.teacher) ? schedule.teacher[0] : schedule.teacher;
+                    if (tItem && typeof tItem === 'object') {
+                        setTeacherOptions([{
+                            label: tItem.name,
+                            value: tItem.$id
+                        }]);
+                    }
+                }
+
+                if (schedule.subject) {
+                    const sItem = Array.isArray(schedule.subject) ? schedule.subject[0] : schedule.subject;
+                    if (sItem && typeof sItem === 'object') {
+                        setSubjectOptions([{
+                            label: sItem.name + (sItem.code ? ` (${sItem.code})` : ''),
+                            value: sItem.$id
+                        }]);
+                    }
+                }
+
+            } catch (error) {
+                console.error("Failed to fetch schedule details", error);
                 Alert.alert("Error", "Failed to load schedule");
                 router.back();
             } finally {
                 setLoading(false);
             }
         })();
-    }, [scheduleId, institutionId]);
+    }, [scheduleId]);
 
     /* ---------- LOAD CLASSES ---------- */
     useEffect(() => {
         if (!academicYear || !institutionId) {
-            setClassOptions([]);
+            // If we already have selectedClass, don't wipe options immediately or we lose the seeded value
+            // But strict flow says we should only show classes for this year.
+            // We'll trust the seed unless academicYear changes.
+            if (!selectedClass) setClassOptions([]);
             return;
         }
 
@@ -115,9 +163,9 @@ export default function EditSchedule() {
 
     useEffect(() => {
         if (!selectedClass || !institutionId) {
-            setTeacherOptions([]);
-            setSubjectOptions([]);
-            setClassAssignments([]);
+            // Keep seeded options if we have a value, otherwise clear
+            if (!teacher) setTeacherOptions([]);
+            if (!subject) setSubjectOptions([]);
             return;
         }
 
@@ -130,6 +178,11 @@ export default function EditSchedule() {
                 setClassAssignments(assignments);
 
                 const tMap = new Map();
+
+                // Preserve existing selection if it exists in the new list (or keep seeded if not found? No, strictly filter)
+                // Actually, for editing, if the assigned teacher is no longer in the list, it's an invalid state, but we should probably show it anyway?
+                // For now, let's just populate from the list.
+
                 assignments.forEach((a: any) => {
                     if (a.teacher && a.teacher.$id)
                         tMap.set(a.teacher.$id, {
@@ -138,7 +191,9 @@ export default function EditSchedule() {
                         });
                 });
 
-                setTeacherOptions([...tMap.values()]);
+                if (tMap.size > 0) {
+                    setTeacherOptions([...tMap.values()]);
+                }
             })
             .catch(err => console.error("Failed to load assignments", err))
             .finally(() => setLoadingAssignments(false));
@@ -147,14 +202,14 @@ export default function EditSchedule() {
     /* ---------- FILTER SUBJECTS ---------- */
     useEffect(() => {
         if (!teacher || classAssignments.length === 0) {
-            setSubjectOptions([]);
+            // Keep seeded if valid
+            if (!subject) setSubjectOptions([]);
             return;
         }
 
         const sMap = new Map();
         classAssignments.forEach((a: any) => {
-            // Match teacher ID
-            const tId = a.teacher?.$id || a.teacher; // handle expanded vs string if erratic
+            const tId = a.teacher?.$id || a.teacher;
             if (tId === teacher && a.subject && a.subject.$id) {
                 sMap.set(a.subject.$id, {
                     label: `${a.subject.name} (${a.subject.code})`,
@@ -162,7 +217,10 @@ export default function EditSchedule() {
                 });
             }
         });
-        setSubjectOptions([...sMap.values()]);
+
+        if (sMap.size > 0) {
+            setSubjectOptions([...sMap.values()]);
+        }
 
     }, [teacher, classAssignments]);
 
@@ -196,7 +254,8 @@ export default function EditSchedule() {
             Alert.alert("Success", "Schedule updated", [
                 { text: "OK", onPress: () => router.back() },
             ]);
-        } catch {
+        } catch (err) {
+            console.log(err);
             Alert.alert("Error", "Failed to update schedule");
         } finally {
             setSubmitting(false);
@@ -218,15 +277,16 @@ export default function EditSchedule() {
     }
 
     return (
-        <View className="flex-1 bg-background dark:bg-dark-background">
+        <View className="flex-1 p-4 bg-background dark:bg-dark-background">
             <PageHeader title="Edit Schedule" />
 
-            <ScrollView className="px-6">
+            <ScrollView className="px-6 bg-card dark:bg-dark-card rounded-xl py-4">
                 <FormSelect
                     label="Academic Year"
                     value={academicYear}
                     onChange={setAcademicYear}
                     options={academicYears}
+                    placeholder="Select Academic Year"
                 />
 
                 <FormSelect
@@ -234,15 +294,24 @@ export default function EditSchedule() {
                     value={selectedClass}
                     onChange={setSelectedClass}
                     options={classOptions}
+                    placeholder={academicYear ? "Select Class" : "Select Academic Year First"}
                 />
 
-                {loadingAssignments && <ActivityIndicator />}
+                {loadingAssignments && (
+                    <View className="py-3">
+                        <ActivityIndicator />
+                        <Text className="text-xs text-center text-gray-500 mt-1">
+                            Loading class assignments...
+                        </Text>
+                    </View>
+                )}
 
                 <FormSelect
                     label="Teacher"
                     value={teacher}
                     onChange={setTeacher}
                     options={teacherOptions}
+                    placeholder={selectedClass ? "Select Teacher (Assigned)" : "Select Class First"}
                 />
 
                 <FormSelect
@@ -250,6 +319,7 @@ export default function EditSchedule() {
                     value={subject}
                     onChange={setSubject}
                     options={subjectOptions}
+                    placeholder={teacher ? "Select Subject" : "Select Teacher First"}
                 />
 
                 <FormSelect
@@ -257,14 +327,15 @@ export default function EditSchedule() {
                     value={dayOfWeek}
                     onChange={(value) => setDayOfWeek(value as "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN")}
                     options={[
-                        { label: "Mon", value: "MON" },
-                        { label: "Tue", value: "TUE" },
-                        { label: "Wed", value: "WED" },
-                        { label: "Thu", value: "THU" },
-                        { label: "Fri", value: "FRI" },
-                        { label: "Sat", value: "SAT" },
-                        { label: "Sun", value: "SUN" },
+                        { label: "Monday", value: "MON" },
+                        { label: "Tuesday", value: "TUE" },
+                        { label: "Wednesday", value: "WED" },
+                        { label: "Thursday", value: "THU" },
+                        { label: "Friday", value: "FRI" },
+                        { label: "Saturday", value: "SAT" },
+                        { label: "Sunday", value: "SUN" },
                     ]}
+                    placeholder="Select Day"
                 />
 
                 <View className="flex-row gap-4 mb-6">

@@ -1,29 +1,26 @@
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useAuth } from "../store/hooks/useAuth";
 
-export const useAuthGuard = (allowedRoles?: string[]) => {
+export const useAuthGuard = (allowedRoles: string[] = []) => {
   const { isAuthenticated, isLoading, role } = useAuth();
   const router = useRouter();
-  const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
     if (isLoading) return;
 
     if (!isAuthenticated) {
       router.replace("/(auth)/login");
-      setIsAuthorized(false);
-      return;
-    }
-
-    if (allowedRoles && (!role || !allowedRoles.includes(role))) {
+    } else if (allowedRoles.length > 0 && (!role || !allowedRoles.includes(role))) {
       router.replace("/");
-      setIsAuthorized(false);
-      return;
     }
-
-    setIsAuthorized(true);
   }, [isLoading, isAuthenticated, role, allowedRoles]);
+
+  // Derived state - synchronous to avoid flickers
+  // If loading, we aren't "authorized" yet in a final sense, but we shouldn't block rendering if we want to show a spinner
+  // user might do: if (isLoading) return <Spinner />
+  // if (!isAuthorized) return null;
+  const isAuthorized = !isLoading && isAuthenticated && (!allowedRoles.length || (!!role && allowedRoles.includes(role)));
 
   return { isAuthorized, isLoading };
 };

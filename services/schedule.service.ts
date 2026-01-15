@@ -18,7 +18,15 @@ export const scheduleService = {
     get(id: string) {
         return databaseService.get<ClassSchedule>(
             COLLECTIONS.CLASS_SCHEDULE,
-            id
+            id,
+            [Query.select([
+                "*",
+                "class.*",
+                "teacher.*",
+                "subject.*",
+                "academicYear.*",
+                "institution.*"
+            ])]
         );
     },
 
@@ -137,8 +145,33 @@ export const scheduleService = {
                 ])
             ]
         );
-    },
 
+    },
+    getPreviousClassForTeacher(
+        teacherId: string,
+        dayOfWeek: string,
+        currentTime: string
+    ) {
+        return databaseService.list<ClassSchedule>(
+            COLLECTIONS.CLASS_SCHEDULE,
+            [
+                Query.equal("teacher", teacherId),
+                Query.equal("dayOfWeek", dayOfWeek),
+                Query.lessThanEqual("startTime", currentTime), // Started in the past or now
+                Query.equal("isActive", true),
+                Query.orderDesc("startTime"), // Get the most recent one
+                Query.limit(1),
+                Query.select([
+                    "*",
+                    "class.*",
+                    "teacher.*",
+                    "subject.*",
+                    "academicYear.*",
+                    "institution.*"
+                ])
+            ]
+        );
+    },
     /* ---------------- UPDATE ---------------- */
 
     update(scheduleId: string, data: Partial<ClassSchedulePayload>) {

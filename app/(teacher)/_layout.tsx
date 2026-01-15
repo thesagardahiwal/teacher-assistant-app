@@ -1,13 +1,22 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { Redirect, Tabs } from "expo-router";
+import { Tabs } from "expo-router";
+import { ActivityIndicator, View } from "react-native";
 import { useAuthGuard } from "../../hooks/useAuthGuard";
 import { useTheme } from "../../store/hooks/useTheme";
 
 export default function TeacherLayout() {
-  const { isAuthorized } = useAuthGuard(["TEACHER"]);
+  const { isAuthorized, isLoading } = useAuthGuard(["TEACHER"]);
   const { isDark } = useTheme();
 
-  if (!isAuthorized) return <Redirect href="/(auth)/login" />;
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (!isAuthorized) return null;
 
   return (
     <Tabs
@@ -69,6 +78,12 @@ export default function TeacherLayout() {
         }}
       />
 
+      <Tabs.Screen
+        name="schedule"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
