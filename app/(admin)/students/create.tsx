@@ -62,9 +62,9 @@ export default function CreateStudent() {
 
       // 2. Create Student Document
       await studentService.create({
-        user: user.$id,
         rollNumber: roll,
         course,
+        userId: user.$id,
         class: selectedClass,
         institution: institutionId,
       });
@@ -84,7 +84,7 @@ export default function CreateStudent() {
   const courseOptions = courses.map(c => ({ label: `${c.name} (${c.code})`, value: c.$id }));
   const classOptions = classes
     .filter(c => c.course?.$id === course) // Filter classes by selected course
-    .map(c => ({ label: `Year ${c.year} - ${c.division}`, value: c.$id }));
+    .map(c => ({ label: `Year ${c.academicYear.label} - ${c.course.name}`, value: c.$id }));
 
   return (
     <View className={`flex-1 px-6 pt-6 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>

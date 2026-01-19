@@ -1,11 +1,10 @@
 import { Stack } from "expo-router";
 import { ActivityIndicator, View } from "react-native";
-import { useAdminOnboardingGuard } from "../../hooks/useAdminOnboardingGuard";
 import { useAuthGuard } from "../../hooks/useAuthGuard";
 
 export default function AdminLayout() {
   const { isAuthorized, isLoading } = useAuthGuard(["ADMIN", "PRINCIPAL", "VICE_PRINCIPAL"]);
-  useAdminOnboardingGuard();
+  // removed useAdminOnboardingGuard(); as it was causing infinite redirects
 
   if (isLoading) {
     return (

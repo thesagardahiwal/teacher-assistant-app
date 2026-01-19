@@ -8,6 +8,7 @@ export interface Student extends Models.Document {
     name: string;
     rollNumber: string;
     course: Course;
+    userId: string;
     class: Class;
     currentYear: number;
     isActive: boolean;
@@ -21,6 +22,7 @@ export interface StudentPayload extends Models.Document {
     name: string;
     rollNumber: string;
     course: string;
+    userId: string;
     class: string;
     currentYear: number;
     isActive: boolean;

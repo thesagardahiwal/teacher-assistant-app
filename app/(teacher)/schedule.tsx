@@ -96,7 +96,7 @@ export default function TeacherScheduleScreen() {
             {/* Schedule List */}
             <View className="flex-1 px-4">
                 {loading ? (
-                    <ActivityIndicator size="large" color="#2563EB" className="mt-10" />
+                    <ActivityIndicator testID="loading-schedules" size="large" color="#2563EB" className="mt-10" />
                 ) : (
                     <FlatList
                         data={schedules}
