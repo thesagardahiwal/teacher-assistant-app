@@ -9,7 +9,7 @@ interface NextClassCardProps {
 }
 
 export const NextClassCard: React.FC<NextClassCardProps> = ({ nextClass, isDark }) => {
-    if (!nextClass) {
+    if (!nextClass || !nextClass.isActive) {
         return null;
     }
 

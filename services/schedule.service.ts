@@ -192,6 +192,8 @@ export const scheduleService = {
             }
         });
 
+        console.log("Schedule Update Payload:", JSON.stringify(payload, null, 2));
+
         return databaseService.update<ClassSchedule>(
             COLLECTIONS.CLASS_SCHEDULE,
             scheduleId,
@@ -201,11 +203,23 @@ export const scheduleService = {
 
     /* ---------------- DELETE (SOFT) ---------------- */
 
-    deactivate(scheduleId: string) {
-        return databaseService.update<ClassSchedule>(
-            COLLECTIONS.CLASS_SCHEDULE,
-            scheduleId,
-            { isActive: false }
-        );
+    async deactivate(scheduleId: string) {
+        // Fetch current document strictly to repair any bad data
+        const current = await this.get(scheduleId);
+
+        const payload: any = {
+            isActive: false,
+        };
+
+        // Ensure we don't send nulls if they are required (though these should exist)
+        // clean up payload
+        Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
+
+        return this.update(scheduleId, payload);
+    },
+
+    /* ---------------- DELETE (HARD) ---------------- */
+    delete(scheduleId: string) {
+        return databaseService.delete(COLLECTIONS.CLASS_SCHEDULE, scheduleId);
     },
 };

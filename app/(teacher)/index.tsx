@@ -1,7 +1,7 @@
 import { NextClassCard } from "@/components/teacher/NextClassCard";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback, useState } from "react";
 import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { scheduleService } from "../../services";
 import { useAssignments } from "../../store/hooks/useAssignments";
@@ -58,9 +58,11 @@ export default function TeacherDashboard() {
         }
     };
 
-    useEffect(() => {
-        loadData();
-    }, [institutionId, user]);
+    useFocusEffect(
+        useCallback(() => {
+            loadData();
+        }, [institutionId, user])
+    );
 
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
@@ -135,7 +137,6 @@ export default function TeacherDashboard() {
 
                 {/* Next Class Card */}
                 <View className="px-5 mb-8">
-                    <Text className={`text-lg font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>Today's Next Class</Text>
                     <NextClassCard nextClass={nextClass} isDark={isDark} />
                 </View>
 

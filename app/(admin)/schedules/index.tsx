@@ -7,7 +7,7 @@ import { useInstitutionId } from "@/utils/useInstitutionId";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, FlatList, RefreshControl, Text, TouchableOpacity, View } from "react-native";
 
 const dayOrder: Record<string, number> = { MON: 1, TUE: 2, WED: 3, THU: 4, FRI: 5, SAT: 6, SUN: 7 };
 
@@ -17,6 +17,7 @@ export default function SchedulesIndex() {
     const institutionId = useInstitutionId();
     const [schedules, setSchedules] = useState<ClassSchedule[]>([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [sortConfig, setSortConfig] = useState<{ key: string; order: "asc" | "desc" }>({
         key: "day",
@@ -25,7 +26,8 @@ export default function SchedulesIndex() {
 
     const fetchSchedules = async () => {
         if (!institutionId) return;
-        setLoading(true);
+        // Don't set full page loading on refresh, just use refreshing spinner
+        if (!refreshing) setLoading(true);
         try {
             const res = await scheduleService.listByInstitution(institutionId);
             setSchedules(res.documents);
@@ -33,7 +35,13 @@ export default function SchedulesIndex() {
             console.error("Failed to fetch schedules", error);
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
+    };
+
+    const onRefresh = () => {
+        setRefreshing(true);
+        fetchSchedules();
     };
 
     useEffect(() => {
@@ -151,6 +159,9 @@ export default function SchedulesIndex() {
                     renderItem={renderItem}
                     keyExtractor={(item) => item.$id}
                     showsVerticalScrollIndicator={false}
+                    refreshControl={
+                        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                    }
                     ListEmptyComponent={
                         <Text className="text-center mt-10 text-muted dark:text-dark-muted">
                             {searchQuery ? "No matching schedules found." : "No schedules found."}

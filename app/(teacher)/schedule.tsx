@@ -71,10 +71,13 @@ export default function TeacherScheduleScreen() {
                     onPress: async () => {
                         try {
                             setLoading(true);
+                            console.log("Deactivating schedule:", schedule.$id);
                             await scheduleService.deactivate(schedule.$id);
+                            console.log("Schedule deactivated successfully");
                             fetchSchedules(true);
-                        } catch (error) {
-                            Alert.alert("Error", "Failed to delete schedule");
+                        } catch (error: any) {
+                            console.error("Delete schedule error:", error);
+                            Alert.alert("Error", `Failed to delete schedule: ${error.message || "Unknown error"}`);
                         } finally {
                             setLoading(false);
                         }

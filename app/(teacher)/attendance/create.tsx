@@ -2,6 +2,7 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, FlatList, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import AddScheduleModal from "../../../components/Schedule/AddScheduleModal";
 import StudentDetailsModal from "../../../components/Student/StudentDetailsModal";
 import { attendanceRecordService, attendanceService, scheduleService } from "../../../services";
 import { useAssignments } from "../../../store/hooks/useAssignments";
@@ -33,44 +34,43 @@ export default function TakeAttendanceScreen() {
   // Modal State
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  // Schedule Creation Modal State
+  const [scheduleModalVisible, setScheduleModalVisible] = useState(false);
+
+  const fetchActiveSchedules = async () => {
+    if (!user?.$id) return;
+    setLoadingSchedules(true);
+    try {
+      // Get today's day (e.g., "MON")
+      const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+      const today = days[new Date().getDay()];
+
+      // Get current time HH:mm
+      const now = new Date();
+      const currentTime = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+
+      const res = await scheduleService.listByTeacher(user.$id, today);
+
+      // Filter for active classes: startTime <= currentTime <= endTime
+      const active = res.documents.filter(schedule => {
+        return schedule.startTime <= currentTime && currentTime <= schedule.endTime;
+      });
+      setActiveSchedules(active);
+    } catch (error) {
+      console.error("Failed to fetch schedules", error);
+      Alert.alert("Error", "Failed to load class schedule");
+    } finally {
+      setLoadingSchedules(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchActiveSchedules = async () => {
-      if (!user?.$id) return;
-      setLoadingSchedules(true);
-      try {
-        // Get today's day (e.g., "MON")
-        const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-        const today = days[new Date().getDay()];
-
-        // Get current time HH:mm
-        const now = new Date();
-        const currentTime = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
-
-        const res = await scheduleService.listByTeacher(user.$id, today);
-
-        // Filter for active classes: startTime <= currentTime <= endTime
-        const active = res.documents.filter(schedule => {
-          return schedule.startTime <= currentTime && currentTime <= schedule.endTime;
-        });
-        setActiveSchedules(active);
-      } catch (error) {
-        console.error("Failed to fetch schedules", error);
-        Alert.alert("Error", "Failed to load class schedule");
-      } finally {
-        setLoadingSchedules(false);
-      }
-    };
-
     fetchActiveSchedules();
   }, [user]);
 
   useEffect(() => {
     if (institutionId && user?.$id) {
       if (assignments.length === 0) fetchAssignments(institutionId, user.$id);
-      // NOTE: fetchStudents handles class filtering internally if we wanted to restrict student list strictly here too, 
-      // but filteredStudents in this component depends on selectedClassId which comes from assignments.
-      // So restricting assignments is enough to restrict class selection.
       if (allStudents.length === 0) fetchStudents(institutionId);
     }
   }, [institutionId, user?.$id]);
@@ -151,6 +151,10 @@ export default function TakeAttendanceScreen() {
     }
   };
 
+  const onScheduleAdded = () => {
+    fetchActiveSchedules();
+  };
+
   const getDayString = () => {
     return new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   };
@@ -190,6 +194,12 @@ export default function TakeAttendanceScreen() {
 
   return (
     <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+      <AddScheduleModal
+        visible={scheduleModalVisible}
+        onClose={() => setScheduleModalVisible(false)}
+        onSave={onScheduleAdded}
+        initialSchedule={null}
+      />
 
       <StudentDetailsModal
         visible={modalVisible}
@@ -243,7 +253,13 @@ export default function TakeAttendanceScreen() {
             ) : (
               <View className="flex-row items-center ml-2">
                 <MaterialCommunityIcons name="clock-alert-outline" size={24} color={isDark ? "#9CA3AF" : "#6B7280"} />
-                <Text className={`ml-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>No active classes found at {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+                <Text className={`ml-2 mr-4 ${isDark ? "text-gray-400" : "text-gray-500"}`}>No active classes.</Text>
+                <TouchableOpacity
+                  onPress={() => setScheduleModalVisible(true)}
+                  className={`px-4 py-2 rounded-lg ${isDark ? "bg-blue-900/50 border border-blue-700" : "bg-blue-100"}`}
+                >
+                  <Text className="text-blue-600 dark:text-blue-400 font-semibold">Create Schedule</Text>
+                </TouchableOpacity>
               </View>
             )}
           </ScrollView>
@@ -281,7 +297,7 @@ export default function TakeAttendanceScreen() {
           <View className="items-center justify-center py-20">
             <MaterialCommunityIcons name="gesture-tap" size={48} color={isDark ? "#4B5563" : "#D1D5DB"} />
             <Text className={`mt-4 text-center ${isDark ? "text-gray-500" : "text-gray-400"}`}>
-              {activeSchedules.length > 0 ? "Select a class above to start taking attendance" : "No active classes to take attendance for"}
+              {activeSchedules.length > 0 ? "Select a class above to start taking attendance" : "No active classes or create one above"}
             </Text>
           </View>
         )}

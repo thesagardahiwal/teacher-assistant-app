@@ -14,6 +14,7 @@ import {
     ActivityIndicator,
     Alert,
     ScrollView,
+    Switch,
     Text,
     TextInput,
     TouchableOpacity,
@@ -147,15 +148,23 @@ export default function EditSchedule() {
         classService
             .listByAcademicYear(institutionId, academicYear)
             .then((res) => {
-                setClassOptions(
-                    res.documents.map((c: any) => ({
-                        label: c.name ?? `Class ${c.year}-${c.division}`,
-                        value: c.$id,
-                    }))
-                );
+                const newOptions = res.documents.map((c: any) => ({
+                    label: c.name ?? `Class ${c.year}-${c.division}`,
+                    value: c.$id,
+                }));
+
+                // Ensure the currently selected class is preserved if not in the new list
+                // We access the current state of options to find the seeded one
+                setClassOptions(prevOptions => {
+                    const selectedOption = prevOptions.find(o => o.value === selectedClass);
+                    if (selectedOption && !newOptions.find((n: any) => n.value === selectedClass)) {
+                        return [selectedOption, ...newOptions];
+                    }
+                    return newOptions;
+                });
             })
             .catch(err => console.error("Failed to load classes", err));
-    }, [academicYear, institutionId]);
+    }, [academicYear, institutionId, selectedClass]);
 
     /* ---------- LOAD ASSIGNMENTS & TEACHERS ---------- */
     // Store assignments to filter subjects later locally
@@ -263,9 +272,29 @@ export default function EditSchedule() {
     };
 
     /* ---------- DELETE ---------- */
-    const handleDelete = async () => {
-        await scheduleService.deactivate(scheduleId);
-        router.back();
+    const handleDelete = () => {
+        Alert.alert(
+            "Delete Schedule",
+            "Are you sure you want to delete this schedule?",
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            setSubmitting(true);
+                            await scheduleService.delete(scheduleId);
+                            router.back();
+                        } catch (error: any) {
+                            Alert.alert("Error", `Failed to delete: ${error.message || "Unknown error"}`);
+                        } finally {
+                            setSubmitting(false);
+                        }
+                    },
+                },
+            ]
+        );
     };
 
     if (loading) {
@@ -363,6 +392,18 @@ export default function EditSchedule() {
                             className="p-4 rounded-xl border bg-card border-border dark:bg-dark-card dark:border-dark-border text-textPrimary dark:text-dark-textPrimary"
                         />
                     </View>
+                </View>
+
+                <View className="flex-row items-center justify-between p-4 mb-6 rounded-xl border bg-card border-border dark:bg-dark-card dark:border-dark-border">
+                    <Text className="font-semibold text-textPrimary dark:text-dark-textPrimary">
+                        Active Status
+                    </Text>
+                    <Switch
+                        value={isActive}
+                        onValueChange={setIsActive}
+                        trackColor={{ false: "#767577", true: "#3B82F6" }}
+                        thumbColor={isActive ? "#FFFFFF" : "#f4f3f4"}
+                    />
                 </View>
 
                 <TouchableOpacity

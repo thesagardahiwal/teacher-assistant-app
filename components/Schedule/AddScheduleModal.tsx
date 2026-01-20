@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { scheduleService } from "../../services";
+import { academicYearService } from "../../services/academicYear.service";
 import { useAssignments } from "../../store/hooks/useAssignments";
 import { useAuth } from "../../store/hooks/useAuth";
 import { useTheme } from "../../store/hooks/useTheme";
@@ -37,6 +38,7 @@ export default function AddScheduleModal({ visible, onClose, onSave, initialSche
     const [startTime, setStartTime] = useState("09:00");
     const [endTime, setEndTime] = useState("10:00");
     const [loading, setLoading] = useState(false);
+    const [academicYearId, setAcademicYearId] = useState<string | null>(null);
 
     // Pre-fill for edit mode
     useEffect(() => {
@@ -57,9 +59,24 @@ export default function AddScheduleModal({ visible, onClose, onSave, initialSche
     }, [initialSchedule, visible]);
 
     useEffect(() => {
-        if (visible && institutionId && user?.$id) {
-            fetchAssignments(institutionId, user.$id);
-        }
+        const loadData = async () => {
+            if (visible && institutionId && user?.$id) {
+                fetchAssignments(institutionId, user.$id);
+
+                try {
+                    const yearsRes = await academicYearService.list(institutionId);
+                    const currentYear = yearsRes.documents.find(y => y.isCurrent);
+                    if (currentYear) {
+                        setAcademicYearId(currentYear.$id);
+                    } else {
+                        Alert.alert("Notice", "No active academic year found. Please ask admin to set one.");
+                    }
+                } catch (err) {
+                    console.error("Failed to fetch academic year", err);
+                }
+            }
+        };
+        loadData();
     }, [visible, institutionId, user?.$id]);
 
     const handleClassSelect = (classId: string, subjectId: string) => {
@@ -70,6 +87,11 @@ export default function AddScheduleModal({ visible, onClose, onSave, initialSche
     const handleSubmit = async () => {
         if (!selectedClassId || !selectedSubjectId || !startTime || !endTime || !user || !institutionId) {
             Alert.alert("Error", "Please fill in all fields");
+            return;
+        }
+
+        if (!academicYearId) {
+            Alert.alert("Error", "Cannot create schedule without an active academic year.");
             return;
         }
 
@@ -103,7 +125,7 @@ export default function AddScheduleModal({ visible, onClose, onSave, initialSche
                 startTime,
                 endTime,
                 isActive: true,
-                academicYear: "current",
+                academicYear: academicYearId,
             };
 
             if (initialSchedule) {
