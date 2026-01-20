@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, FlatList, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useAssignments } from "../../store/hooks/useAssignments";
 import { useAuth } from "../../store/hooks/useAuth";
 import { useStudents } from "../../store/hooks/useStudents";
@@ -63,7 +63,10 @@ export default function StudentsScreen() {
     );
 
     return (
-        <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}
+        >
             <View className="px-5 py-4">
                 <Text className={`text-2xl font-bold mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>Students</Text>
 
@@ -97,6 +100,6 @@ export default function StudentsScreen() {
                     }
                 />
             )}
-        </View>
+        </KeyboardAvoidingView>
     );
 }

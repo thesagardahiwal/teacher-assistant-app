@@ -40,7 +40,7 @@ export const assessmentService = {
     ) {
         const queries = [
             Query.equal("institution", institutionId),
-            Query.equal("classe", classeId),
+            Query.equal("class", classeId),
             Query.equal("isActive", true),
             query
         ];

@@ -4,7 +4,7 @@ import { useTheme } from "@/store/hooks/useTheme";
 import { StudyFile } from "@/types/study-file.type";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Modal, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 interface RenameFileModalProps {
     visible: boolean;
@@ -83,7 +83,10 @@ export const RenameFileModal: React.FC<RenameFileModalProps> = ({
             animationType="fade"
             onRequestClose={onClose}
         >
-            <View className="flex-1 justify-center items-center bg-black/50 px-4">
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                className="flex-1 justify-center items-center bg-black/50 px-4"
+            >
                 <View className={`w-full max-w-sm p-6 rounded-2xl ${isDark ? "bg-gray-800" : "bg-white"}`}>
                     <View className="flex-row justify-between items-center mb-4">
                         <Text className={`text-xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
@@ -103,8 +106,8 @@ export const RenameFileModal: React.FC<RenameFileModalProps> = ({
                             value={name}
                             onChangeText={setName}
                             className={`flex-1 p-3 rounded-l-xl border-y border-l ${isDark
-                                    ? "bg-gray-700 border-gray-600 text-white"
-                                    : "bg-gray-50 border-gray-200 text-gray-900"
+                                ? "bg-gray-700 border-gray-600 text-white"
+                                : "bg-gray-50 border-gray-200 text-gray-900"
                                 }`}
                             placeholder="Enter file name"
                             placeholderTextColor={isDark ? "#9CA3AF" : "#9CA3AF"}
@@ -144,7 +147,7 @@ export const RenameFileModal: React.FC<RenameFileModalProps> = ({
                         </TouchableOpacity>
                     </View>
                 </View>
-            </View>
+            </KeyboardAvoidingView>
         </Modal>
     );
 };

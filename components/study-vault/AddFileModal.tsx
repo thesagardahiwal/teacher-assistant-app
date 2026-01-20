@@ -6,7 +6,7 @@ import { StudyFile } from "@/types/study-file.type";
 import { Ionicons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
 import React, { useState } from "react";
-import { ActivityIndicator, Alert, Modal, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import uuid from 'react-native-uuid';
 
@@ -121,7 +121,10 @@ export const AddFileModal: React.FC<AddFileModalProps> = ({ visible, onClose, on
             visible={visible}
             onRequestClose={handleClose}
         >
-            <View className="flex-1 justify-end bg-black/50">
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                className="flex-1 justify-end bg-black/50"
+            >
                 <View className={`rounded-t-3xl p-6 ${isDark ? "bg-gray-900" : "bg-white"}`}>
                     <View className="flex-row justify-between items-center mb-6">
                         <Text className={`text-xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
@@ -221,7 +224,7 @@ export const AddFileModal: React.FC<AddFileModalProps> = ({ visible, onClose, on
                     </TouchableOpacity>
 
                 </View>
-            </View>
+            </KeyboardAvoidingView>
         </Modal >
     );
 };

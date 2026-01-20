@@ -2,7 +2,7 @@ import { AssessmentPayload, AssessmentType } from "@/types/assessment.type";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Calendar } from "react-native-calendars";
 import { useAcademicYears } from "../../../store/hooks/useAcademicYears";
 import { useAssessments } from "../../../store/hooks/useAssessments";
@@ -107,7 +107,10 @@ export default function CreateAssessmentScreen() {
     };
 
     return (
-        <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-white"}`}>
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            className={`flex-1 ${isDark ? "bg-gray-900" : "bg-white"}`}
+        >
             <View className={`flex-row items-center justify-between px-5 pt-4 pb-2 border-b ${isDark ? "border-gray-800" : "border-gray-100"}`}>
                 <TouchableOpacity onPress={() => router.back()}>
                     <Text className="text-blue-500 text-lg">Cancel</Text>
@@ -281,6 +284,6 @@ export default function CreateAssessmentScreen() {
                     </View>
                 </View>
             </Modal>
-        </View>
+        </KeyboardAvoidingView>
     );
 }

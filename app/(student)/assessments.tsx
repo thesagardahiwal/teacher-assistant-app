@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, RefreshControl, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, RefreshControl, Text, TouchableOpacity, View } from "react-native";
 import { useAssessmentResults } from "../../store/hooks/useAssessmentResults";
 import { useAuth } from "../../store/hooks/useAuth";
 import { useTheme } from "../../store/hooks/useTheme";
@@ -68,8 +68,11 @@ export default function StudentAssessmentsScreen() {
     return (
         <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
             {/* Header */}
-            <View className={`px-5 py-4 border-b ${isDark ? "border-gray-800" : "border-gray-200"}`}>
-                <Text className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>My Assessments</Text>
+            <View className={`px-5 py-4 flex-row items-center border-b ${isDark ? "border-gray-800 bg-gray-900" : "border-gray-200 bg-white"}`}>
+                <TouchableOpacity onPress={() => router.back()} className="mr-3">
+                    <Ionicons name="arrow-back" size={24} color={isDark ? "#FFFFFF" : "#000000"} />
+                </TouchableOpacity>
+                <Text className={`text-xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>My Assessments</Text>
             </View>
 
             {isLoading && results.length === 0 ? (

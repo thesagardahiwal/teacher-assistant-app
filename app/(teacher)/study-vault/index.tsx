@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 import { AddFileModal } from "@/components/study-vault/AddFileModal";
 import { FileListItem } from "@/components/study-vault/FileListItem";
@@ -58,7 +58,10 @@ export default function TeacherStudyVault() {
     }, [searchQuery, files]);
 
     return (
-        <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}
+        >
             {/* Header */}
             <View className="px-5 py-4 flex-row justify-between items-center bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
                 <Text className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
@@ -133,6 +136,6 @@ export default function TeacherStudyVault() {
                 onClose={() => setFileToRename(null)}
                 onSuccess={loadFiles}
             />
-        </View>
+        </KeyboardAvoidingView>
     );
 }

@@ -9,9 +9,9 @@ import { AttendanceRecord } from "../../types";
 
 // Helper component for Stat Cards
 const StatCard = ({ label, value, colorClass, textColorClass }: any) => (
-  <View className={`flex - 1 p - 4 rounded - 2xl ${colorClass} mx - 1 shadow - sm`}>
-    <Text className={`text - 3xl font - bold ${textColorClass} mb - 1`}>{value}</Text>
-    <Text className={`text - sm font - medium ${textColorClass} opacity - 80`}>{label}</Text>
+  <View className={`flex-1 p-4 rounded-2xl ${colorClass} mx-1 shadow-sm`}>
+    <Text className={`text-3xl font-bold ${textColorClass} mb-1`}>{value}</Text>
+    <Text className={`text-sm font-medium ${textColorClass} opacity-80`}>{label}</Text>
   </View>
 );
 
@@ -104,7 +104,7 @@ const Dashboard = () => {
         </View>
 
         {/* Quick Stats Grid */}
-        <View className="flex-row mb-8">
+        <View className="flex-row gap-4 mb-8">
           <StatCard
             label="Total Classes"
             value={stats.total}
@@ -123,16 +123,6 @@ const Dashboard = () => {
             colorClass="bg-red-100 dark:bg-red-900/40"
             textColorClass="text-red-700 dark:text-red-400"
           />
-        </View>
-
-        {/* Recent Activity Header */}
-        <View className="flex-row justify-between items-center mb-4">
-          <Text className="text-xl font-bold text-textPrimary dark:text-dark-textPrimary">
-            Recent Activity
-          </Text>
-          <Link href="/(student)/attendance" className="text-primary dark:text-dark-primary font-semibold">
-            View All
-          </Link>
         </View>
 
         {/* Quick Links */}
@@ -176,6 +166,17 @@ const Dashboard = () => {
           </Link>
           <View className="flex-1" />
         </View>
+        {/* Recent Activity Header */}
+        <View className="flex-row justify-between items-center mb-4">
+          <Text className="text-xl font-bold text-textPrimary dark:text-dark-textPrimary">
+            Recent Activity
+          </Text>
+          <Link href="/(student)/attendance" className="text-primary dark:text-dark-primary font-semibold">
+            View All
+          </Link>
+        </View>
+
+
 
         {/* Recent List */}
         {

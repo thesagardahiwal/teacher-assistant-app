@@ -88,7 +88,7 @@ describe("Assessment Service", () => {
             COLLECTIONS.ASSESSMENTS,
             expect.arrayContaining([
                 expect.objectContaining({ method: "equal", attr: "institution", val: "inst1" }),
-                expect.objectContaining({ method: "equal", attr: "classe", val: "c1" }), // Changed class to classe
+                expect.objectContaining({ method: "equal", attr: "class", val: "c1" }),
                 expect.objectContaining({ method: "equal", attr: "isActive", val: true }),
                 expect.objectContaining({ method: "select" }),
                 expect.objectContaining({ method: "equal", attr: "subject", val: "s1" })

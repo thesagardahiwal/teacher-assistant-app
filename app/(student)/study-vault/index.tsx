@@ -1,8 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 import { AddFileModal } from "@/components/study-vault/AddFileModal";
 import { FileListItem } from "@/components/study-vault/FileListItem";
@@ -59,7 +58,10 @@ export default function StudentStudyVault() {
     }, [searchQuery, files]);
 
     return (
-        <SafeAreaView className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`} edges={['top']}>
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}
+        >
             {/* Header */}
             <View className="px-5 py-4 flex-row items-center bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
                 <TouchableOpacity onPress={() => router.back()} className="mr-4">
@@ -137,6 +139,6 @@ export default function StudentStudyVault() {
                 onClose={() => setFileToRename(null)}
                 onSuccess={loadFiles}
             />
-        </SafeAreaView>
+        </KeyboardAvoidingView>
     );
 }

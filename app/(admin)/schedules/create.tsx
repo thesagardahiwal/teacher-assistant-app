@@ -14,6 +14,8 @@ import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
     Alert,
+    KeyboardAvoidingView,
+    Platform,
     ScrollView,
     Text,
     TextInput,
@@ -227,102 +229,106 @@ export default function CreateSchedule() {
     /* ---------------- UI ---------------- */
 
     return (
-        <View className="flex-1 bg-background p-4 dark:bg-dark-background">
-            <PageHeader title="Create Schedule" />
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            className="flex-1 bg-background p-4 dark:bg-dark-background"
+        >
+            <View style={{ flex: 1 }}>
+                <PageHeader title="Create Schedule" />
 
-            <ScrollView className="px-6">
-                <FormSelect
-                    label="Academic Year"
-                    value={academicYear}
-                    onChange={setAcademicYear}
-                    options={academicYears}
-                    placeholder="Select Academic Year"
-                />
+                <ScrollView className="px-6">
+                    <FormSelect
+                        label="Academic Year"
+                        value={academicYear}
+                        onChange={setAcademicYear}
+                        options={academicYears}
+                        placeholder="Select Academic Year"
+                    />
 
-                <FormSelect
-                    label="Class"
-                    value={selectedClass}
-                    onChange={setSelectedClass}
-                    options={availableClasses}
-                    placeholder={academicYear ? "Select Class" : "Select Academic Year First"}
-                />
+                    <FormSelect
+                        label="Class"
+                        value={selectedClass}
+                        onChange={setSelectedClass}
+                        options={availableClasses}
+                        placeholder={academicYear ? "Select Class" : "Select Academic Year First"}
+                    />
 
-                {loadingAssignments && (
-                    <View className="py-3">
-                        <ActivityIndicator />
-                        <Text className="text-xs text-center text-gray-500 mt-1">
-                            Loading class assignments...
-                        </Text>
-                    </View>
-                )}
-
-                <FormSelect
-                    label="Teacher"
-                    value={teacher}
-                    onChange={setTeacher}
-                    options={teacherOptions}
-                    placeholder={selectedClass ? "Select Teacher (Assigned)" : "Select Class First"}
-                />
-
-                <FormSelect
-                    label="Subject"
-                    value={subject}
-                    onChange={setSubject}
-                    options={subjectOptions}
-                    placeholder={teacher ? "Select Subject" : "Select Teacher First"}
-                />
-
-                <FormSelect
-                    label="Day"
-                    value={dayOfWeek}
-                    onChange={(v) => setDayOfWeek(v as "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN")}
-                    options={days}
-                    placeholder="Select Day"
-                />
-
-                {/* TIME */}
-                {/* TIME */}
-                <View className="flex-row gap-4 mb-6">
-                    <View className="flex-1">
-                        <Text className="mb-2 font-semibold text-textSecondary dark:text-dark-textSecondary">
-                            Start Time
-                        </Text>
-                        <TextInput
-                            placeholder="09:00"
-                            placeholderTextColor={isDark ? "#9CA3AF" : "#6B7280"}
-                            value={startTime}
-                            onChangeText={setStartTime}
-                            className="p-4 rounded-xl border bg-card border-border dark:bg-dark-card dark:border-dark-border text-textPrimary dark:text-dark-textPrimary"
-                        />
-                    </View>
-                    <View className="flex-1">
-                        <Text className="mb-2 font-semibold text-textSecondary dark:text-dark-textSecondary">
-                            End Time
-                        </Text>
-                        <TextInput
-                            placeholder="10:00"
-                            placeholderTextColor={isDark ? "#9CA3AF" : "#6B7280"}
-                            value={endTime}
-                            onChangeText={setEndTime}
-                            className="p-4 rounded-xl border bg-card border-border dark:bg-dark-card dark:border-dark-border text-textPrimary dark:text-dark-textPrimary"
-                        />
-                    </View>
-                </View>
-
-                <TouchableOpacity
-                    onPress={handleSubmit}
-                    disabled={loading}
-                    className="mt-4 py-4 rounded-xl bg-primary dark:bg-dark-primary items-center"
-                >
-                    {loading ? (
-                        <ActivityIndicator color="white" />
-                    ) : (
-                        <Text className="text-white font-bold text-lg">
-                            Create Schedule
-                        </Text>
+                    {loadingAssignments && (
+                        <View className="py-3">
+                            <ActivityIndicator />
+                            <Text className="text-xs text-center text-gray-500 mt-1">
+                                Loading class assignments...
+                            </Text>
+                        </View>
                     )}
-                </TouchableOpacity>
-            </ScrollView>
-        </View>
+
+                    <FormSelect
+                        label="Teacher"
+                        value={teacher}
+                        onChange={setTeacher}
+                        options={teacherOptions}
+                        placeholder={selectedClass ? "Select Teacher (Assigned)" : "Select Class First"}
+                    />
+
+                    <FormSelect
+                        label="Subject"
+                        value={subject}
+                        onChange={setSubject}
+                        options={subjectOptions}
+                        placeholder={teacher ? "Select Subject" : "Select Teacher First"}
+                    />
+
+                    <FormSelect
+                        label="Day"
+                        value={dayOfWeek}
+                        onChange={(v) => setDayOfWeek(v as "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN")}
+                        options={days}
+                        placeholder="Select Day"
+                    />
+
+                    {/* TIME */}
+                    <View className="flex-row gap-4 mb-6">
+                        <View className="flex-1">
+                            <Text className="mb-2 font-semibold text-textSecondary dark:text-dark-textSecondary">
+                                Start Time
+                            </Text>
+                            <TextInput
+                                placeholder="09:00"
+                                placeholderTextColor={isDark ? "#9CA3AF" : "#6B7280"}
+                                value={startTime}
+                                onChangeText={setStartTime}
+                                className="p-4 rounded-xl border bg-card border-border dark:bg-dark-card dark:border-dark-border text-textPrimary dark:text-dark-textPrimary"
+                            />
+                        </View>
+                        <View className="flex-1">
+                            <Text className="mb-2 font-semibold text-textSecondary dark:text-dark-textSecondary">
+                                End Time
+                            </Text>
+                            <TextInput
+                                placeholder="10:00"
+                                placeholderTextColor={isDark ? "#9CA3AF" : "#6B7280"}
+                                value={endTime}
+                                onChangeText={setEndTime}
+                                className="p-4 rounded-xl border bg-card border-border dark:bg-dark-card dark:border-dark-border text-textPrimary dark:text-dark-textPrimary"
+                            />
+                        </View>
+                    </View>
+
+                    <TouchableOpacity
+                        onPress={handleSubmit}
+                        disabled={loading}
+                        className="mt-4 py-4 rounded-xl bg-primary dark:bg-dark-primary items-center"
+                    >
+                        {loading ? (
+                            <ActivityIndicator color="white" />
+                        ) : (
+                            <Text className="text-white font-bold text-lg">
+                                Create Schedule
+                            </Text>
+                        )}
+                    </TouchableOpacity>
+                </ScrollView>
+            </View>
+        </KeyboardAvoidingView>
     );
 }

@@ -1,15 +1,17 @@
+import { AddEventModal } from "@/components/calendar/AddEventModal";
 import { CalendarAgenda } from "@/components/calendar/CalendarAgenda";
 import { assessmentService, scheduleService, studentService } from "@/services";
+import { localEventService } from "@/services/local/localEvent.service";
 import { useAuth } from "@/store/hooks/useAuth";
 import { useTheme } from "@/store/hooks/useTheme";
 import { Assessment } from "@/types/assessment.type";
+import { LocalEvent } from "@/types/local-event.type";
 import { ClassSchedule } from "@/types/schedule.type";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function StudentCalendar() {
     const router = useRouter();
@@ -19,8 +21,11 @@ export default function StudentCalendar() {
 
     const [schedules, setSchedules] = useState<ClassSchedule[]>([]);
     const [assessments, setAssessments] = useState<Assessment[]>([]);
+    const [localEvents, setLocalEvents] = useState<LocalEvent[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
     const loadData = async () => {
         if (!user?.$id || !institutionId) return;
@@ -37,13 +42,15 @@ export default function StudentCalendar() {
             const classId = typeof student.class === 'string' ? student.class : student.class.$id;
 
             // 2. Fetch Class Data
-            const [schRes, assRes] = await Promise.all([
+            const [schRes, assRes, localRes] = await Promise.all([
                 scheduleService.listByClass(classId),
-                assessmentService.listByClass(institutionId, classId)
+                assessmentService.listByClass(institutionId, classId),
+                localEventService.getAll()
             ]);
 
             setSchedules(schRes.documents);
             setAssessments(assRes.documents);
+            setLocalEvents(localRes);
         } catch (error) {
             console.error("Failed to load calendar data", error);
         } finally {
@@ -72,20 +79,38 @@ export default function StudentCalendar() {
     }
 
     return (
-        <SafeAreaView className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`} edges={['top']}>
-            <View className="flex-row items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
-                <TouchableOpacity onPress={() => router.back()} className="mr-3">
-                    <Ionicons name="arrow-back" size={24} color={isDark ? "#FFFFFF" : "#000000"} />
+        <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+            <View className="flex-row items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 justify-between">
+                <View className="flex-row items-center">
+                    <TouchableOpacity onPress={() => router.back()} className="mr-3">
+                        <Ionicons name="arrow-back" size={24} color={isDark ? "#FFFFFF" : "#000000"} />
+                    </TouchableOpacity>
+                    <Text className={`text-xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>My Calendar</Text>
+                </View>
+                <TouchableOpacity
+                    onPress={() => setModalVisible(true)}
+                    className="flex-row items-center bg-blue-100 dark:bg-blue-900/30 px-3 py-1.5 rounded-full"
+                >
+                    <Ionicons name="add" size={18} color="#2563EB" />
+                    <Text className="ml-1 text-blue-700 dark:text-blue-300 font-semibold text-xs">New Event</Text>
                 </TouchableOpacity>
-                <Text className={`text-xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>My Calendar</Text>
             </View>
             <CalendarAgenda
                 schedules={schedules}
                 assessments={assessments}
+                localEvents={localEvents}
                 role="STUDENT"
                 refreshing={refreshing}
                 onRefresh={onRefresh}
+                onDateSelected={setSelectedDate}
             />
-        </SafeAreaView>
+
+            <AddEventModal
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+                onSuccess={loadData}
+                preSelectedDate={selectedDate}
+            />
+        </View>
     );
 }

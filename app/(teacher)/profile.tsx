@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { ActivityIndicator, Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../../store/hooks/useAuth";
 import { useTheme } from "../../store/hooks/useTheme";
 
@@ -65,7 +65,10 @@ export default function ProfileScreen() {
     );
 
     return (
-        <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-white"}`}>
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            className={`flex-1 ${isDark ? "bg-gray-900" : "bg-white"}`}
+        >
             <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
                 {/* Header / Banner */}
                 <View className={`h-48 ${isDark ? "bg-gray-800" : "bg-blue-600"} items-center justify-center`}>
@@ -164,6 +167,6 @@ export default function ProfileScreen() {
                     </TouchableOpacity>
                 </View>
             </ScrollView>
-        </View>
+        </KeyboardAvoidingView>
     );
 }

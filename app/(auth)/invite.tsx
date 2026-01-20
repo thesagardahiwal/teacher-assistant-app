@@ -5,7 +5,7 @@ import { databaseService } from "@/services/appwrite/database.service";
 import { invitationService } from "@/services/invitation.service";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Keyboard, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
 import { ID, Query } from "react-native-appwrite";
 
 export default function InviteScreen() {
@@ -148,49 +148,54 @@ export default function InviteScreen() {
     }
 
     return (
-        <View className="flex-1 bg-white px-6 justify-center">
-            <View className="w-full max-w-sm mx-auto">
-                <Text className="text-2xl font-bold text-gray-900 mb-2">Welcome!</Text>
-                <Text className="text-gray-500 mb-8">
-                    Set your password to accept the invitation for {inviteData?.email}
-                </Text>
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            className="flex-1 bg-white px-6 justify-center"
+        >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <View className="w-full max-w-sm mx-auto">
+                    <Text className="text-2xl font-bold text-gray-900 mb-2">Welcome!</Text>
+                    <Text className="text-gray-500 mb-8">
+                        Set your password to accept the invitation for {inviteData?.email}
+                    </Text>
 
-                <View className="space-y-4">
-                    <View>
-                        <Text className="text-sm font-medium text-gray-700 mb-1">New Password</Text>
-                        <TextInput
-                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3"
-                            secureTextEntry={true}
-                            placeholder="Min 8 characters"
-                            value={password}
-                            onChangeText={setPassword}
-                        />
+                    <View className="space-y-4">
+                        <View>
+                            <Text className="text-sm font-medium text-gray-700 mb-1">New Password</Text>
+                            <TextInput
+                                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3"
+                                secureTextEntry={true}
+                                placeholder="Min 8 characters"
+                                value={password}
+                                onChangeText={setPassword}
+                            />
+                        </View>
+
+                        <View>
+                            <Text className="text-sm font-medium text-gray-700 mb-1">Confirm Password</Text>
+                            <TextInput
+                                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3"
+                                secureTextEntry={true}
+                                placeholder="Re-enter password"
+                                value={confirmPassword}
+                                onChangeText={setConfirmPassword}
+                            />
+                        </View>
+
+                        <TouchableOpacity
+                            onPress={handleAccept}
+                            disabled={submitting}
+                            className={`w-full py-4 rounded-xl items-center mt-6 ${submitting ? "bg-blue-400" : "bg-blue-600"}`}
+                        >
+                            {submitting ? (
+                                <ActivityIndicator color="white" />
+                            ) : (
+                                <Text className="text-white font-bold text-lg">Activate Account</Text>
+                            )}
+                        </TouchableOpacity>
                     </View>
-
-                    <View>
-                        <Text className="text-sm font-medium text-gray-700 mb-1">Confirm Password</Text>
-                        <TextInput
-                            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3"
-                            secureTextEntry={true}
-                            placeholder="Re-enter password"
-                            value={confirmPassword}
-                            onChangeText={setConfirmPassword}
-                        />
-                    </View>
-
-                    <TouchableOpacity
-                        onPress={handleAccept}
-                        disabled={submitting}
-                        className={`w-full py-4 rounded-xl items-center mt-6 ${submitting ? "bg-blue-400" : "bg-blue-600"}`}
-                    >
-                        {submitting ? (
-                            <ActivityIndicator color="white" />
-                        ) : (
-                            <Text className="text-white font-bold text-lg">Activate Account</Text>
-                        )}
-                    </TouchableOpacity>
                 </View>
-            </View>
-        </View>
+            </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
     );
 }

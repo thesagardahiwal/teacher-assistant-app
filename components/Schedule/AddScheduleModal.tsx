@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { scheduleService } from "../../services";
 import { academicYearService } from "../../services/academicYear.service";
 import { useAssignments } from "../../store/hooks/useAssignments";
@@ -149,7 +149,10 @@ export default function AddScheduleModal({ visible, onClose, onSave, initialSche
 
     return (
         <Modal visible={visible} animationType="slide" transparent>
-            <View className="flex-1 justify-end bg-black/50">
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                className="flex-1 justify-end bg-black/50"
+            >
                 <View className={`rounded-t-3xl h-[85%] ${isDark ? "bg-gray-900" : "bg-white"}`}>
                     <View className={`flex-row items-center justify-between p-4 border-b ${isDark ? "border-gray-800" : "border-gray-100"}`}>
                         <Text className={`text-xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>{initialSchedule ? "Edit Schedule" : "Add Schedule"}</Text>
@@ -238,7 +241,7 @@ export default function AddScheduleModal({ visible, onClose, onSave, initialSche
                         <View className="h-20" />
                     </ScrollView>
                 </View>
-            </View>
+            </KeyboardAvoidingView>
         </Modal>
     );
 }

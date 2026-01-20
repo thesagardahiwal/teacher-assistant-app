@@ -14,6 +14,7 @@ interface CalendarAgendaProps {
     role: "TEACHER" | "STUDENT";
     refreshing?: boolean;
     onRefresh?: () => void;
+    onDateSelected?: (date: string) => void;
 }
 
 const DAYS_MAP: Record<string, number> = {
@@ -26,7 +27,7 @@ const DAYS_MAP: Record<string, number> = {
     SAT: 6,
 };
 
-export const CalendarAgenda: React.FC<CalendarAgendaProps> = ({ schedules, assessments, localEvents = [], role, refreshing, onRefresh }) => {
+export const CalendarAgenda: React.FC<CalendarAgendaProps> = ({ schedules, assessments, localEvents = [], role, refreshing, onRefresh, onDateSelected }) => {
     const { isDark } = useTheme();
 
     // Get local today string
@@ -35,6 +36,10 @@ export const CalendarAgenda: React.FC<CalendarAgendaProps> = ({ schedules, asses
 
     const [selectedDate, setSelectedDate] = useState(today);
     const [currentMonth, setCurrentMonth] = useState(new Date());
+
+    // ... (rest of the component)
+
+
 
     // Helper to get all dates for a specific day of the week in a given month
     const getDatesForDayOfWeek = (dayStr: string, year: number, month: number) => {
@@ -238,7 +243,10 @@ export const CalendarAgenda: React.FC<CalendarAgendaProps> = ({ schedules, asses
                     arrowColor: "#2563EB",
                     dotStyle: { width: 5, height: 5, borderRadius: 2.5 }
                 }}
-                onDayPress={(day: DateData) => setSelectedDate(day.dateString)}
+                onDayPress={(day: DateData) => {
+                    setSelectedDate(day.dateString);
+                    if (onDateSelected) onDateSelected(day.dateString);
+                }}
                 onMonthChange={(month: DateData) => {
                     setCurrentMonth(new Date(month.dateString));
                 }}

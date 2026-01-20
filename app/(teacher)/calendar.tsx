@@ -25,6 +25,7 @@ export default function TeacherCalendar() {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
+    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
     const loadData = async () => {
         if (!user?.$id || !institutionId) return;
@@ -85,12 +86,14 @@ export default function TeacherCalendar() {
                 role="TEACHER"
                 refreshing={refreshing}
                 onRefresh={onRefresh}
+                onDateSelected={setSelectedDate}
             />
 
             <AddEventModal
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
                 onSuccess={loadData}
+                preSelectedDate={selectedDate}
             />
         </SafeAreaView>
     );

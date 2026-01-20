@@ -13,6 +13,8 @@ import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
     Alert,
+    KeyboardAvoidingView,
+    Platform,
     ScrollView,
     Switch,
     Text,
@@ -306,120 +308,125 @@ export default function EditSchedule() {
     }
 
     return (
-        <View className="flex-1 p-4 bg-background dark:bg-dark-background">
-            <PageHeader title="Edit Schedule" />
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            className="flex-1 bg-background p-4 dark:bg-dark-background"
+        >
+            <View style={{ flex: 1 }}>
+                <PageHeader title="Edit Schedule" />
 
-            <ScrollView className="px-6 bg-card dark:bg-dark-card rounded-xl py-4">
-                <FormSelect
-                    label="Academic Year"
-                    value={academicYear}
-                    onChange={setAcademicYear}
-                    options={academicYears}
-                    placeholder="Select Academic Year"
-                />
-
-                <FormSelect
-                    label="Class"
-                    value={selectedClass}
-                    onChange={setSelectedClass}
-                    options={classOptions}
-                    placeholder={academicYear ? "Select Class" : "Select Academic Year First"}
-                />
-
-                {loadingAssignments && (
-                    <View className="py-3">
-                        <ActivityIndicator />
-                        <Text className="text-xs text-center text-gray-500 mt-1">
-                            Loading class assignments...
-                        </Text>
-                    </View>
-                )}
-
-                <FormSelect
-                    label="Teacher"
-                    value={teacher}
-                    onChange={setTeacher}
-                    options={teacherOptions}
-                    placeholder={selectedClass ? "Select Teacher (Assigned)" : "Select Class First"}
-                />
-
-                <FormSelect
-                    label="Subject"
-                    value={subject}
-                    onChange={setSubject}
-                    options={subjectOptions}
-                    placeholder={teacher ? "Select Subject" : "Select Teacher First"}
-                />
-
-                <FormSelect
-                    label="Day"
-                    value={dayOfWeek}
-                    onChange={(value) => setDayOfWeek(value as "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN")}
-                    options={[
-                        { label: "Monday", value: "MON" },
-                        { label: "Tuesday", value: "TUE" },
-                        { label: "Wednesday", value: "WED" },
-                        { label: "Thursday", value: "THU" },
-                        { label: "Friday", value: "FRI" },
-                        { label: "Saturday", value: "SAT" },
-                        { label: "Sunday", value: "SUN" },
-                    ]}
-                    placeholder="Select Day"
-                />
-
-                <View className="flex-row gap-4 mb-6">
-                    <View className="flex-1">
-                        <Text className="mb-2 font-semibold text-textSecondary dark:text-dark-textSecondary">
-                            Start Time
-                        </Text>
-                        <TextInput
-                            placeholder="09:00"
-                            placeholderTextColor={isDark ? "#9CA3AF" : "#6B7280"}
-                            value={startTime}
-                            onChangeText={setStartTime}
-                            className="p-4 rounded-xl border bg-card border-border dark:bg-dark-card dark:border-dark-border text-textPrimary dark:text-dark-textPrimary"
-                        />
-                    </View>
-                    <View className="flex-1">
-                        <Text className="mb-2 font-semibold text-textSecondary dark:text-dark-textSecondary">
-                            End Time
-                        </Text>
-                        <TextInput
-                            placeholder="10:00"
-                            placeholderTextColor={isDark ? "#9CA3AF" : "#6B7280"}
-                            value={endTime}
-                            onChangeText={setEndTime}
-                            className="p-4 rounded-xl border bg-card border-border dark:bg-dark-card dark:border-dark-border text-textPrimary dark:text-dark-textPrimary"
-                        />
-                    </View>
-                </View>
-
-                <View className="flex-row items-center justify-between p-4 mb-6 rounded-xl border bg-card border-border dark:bg-dark-card dark:border-dark-border">
-                    <Text className="font-semibold text-textPrimary dark:text-dark-textPrimary">
-                        Active Status
-                    </Text>
-                    <Switch
-                        value={isActive}
-                        onValueChange={setIsActive}
-                        trackColor={{ false: "#767577", true: "#3B82F6" }}
-                        thumbColor={isActive ? "#FFFFFF" : "#f4f3f4"}
+                <ScrollView className="px-6 bg-card dark:bg-dark-card rounded-xl py-4">
+                    <FormSelect
+                        label="Academic Year"
+                        value={academicYear}
+                        onChange={setAcademicYear}
+                        options={academicYears}
+                        placeholder="Select Academic Year"
                     />
-                </View>
 
-                <TouchableOpacity
-                    onPress={handleSubmit}
-                    className="mt-4 py-4 rounded-xl bg-primary dark:bg-dark-primary items-center mb-4"
-                >
-                    <Text className="text-white font-bold text-lg">Update Schedule</Text>
-                </TouchableOpacity>
+                    <FormSelect
+                        label="Class"
+                        value={selectedClass}
+                        onChange={setSelectedClass}
+                        options={classOptions}
+                        placeholder={academicYear ? "Select Class" : "Select Academic Year First"}
+                    />
 
-                <TouchableOpacity
-                    onPress={handleDelete}
-                    className="py-4 rounded-xl items-center mb-10 bg-red-100 dark:bg-red-900/30"
-                >
-                    <Text className="text-red-600 dark:text-red-400 font-bold text-lg">Delete Schedule</Text>
-                </TouchableOpacity>
-            </ScrollView>
-        </View>
+                    {loadingAssignments && (
+                        <View className="py-3">
+                            <ActivityIndicator />
+                            <Text className="text-xs text-center text-gray-500 mt-1">
+                                Loading class assignments...
+                            </Text>
+                        </View>
+                    )}
+
+                    <FormSelect
+                        label="Teacher"
+                        value={teacher}
+                        onChange={setTeacher}
+                        options={teacherOptions}
+                        placeholder={selectedClass ? "Select Teacher (Assigned)" : "Select Class First"}
+                    />
+
+                    <FormSelect
+                        label="Subject"
+                        value={subject}
+                        onChange={setSubject}
+                        options={subjectOptions}
+                        placeholder={teacher ? "Select Subject" : "Select Teacher First"}
+                    />
+
+                    <FormSelect
+                        label="Day"
+                        value={dayOfWeek}
+                        onChange={(value) => setDayOfWeek(value as "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN")}
+                        options={[
+                            { label: "Monday", value: "MON" },
+                            { label: "Tuesday", value: "TUE" },
+                            { label: "Wednesday", value: "WED" },
+                            { label: "Thursday", value: "THU" },
+                            { label: "Friday", value: "FRI" },
+                            { label: "Saturday", value: "SAT" },
+                            { label: "Sunday", value: "SUN" },
+                        ]}
+                        placeholder="Select Day"
+                    />
+
+                    <View className="flex-row gap-4 mb-6">
+                        <View className="flex-1">
+                            <Text className="mb-2 font-semibold text-textSecondary dark:text-dark-textSecondary">
+                                Start Time
+                            </Text>
+                            <TextInput
+                                placeholder="09:00"
+                                placeholderTextColor={isDark ? "#9CA3AF" : "#6B7280"}
+                                value={startTime}
+                                onChangeText={setStartTime}
+                                className="p-4 rounded-xl border bg-card border-border dark:bg-dark-card dark:border-dark-border text-textPrimary dark:text-dark-textPrimary"
+                            />
+                        </View>
+                        <View className="flex-1">
+                            <Text className="mb-2 font-semibold text-textSecondary dark:text-dark-textSecondary">
+                                End Time
+                            </Text>
+                            <TextInput
+                                placeholder="10:00"
+                                placeholderTextColor={isDark ? "#9CA3AF" : "#6B7280"}
+                                value={endTime}
+                                onChangeText={setEndTime}
+                                className="p-4 rounded-xl border bg-card border-border dark:bg-dark-card dark:border-dark-border text-textPrimary dark:text-dark-textPrimary"
+                            />
+                        </View>
+                    </View>
+
+                    <View className="flex-row items-center justify-between p-4 mb-6 rounded-xl border bg-card border-border dark:bg-dark-card dark:border-dark-border">
+                        <Text className="font-semibold text-textPrimary dark:text-dark-textPrimary">
+                            Active Status
+                        </Text>
+                        <Switch
+                            value={isActive}
+                            onValueChange={setIsActive}
+                            trackColor={{ false: "#767577", true: "#3B82F6" }}
+                            thumbColor={isActive ? "#FFFFFF" : "#f4f3f4"}
+                        />
+                    </View>
+
+                    <TouchableOpacity
+                        onPress={handleSubmit}
+                        className="mt-4 py-4 rounded-xl bg-primary dark:bg-dark-primary items-center mb-4"
+                    >
+                        <Text className="text-white font-bold text-lg">Update Schedule</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        onPress={handleDelete}
+                        className="py-4 rounded-xl items-center mb-10 bg-red-100 dark:bg-red-900/30"
+                    >
+                        <Text className="text-red-600 dark:text-red-400 font-bold text-lg">Delete Schedule</Text>
+                    </TouchableOpacity>
+                </ScrollView>
+            </View>
+        </KeyboardAvoidingView>
     );
 }

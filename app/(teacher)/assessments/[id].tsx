@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, FlatList, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, FlatList, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { assessmentService } from "../../../services/assessment.service";
 import { useAssessmentResults } from "../../../store/hooks/useAssessmentResults";
 import { useAuth } from "../../../store/hooks/useAuth";
@@ -161,7 +161,10 @@ export default function AssessmentDetailsScreen() {
     }
 
     return (
-        <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-white"}`}>
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            className={`flex-1 ${isDark ? "bg-gray-900" : "bg-white"}`}
+        >
             {/* Header */}
             <View className={`px-5 py-4 border-b ${isDark ? "border-gray-800" : "border-gray-100"}`}>
                 <View className="flex-row items-center mb-3">
@@ -192,6 +195,6 @@ export default function AssessmentDetailsScreen() {
                     </Text>
                 }
             />
-        </View>
+        </KeyboardAvoidingView>
     );
 }

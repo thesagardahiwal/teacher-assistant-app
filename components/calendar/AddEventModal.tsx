@@ -4,7 +4,7 @@ import { LocalEvent } from "@/types/local-event.type";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import React, { useState } from "react";
-import { ActivityIndicator, Alert, Modal, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 import uuid from 'react-native-uuid';
 
 interface AddEventModalProps {
@@ -110,7 +110,10 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({ visible, onClose, 
             visible={visible}
             onRequestClose={onClose}
         >
-            <View className="flex-1 justify-end bg-black/50">
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                className="flex-1 justify-end bg-black/50"
+            >
                 <View className={`rounded-t-3xl p-6 ${isDark ? "bg-gray-900" : "bg-white"}`} style={{ maxHeight: '90%' }}>
                     <View className="flex-row justify-between items-center mb-6">
                         <Text className={`text-xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
@@ -227,7 +230,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({ visible, onClose, 
                         )}
                     </TouchableOpacity>
                 </View>
-            </View>
+            </KeyboardAvoidingView>
         </Modal>
     );
 };
