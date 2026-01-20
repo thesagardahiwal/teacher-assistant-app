@@ -128,6 +128,37 @@ export default function AttendanceDashboard() {
                     </View>
                 )}
 
+                {/* Recent Sessions List */}
+                {attendanceHistory.length > 0 && (
+                    <View className="mt-6 mb-4">
+                        <Text className={`text-lg font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>Recent Sessions</Text>
+                        {attendanceHistory
+                            .slice()
+                            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                            .slice(0, 10) // Show last 10
+                            .map((session) => (
+                                <TouchableOpacity
+                                    key={session.$id}
+                                    onPress={() => router.push(`/(teacher)/attendance/${session.$id}`)}
+                                    className={`p-4 mb-3 rounded-xl border flex-row items-center justify-between ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"}`}
+                                >
+                                    <View>
+                                        <Text className={`font-semibold ${isDark ? "text-white" : "text-gray-900"}`}>
+                                            {session.class?.name} • {session.subject?.name}
+                                        </Text>
+                                        <Text className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                                            {new Date(session.date).toLocaleDateString()} at {new Date(session.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </Text>
+                                    </View>
+                                    <View className="flex-row items-center">
+                                        <Text className={`text-xs mr-2 ${isDark ? "text-blue-400" : "text-blue-600"}`}>Edit</Text>
+                                        <Ionicons name="chevron-forward" size={16} color={isDark ? "#9CA3AF" : "#6B7280"} />
+                                    </View>
+                                </TouchableOpacity>
+                            ))}
+                    </View>
+                )}
+
                 <View className="h-20" />
             </ScrollView>
         </View>

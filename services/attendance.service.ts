@@ -22,7 +22,8 @@ export const attendanceService = {
     get(attendanceId: string) {
         return databaseService.get<Attendance>(
             COLLECTIONS.ATTENDANCE,
-            attendanceId
+            attendanceId,
+            [Query.select(["*", "class.*", "subject.*", "teacher.*", "institution.*"])]
         );
     },
 

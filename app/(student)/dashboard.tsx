@@ -164,7 +164,17 @@ const Dashboard = () => {
               </View>
             </TouchableOpacity>
           </Link>
-          <View className="flex-1" />
+          <Link href="/(student)/teachers" asChild>
+            <TouchableOpacity className="flex-1 bg-green-100 dark:bg-green-900/30 p-4 rounded-2xl items-center flex-row">
+              <View className="w-10 h-10 bg-green-500 rounded-full items-center justify-center mr-3">
+                <Ionicons name="people-outline" size={24} color="white" />
+              </View>
+              <View>
+                <Text className="font-bold text-green-900 dark:text-green-100">Teachers</Text>
+                <Text className="text-xs text-green-700 dark:text-green-300">View Faculty</Text>
+              </View>
+            </TouchableOpacity>
+          </Link>
         </View>
         {/* Recent Activity Header */}
         <View className="flex-row justify-between items-center mb-4">

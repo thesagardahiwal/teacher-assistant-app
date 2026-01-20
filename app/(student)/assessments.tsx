@@ -60,7 +60,7 @@ export default function StudentAssessmentsScreen() {
             ) : null}
 
             <Text className={`text-xs mt-2 text-right ${isDark ? "text-gray-500" : "text-gray-400"}`}>
-                Date: {new Date(item.date).toLocaleDateString()}
+                Date: {new Date(item.evaluatedAt).toLocaleDateString()}
             </Text>
         </View>
     );

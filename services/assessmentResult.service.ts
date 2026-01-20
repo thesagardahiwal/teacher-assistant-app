@@ -9,6 +9,7 @@ const query = Query.select([
     "student.*",
     "evaluatedBy.*",
     "institution.*",
+    "assessment.subject.*",
 ])
 
 export const assessmentResultService = {

@@ -9,7 +9,7 @@ export const attendanceRecordService = {
             COLLECTIONS.ATTENDANCE_RECORDS,
             [
                 Query.equal("institution", institutionId),
-                Query.select(["*", "attendance.*", "student.*", "institution.*"]),
+                Query.select(["*", "attendance.*", "student.*", "institution.*, attendance.subject.*", "attendance.class.*"]),
                 ...queries
             ]
         );
@@ -20,7 +20,7 @@ export const attendanceRecordService = {
             COLLECTIONS.ATTENDANCE_RECORDS,
             [
                 Query.equal("attendance", attendanceId),
-                Query.select(["*", "attendance.*", "student.*", "institution.*"])
+                Query.select(["*", "attendance.*", "student.*", "institution.*", "attendance.subject.*", "attendance.class.*"])
             ]
         );
     },
