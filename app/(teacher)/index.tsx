@@ -71,9 +71,9 @@ export default function TeacherDashboard() {
     }, [institutionId, user]);
 
     const stats = [
-        { label: "My Classes", value: assignments.length, icon: "book-open-variant", color: "text-blue-500", bg: "bg-blue-100 dark:bg-blue-900/30" },
-        { label: "Students", value: students.length, icon: "account-group", color: "text-indigo-500", bg: "bg-indigo-100 dark:bg-indigo-900/30" },
-        { label: "Attendance", value: attendanceHistory.length, icon: "clipboard-check", color: "text-green-500", bg: "bg-green-100 dark:bg-green-900/30" },
+        { label: "My Classes", value: assignments.length, icon: "book-open-variant", color: "text-blue-500", bg: "bg-blue-300 dark:bg-blue-900/30" },
+        { label: "Students", value: students.length, icon: "account-group", color: "text-indigo-500", bg: "bg-indigo-300 dark:bg-indigo-900/30" },
+        { label: "Attendance", value: attendanceHistory.length, icon: "clipboard-check", color: "text-green-500", bg: "bg-green-300 dark:bg-green-900/30" },
     ];
 
     const QuickAction = ({

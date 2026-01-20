@@ -118,7 +118,7 @@ export default function ProfileScreen() {
         >
             <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
                 {/* Header */}
-                <View className="h-64 bg-indigo-600 dark:bg-indigo-900 relative">
+                <View className="h-64 bg-blue-600 dark:bg-blue-900 relative">
                     <View className="absolute inset-0 bg-black/10" />
                     <View className="flex-row items-center justify-between px-6 pt-14">
                         <View />
@@ -135,8 +135,8 @@ export default function ProfileScreen() {
                     <View className={`rounded-3xl p-6 shadow-sm mb-6 ${isDark ? "bg-gray-900 shadow-none border border-gray-800" : "bg-white shadow-gray-200"}`}>
                         <View className="items-center -mt-16 mb-4">
                             <View className="w-28 h-28 rounded-full bg-white dark:bg-gray-900 p-2 shadow-lg shadow-black/10">
-                                <View className="flex-1 rounded-full bg-indigo-100 dark:bg-indigo-900/50 items-center justify-center border-4 border-indigo-50 dark:border-indigo-900">
-                                    <Text className="text-4xl font-bold text-indigo-600 dark:text-indigo-400">
+                                <View className="flex-1 rounded-full bg-blue-100 dark:bg-blue-900/50 items-center justify-center border-4 border-blue-50 dark:border-blue-900">
+                                    <Text className="text-4xl font-bold text-blue-600 dark:text-blue-400">
                                         {user?.name?.charAt(0).toUpperCase() || "T"}
                                     </Text>
                                 </View>
@@ -145,7 +145,7 @@ export default function ProfileScreen() {
                             {!isEditing && (
                                 <TouchableOpacity
                                     onPress={() => setIsEditing(true)}
-                                    className="absolute bottom-0 right-0 bg-indigo-600 w-10 h-10 rounded-full items-center justify-center shadow-lg shadow-indigo-600/30 border-2 border-white dark:border-gray-900"
+                                    className="absolute bottom-0 right-0 bg-blue-600 w-10 h-10 rounded-full items-center justify-center shadow-lg shadow-blue-600/30 border-2 border-white dark:border-gray-900"
                                 >
                                     <Ionicons name="pencil" size={18} color="white" />
                                 </TouchableOpacity>
@@ -159,8 +159,8 @@ export default function ProfileScreen() {
                             <Text className={`text-center mt-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
                                 {user?.email}
                             </Text>
-                            <View className={`mt-3 px-4 py-1.5 rounded-full ${isDark ? "bg-indigo-900/30" : "bg-indigo-50"}`}>
-                                <Text className={`text-xs font-bold uppercase tracking-wider ${isDark ? "text-indigo-400" : "text-indigo-700"}`}>
+                            <View className={`mt-3 px-4 py-1.5 rounded-full ${isDark ? "bg-blue-900/30" : "bg-blue-50"}`}>
+                                <Text className={`text-xs font-bold uppercase tracking-wider ${isDark ? "text-blue-400" : "text-blue-700"}`}>
                                     Teacher Account
                                 </Text>
                             </View>
@@ -219,7 +219,7 @@ export default function ProfileScreen() {
                                 <TouchableOpacity
                                     onPress={handleSave}
                                     disabled={loading}
-                                    className="flex-1 bg-indigo-600 py-3.5 rounded-xl items-center shadow-lg shadow-indigo-600/20"
+                                    className="flex-1 bg-blue-600 py-3.5 rounded-xl items-center shadow-lg shadow-blue-600/20"
                                 >
                                     {loading ? (
                                         <ActivityIndicator color="white" />
@@ -233,14 +233,14 @@ export default function ProfileScreen() {
 
                     {/* Settings Section */}
                     <View className="px-2">
-                        <Text className={`text-lg font-bold mb-4 ml-2 ${isDark ? "text-white" : "text-gray-900"}`}>
+                        {/* <Text className={`text-lg font-bold mb-4 ml-2 ${isDark ? "text-white" : "text-gray-900"}`}>
                             Settings
                         </Text>
 
                         <SettingItem icon="notifications-outline" label="Notifications" onPress={() => { }} />
                         <SettingItem icon="lock-closed-outline" label="Change Password" onPress={() => { }} />
                         <SettingItem icon="help-circle-outline" label="Help & Support" onPress={() => { }} />
-                        <SettingItem icon="shield-checkmark-outline" label="Privacy Policy" onPress={() => { }} />
+                        <SettingItem icon="shield-checkmark-outline" label="Privacy Policy" onPress={() => { }} /> */}
                         <SettingItem
                             icon="log-out-outline"
                             label="Logout"
