@@ -1,6 +1,7 @@
+import { showAlert } from "@/utils/alert";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { scheduleService } from "../../services";
 import { academicYearService } from "../../services/academicYear.service";
 import { useAssignments } from "../../store/hooks/useAssignments";
@@ -69,7 +70,7 @@ export default function AddScheduleModal({ visible, onClose, onSave, initialSche
                     if (currentYear) {
                         setAcademicYearId(currentYear.$id);
                     } else {
-                        Alert.alert("Notice", "No active academic year found. Please ask admin to set one.");
+                        showAlert("Notice", "No active academic year found. Please ask admin to set one.");
                     }
                 } catch (err) {
                     console.error("Failed to fetch academic year", err);
@@ -86,17 +87,17 @@ export default function AddScheduleModal({ visible, onClose, onSave, initialSche
 
     const handleSubmit = async () => {
         if (!selectedClassId || !selectedSubjectId || !startTime || !endTime || !user || !institutionId) {
-            Alert.alert("Error", "Please fill in all fields");
+            showAlert("Error", "Please fill in all fields");
             return;
         }
 
         if (!academicYearId) {
-            Alert.alert("Error", "Cannot create schedule without an active academic year.");
+            showAlert("Error", "Cannot create schedule without an active academic year.");
             return;
         }
 
         if (startTime >= endTime) {
-            Alert.alert("Error", "End time must be after start time");
+            showAlert("Error", "End time must be after start time");
             return;
         }
 
@@ -111,7 +112,7 @@ export default function AddScheduleModal({ visible, onClose, onSave, initialSche
             });
 
             if (hasConflict) {
-                Alert.alert("Schedule Conflict", "This time slot overlaps with another scheduled class on this day.");
+                showAlert("Schedule Conflict", "This time slot overlaps with another scheduled class on this day.");
                 setLoading(false);
                 return;
             }
@@ -138,7 +139,7 @@ export default function AddScheduleModal({ visible, onClose, onSave, initialSche
             onClose();
         } catch (error) {
             console.error(error);
-            Alert.alert("Error", "Failed to save schedule");
+            showAlert("Error", "Failed to save schedule");
         } finally {
             setLoading(false);
         }

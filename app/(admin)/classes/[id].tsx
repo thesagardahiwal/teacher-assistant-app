@@ -7,13 +7,13 @@ import { useAuth } from "@/store/hooks/useAuth";
 import { useClasses } from "@/store/hooks/useClasses";
 import { useCourses } from "@/store/hooks/useCourses";
 import { useTheme } from "@/store/hooks/useTheme";
+import { showAlert } from "@/utils/alert";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
-    Alert,
     ScrollView,
     Text,
     TouchableOpacity,
@@ -61,7 +61,7 @@ export default function EditClass() {
             setName(doc.name || "");
         } catch (error) {
             console.error("loadData Error:", error);
-            Alert.alert("Error", "Failed to load class");
+            showAlert("Error", "Failed to load class");
             router.back();
         } finally {
             setLoading(false);
@@ -69,7 +69,7 @@ export default function EditClass() {
     }
 
     const handleDelete = async () => {
-        Alert.alert("Delete", "Are you sure you want to delete this class?", [
+        showAlert("Delete", "Are you sure you want to delete this class?", [
             { text: "Cancel", style: "cancel" },
             {
                 text: "Delete",
@@ -80,7 +80,7 @@ export default function EditClass() {
                         if (institutionId) await fetchClasses(institutionId);
                         router.back();
                     } catch (error) {
-                        Alert.alert("Error", "Failed to delete");
+                        showAlert("Error", "Failed to delete");
                     }
                 }
             }
@@ -89,7 +89,7 @@ export default function EditClass() {
 
     const handleSubmit = async () => {
         if (!semester || !course || !academicYear) {
-            Alert.alert("Error", "Please fill in all required fields");
+            showAlert("Error", "Please fill in all required fields");
             return;
         }
 
@@ -103,9 +103,9 @@ export default function EditClass() {
             });
 
             if (institutionId) await fetchClasses(institutionId);
-            Alert.alert("Success", "Class updated successfully");
+            showAlert("Success", "Class updated successfully");
         } catch (error: any) {
-            Alert.alert("Error", error.message || "Failed to update class");
+            showAlert("Error", error.message || "Failed to update class");
         } finally {
             setSaving(false);
         }

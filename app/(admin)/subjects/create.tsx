@@ -4,12 +4,12 @@ import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { subjectService } from "@/services";
 import { useCourses } from "@/store/hooks/useCourses";
 import { useTheme } from "@/store/hooks/useTheme";
+import { showAlert } from "@/utils/alert";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -38,7 +38,7 @@ export default function CreateSubject() {
 
   const handleSubmit = async () => {
     if (!name || !code || !course || !semester || !institutionId) {
-      Alert.alert("Error", "Please fill in all required fields");
+      showAlert("Error", "Please fill in all required fields");
       return;
     }
 
@@ -52,11 +52,11 @@ export default function CreateSubject() {
         institution: institutionId,
       });
 
-      Alert.alert("Success", "Subject created successfully", [
+      showAlert("Success", "Subject created successfully", [
         { text: "OK", onPress: () => router.back() }
       ]);
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to create subject");
+      showAlert("Error", error.message || "Failed to create subject");
     } finally {
       setLoading(false);
     }

@@ -1,13 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, FlatList, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { assessmentService } from "../../../services/assessment.service";
 import { useAssessmentResults } from "../../../store/hooks/useAssessmentResults";
 import { useAuth } from "../../../store/hooks/useAuth";
 import { useStudents } from "../../../store/hooks/useStudents";
 import { useTheme } from "../../../store/hooks/useTheme";
 import { Assessment } from "../../../types/assessment.type";
+import { showAlert } from "../../../utils/alert";
 import { useInstitutionId } from "../../../utils/useInstitutionId";
 
 export default function AssessmentDetailsScreen() {
@@ -43,7 +44,7 @@ export default function AssessmentDetailsScreen() {
                 fetchStudents(institutionId, [res.class.$id]);
             }
         } catch (error) {
-            Alert.alert("Error", "Failed to load assessment details");
+            showAlert("Error", "Failed to load assessment details");
         } finally {
             setLoading(false);
         }
@@ -74,13 +75,14 @@ export default function AssessmentDetailsScreen() {
         const remark = remarks[studentId];
 
         if (!obtained) {
-            Alert.alert("Error", "Please enter marks");
+            console.log("Marks empty");
+            showAlert("Error", "Please enter marks");
             return;
         }
 
         const numMarks = parseFloat(obtained);
         if (isNaN(numMarks) || numMarks < 0 || numMarks > assessment.maxMarks) {
-            Alert.alert("Error", `Marks must be between 0 and ${assessment.maxMarks}`);
+            showAlert("Error", `Marks must be between 0 and ${assessment.maxMarks}`);
             return;
         }
 
@@ -96,9 +98,9 @@ export default function AssessmentDetailsScreen() {
                 remarks: remark,
                 evaluatedAt: new Date().toISOString()
             });
-            Alert.alert("Success", "Grade saved successfully");
+            showAlert("Success", "Grade saved successfully");
         } catch (error) {
-            Alert.alert("Error", "Failed to save grade");
+            showAlert("Error", "Failed to save grade");
         } finally {
             setSavingStudentId(null);
         }

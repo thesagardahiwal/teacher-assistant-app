@@ -1,9 +1,9 @@
+import { showAlert } from "@/utils/alert";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -39,7 +39,7 @@ const AdminProfile = () => {
   const handleSave = async () => {
     if (!user) return;
     if (!name.trim()) {
-      Alert.alert("Error", "Name is required");
+      showAlert("Error", "Name is required");
       return;
     }
 
@@ -51,9 +51,9 @@ const AdminProfile = () => {
         designation,
       });
       setIsEditing(false);
-      Alert.alert("Success", "Profile updated successfully");
+      showAlert("Success", "Profile updated successfully");
     } catch (error) {
-      Alert.alert("Error", "Failed to update profile");
+      showAlert("Error", "Failed to update profile");
       console.error(error);
     } finally {
       setSubmitting(false);
@@ -85,8 +85,8 @@ const AdminProfile = () => {
           placeholder={placeholder}
           placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"}
           className={`px-4 py-3.5 rounded-xl border text-base ${isDark
-              ? "bg-gray-800 border-gray-700 text-white focus:border-blue-500"
-              : "bg-white border-gray-200 text-gray-900 focus:border-blue-500"
+            ? "bg-gray-800 border-gray-700 text-white focus:border-blue-500"
+            : "bg-white border-gray-200 text-gray-900 focus:border-blue-500"
             }`}
         />
       ) : (

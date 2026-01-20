@@ -2,9 +2,10 @@ import { localFileService } from "@/services/local/localFile.service";
 import { metadataService } from "@/services/local/metadata.service";
 import { useTheme } from "@/store/hooks/useTheme";
 import { StudyFile } from "@/types/study-file.type";
+import { showAlert } from "@/utils/alert";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 interface RenameFileModalProps {
     visible: boolean;
@@ -39,13 +40,13 @@ export const RenameFileModal: React.FC<RenameFileModalProps> = ({
 
     const handleRename = async () => {
         if (!file || !name.trim()) {
-            Alert.alert("Validation", "File name cannot be empty.");
+            showAlert("Validation", "File name cannot be empty.");
             return;
         }
 
         // Basic validation for invalid chars
         if (/[<>:"/\\|?*]/.test(name)) {
-            Alert.alert("Validation", "File name contains invalid characters.");
+            showAlert("Validation", "File name contains invalid characters.");
             return;
         }
 
@@ -65,12 +66,12 @@ export const RenameFileModal: React.FC<RenameFileModalProps> = ({
 
             await metadataService.updateFileName(file.id, finalFileName, newLocalPath);
 
-            Alert.alert("Success", "File renamed.");
+            showAlert("Success", "File renamed.");
             onSuccess(finalFileName);
             onClose();
         } catch (error) {
             console.error(error);
-            Alert.alert("Error", "Failed to rename file.");
+            showAlert("Error", "Failed to rename file.");
         } finally {
             setLoading(false);
         }

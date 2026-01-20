@@ -7,13 +7,13 @@ import { useCourses } from "@/store/hooks/useCourses";
 import { useSubjects } from "@/store/hooks/useSubjects";
 import { useTeachers } from "@/store/hooks/useTeachers";
 import { useTheme } from "@/store/hooks/useTheme";
+import { showAlert } from "@/utils/alert";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
-    Alert,
     ScrollView,
     Text,
     TouchableOpacity,
@@ -69,7 +69,7 @@ export default function EditAssignment() {
                 setCourse(doc.class.course.$id);
             }
         } catch (error) {
-            Alert.alert("Error", "Failed to load assignment");
+            showAlert("Error", "Failed to load assignment");
             router.back();
         } finally {
             setLoading(false);
@@ -77,7 +77,7 @@ export default function EditAssignment() {
     }
 
     const handleDelete = async () => {
-        Alert.alert("Delete", "Are you sure you want to delete this assignment?", [
+        showAlert("Delete", "Are you sure you want to delete this assignment?", [
             { text: "Cancel", style: "cancel" },
             {
                 text: "Delete",
@@ -88,7 +88,7 @@ export default function EditAssignment() {
                         if (institutionId) await fetchAssignments(institutionId);
                         router.back();
                     } catch (error) {
-                        Alert.alert("Error", "Failed to delete");
+                        showAlert("Error", "Failed to delete");
                     }
                 }
             }
@@ -97,7 +97,7 @@ export default function EditAssignment() {
 
     const handleSubmit = async () => {
         if (!teacher || !selectedClass || !subject) {
-            Alert.alert("Error", "Please fill in all required fields");
+            showAlert("Error", "Please fill in all required fields");
             return;
         }
 
@@ -110,9 +110,9 @@ export default function EditAssignment() {
             });
 
             if (institutionId) await fetchAssignments(institutionId);
-            Alert.alert("Success", "Assignment updated successfully");
+            showAlert("Success", "Assignment updated successfully");
         } catch (error: any) {
-            Alert.alert("Error", error.message || "Failed to update assignment");
+            showAlert("Error", error.message || "Failed to update assignment");
         } finally {
             setSaving(false);
         }

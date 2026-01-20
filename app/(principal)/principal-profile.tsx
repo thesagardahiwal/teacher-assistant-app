@@ -3,12 +3,12 @@ import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { userService } from "@/services/user.service";
 import { useAuth } from "@/store/hooks/useAuth";
 import { useTheme } from "@/store/hooks/useTheme";
+import { showAlert } from "@/utils/alert";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
-    Alert,
     ScrollView,
     Text,
     TouchableOpacity,
@@ -32,7 +32,7 @@ export default function PrincipalProfile() {
 
     const handleSave = async () => {
         if (!name) {
-            Alert.alert("Error", "Name is required");
+            showAlert("Error", "Name is required");
             return;
         }
 
@@ -40,17 +40,17 @@ export default function PrincipalProfile() {
         try {
             await userService.update(user!.$id, { name });
             // Refresh user data if needed, or rely on auth store update
-            Alert.alert("Success", "Profile updated successfully");
+            showAlert("Success", "Profile updated successfully");
             setIsEditing(false);
         } catch (error: any) {
-            Alert.alert("Error", error.message || "Failed to update profile");
+            showAlert("Error", error.message || "Failed to update profile");
         } finally {
             setLoading(false);
         }
     };
 
     const handleLogout = async () => {
-        Alert.alert("Logout", "Are you sure you want to logout?", [
+        showAlert("Logout", "Are you sure you want to logout?", [
             { text: "Cancel", style: "cancel" },
             {
                 text: "Logout",

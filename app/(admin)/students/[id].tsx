@@ -7,13 +7,13 @@ import { useClasses } from "@/store/hooks/useClasses";
 import { useCourses } from "@/store/hooks/useCourses";
 import { useStudents } from "@/store/hooks/useStudents";
 import { useTheme } from "@/store/hooks/useTheme";
+import { showAlert } from "@/utils/alert";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
-    Alert,
     ScrollView,
     Text,
     TouchableOpacity,
@@ -73,7 +73,7 @@ export default function EditStudent() {
                 }
             }
         } catch (error) {
-            Alert.alert("Error", "Failed to load student");
+            showAlert("Error", "Failed to load student");
             router.back();
         } finally {
             setLoading(false);
@@ -81,7 +81,7 @@ export default function EditStudent() {
     }
 
     const handleDelete = async () => {
-        Alert.alert("Delete", "Are you sure you want to delete this student? This will NOT delete their Auth account, only their student profile.", [
+        showAlert("Delete", "Are you sure you want to delete this student? This will NOT delete their Auth account, only their student profile.", [
             { text: "Cancel", style: "cancel" },
             {
                 text: "Delete",
@@ -92,7 +92,7 @@ export default function EditStudent() {
                         if (institutionId) await fetchStudents(institutionId);
                         router.back();
                     } catch (error) {
-                        Alert.alert("Error", "Failed to delete");
+                        showAlert("Error", "Failed to delete");
                     }
                 }
             }
@@ -101,7 +101,7 @@ export default function EditStudent() {
 
     const handleSubmit = async () => {
         if (!name || !roll || !course || !selectedClass) {
-            Alert.alert("Error", "Please fill in all required fields");
+            showAlert("Error", "Please fill in all required fields");
             return;
         }
 
@@ -120,9 +120,9 @@ export default function EditStudent() {
             }
 
             if (institutionId) await fetchStudents(institutionId);
-            Alert.alert("Success", "Student updated successfully");
+            showAlert("Success", "Student updated successfully");
         } catch (error: any) {
-            Alert.alert("Error", error.message || "Failed to update student");
+            showAlert("Error", error.message || "Failed to update student");
         } finally {
             setSaving(false);
         }

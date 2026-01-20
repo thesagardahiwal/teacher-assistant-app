@@ -3,13 +3,13 @@ import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { academicYearService } from "@/services/academicYear.service";
 import { useAcademicYears } from "@/store/hooks/useAcademicYears";
 import { useTheme } from "@/store/hooks/useTheme";
+import { showAlert } from "@/utils/alert";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
-    Alert,
     ScrollView,
     Switch,
     Text,
@@ -42,7 +42,7 @@ export default function EditAcademicYear() {
             setLabel(doc.label);
             setIsCurrent(doc.isCurrent);
         } catch (error) {
-            Alert.alert("Error", "Failed to load academic year");
+            showAlert("Error", "Failed to load academic year");
             router.back();
         } finally {
             setLoading(false);
@@ -50,7 +50,7 @@ export default function EditAcademicYear() {
     }
 
     const handleDelete = async () => {
-        Alert.alert("Delete", "Are you sure you want to delete this academic year?", [
+        showAlert("Delete", "Are you sure you want to delete this academic year?", [
             { text: "Cancel", style: "cancel" },
             {
                 text: "Delete",
@@ -61,7 +61,7 @@ export default function EditAcademicYear() {
                         if (institutionId) await fetchAcademicYears(institutionId);
                         router.back();
                     } catch (error) {
-                        Alert.alert("Error", "Failed to delete");
+                        showAlert("Error", "Failed to delete");
                     }
                 }
             }
@@ -70,7 +70,7 @@ export default function EditAcademicYear() {
 
     const handleSubmit = async () => {
         if (!label) {
-            Alert.alert("Error", "Please fill in all required fields");
+            showAlert("Error", "Please fill in all required fields");
             return;
         }
 
@@ -82,9 +82,9 @@ export default function EditAcademicYear() {
             });
 
             if (institutionId) await fetchAcademicYears(institutionId);
-            Alert.alert("Success", "Academic Year updated successfully");
+            showAlert("Success", "Academic Year updated successfully");
         } catch (error: any) {
-            Alert.alert("Error", error.message || "Failed to update academic year");
+            showAlert("Error", error.message || "Failed to update academic year");
         } finally {
             setSaving(false);
         }

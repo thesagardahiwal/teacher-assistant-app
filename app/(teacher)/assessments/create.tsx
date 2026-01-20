@@ -2,7 +2,7 @@ import { AssessmentPayload, AssessmentType } from "@/types/assessment.type";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Calendar } from "react-native-calendars";
 import { useAcademicYears } from "../../../store/hooks/useAcademicYears";
 import { useAssessments } from "../../../store/hooks/useAssessments";
@@ -10,6 +10,7 @@ import { useAuth } from "../../../store/hooks/useAuth";
 import { useClasses } from "../../../store/hooks/useClasses";
 import { useSubjects } from "../../../store/hooks/useSubjects";
 import { useTheme } from "../../../store/hooks/useTheme";
+import { showAlert } from "../../../utils/alert";
 import { useInstitutionId } from "../../../utils/useInstitutionId";
 
 const ASSESSMENT_TYPES: AssessmentType[] = ["HOMEWORK", "QUIZ", "TEST", "ASSIGNMENT"];
@@ -65,22 +66,22 @@ export default function CreateAssessmentScreen() {
 
     const handleCreate = async () => {
         if (!form.title || !form.subject || !form.class || !form.maxMarks) {
-            Alert.alert("Error", "Please fill in all required fields");
+            showAlert("Error", "Please fill in all required fields");
             return;
         }
 
         if (form.dueDate && isNaN(new Date(form.dueDate).getTime())) {
-            Alert.alert("Error", "Invalid Due Date format");
+            showAlert("Error", "Invalid Due Date format");
             return;
         }
 
         if (!institutionId || !user?.$id) {
-            Alert.alert("Error", "Missing user information");
+            showAlert("Error", "Missing user information");
             return;
         }
 
         if (!form.academicYear) {
-            Alert.alert("Error", "No active academic year found");
+            showAlert("Error", "No active academic year found");
             return;
         }
 
@@ -99,10 +100,10 @@ export default function CreateAssessmentScreen() {
                 academicYear: form.academicYear,
                 isActive: true
             });
-            Alert.alert("Success", "Assessment created successfully");
+            showAlert("Success", "Assessment created successfully");
             router.back();
         } catch (error) {
-            Alert.alert("Error", (error as Error).message);
+            showAlert("Error", (error as Error).message);
         }
     };
 

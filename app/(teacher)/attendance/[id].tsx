@@ -4,10 +4,11 @@ import { attendanceRecordService } from "@/services/attendanceRecord.service";
 import { useAuth } from "@/store/hooks/useAuth";
 import { useTheme } from "@/store/hooks/useTheme";
 import { Attendance, AttendanceRecord } from "@/types";
+import { showAlert } from "@/utils/alert";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
 
 export default function AttendanceDetailScreen() {
     const { id } = useLocalSearchParams();
@@ -44,7 +45,7 @@ export default function AttendanceDetailScreen() {
             setRecords(sortedRecs);
             setOriginalRecords(sortedRecs);
         } catch (error) {
-            Alert.alert("Error", "Failed to load attendance details");
+            showAlert("Error", "Failed to load attendance details");
             router.back();
         } finally {
             setLoading(false);
@@ -77,7 +78,7 @@ export default function AttendanceDetailScreen() {
     const handleSave = async () => {
         if (!hasChanges) return;
 
-        Alert.alert(
+        showAlert(
             "Confirm Save",
             `Are you sure you want to update attendance for ${Object.keys(changes).length} student(s)?`,
             [
@@ -92,13 +93,13 @@ export default function AttendanceDetailScreen() {
                             );
                             await Promise.all(updates);
 
-                            Alert.alert("Success", "Attendance updated successfully");
+                            showAlert("Success", "Attendance updated successfully");
                             setChanges({});
 
                             // Reload to sync state
                             await loadData();
                         } catch (error) {
-                            Alert.alert("Error", "Failed to save changes");
+                            showAlert("Error", "Failed to save changes");
                             // Revert UI to original if needed, but reloading is safer
                             loadData();
                         } finally {

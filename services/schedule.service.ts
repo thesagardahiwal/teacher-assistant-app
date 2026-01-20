@@ -74,17 +74,18 @@ export const scheduleService = {
         const queries = [
             Query.equal("teacher", teacherId),
             Query.equal("isActive", true),
-        ];
-
-        if (dayOfWeek) {
-            queries.push(Query.equal("dayOfWeek", dayOfWeek), Query.select([
+            Query.select([
                 "*",
                 "class.*",
                 "teacher.*",
                 "subject.*",
                 "academicYear.*",
                 "institution.*"
-            ]));
+            ])
+        ];
+
+        if (dayOfWeek) {
+            queries.push(Query.equal("dayOfWeek", dayOfWeek));
         }
 
         return databaseService.list<ClassSchedule>(

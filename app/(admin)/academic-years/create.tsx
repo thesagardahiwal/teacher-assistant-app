@@ -4,12 +4,12 @@ import { academicYearService } from "@/services/academicYear.service";
 import { useAcademicYears } from "@/store/hooks/useAcademicYears";
 import { useAuth } from "@/store/hooks/useAuth";
 import { useTheme } from "@/store/hooks/useTheme";
+import { showAlert } from "@/utils/alert";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
     ActivityIndicator,
-    Alert,
     ScrollView,
     Switch,
     Text,
@@ -32,7 +32,7 @@ export default function CreateAcademicYear() {
 
     const handleSubmit = async () => {
         if (!label || !institutionId) {
-            Alert.alert("Error", "Please fill in all required fields");
+            showAlert("Error", "Please fill in all required fields");
             return;
         }
 
@@ -45,11 +45,11 @@ export default function CreateAcademicYear() {
             });
 
             await fetchAcademicYears(institutionId);
-            Alert.alert("Success", "Academic Year created successfully", [
+            showAlert("Success", "Academic Year created successfully", [
                 { text: "OK", onPress: () => router.back() }
             ]);
         } catch (error: any) {
-            Alert.alert("Error", error.message || "Failed to create academic year");
+            showAlert("Error", error.message || "Failed to create academic year");
         } finally {
             setLoading(false);
         }

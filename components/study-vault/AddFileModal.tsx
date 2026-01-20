@@ -3,10 +3,11 @@ import { metadataService } from "@/services/local/metadata.service";
 import { useAuth } from "@/store/hooks/useAuth";
 import { useTheme } from "@/store/hooks/useTheme";
 import { StudyFile } from "@/types/study-file.type";
+import { showAlert } from "@/utils/alert";
 import { Ionicons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
 import React, { useState } from "react";
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import uuid from 'react-native-uuid';
 
@@ -49,7 +50,7 @@ export const AddFileModal: React.FC<AddFileModalProps> = ({ visible, onClose, on
                 }
             }
         } catch (err) {
-            Alert.alert("Error", "Failed to pick file");
+            showAlert("Error", "Failed to pick file");
         }
     };
 
@@ -91,12 +92,12 @@ export const AddFileModal: React.FC<AddFileModalProps> = ({ visible, onClose, on
             // 3. Save metadata
             await metadataService.addFile(newFile);
 
-            Alert.alert("Success", "File saved to Vault!");
+            showAlert("Success", "File saved to Vault!");
             onSuccess();
             onClose();
         } catch (error) {
             console.error(error);
-            Alert.alert("Error", "Failed to save file");
+            showAlert("Error", "Failed to save file");
         } finally {
             setLoading(false);
             setSelectedFile(null);

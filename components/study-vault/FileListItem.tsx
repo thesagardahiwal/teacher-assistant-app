@@ -3,9 +3,10 @@ import { localFileService } from "@/services/local/localFile.service";
 import { metadataService } from "@/services/local/metadata.service";
 import { useTheme } from "@/store/hooks/useTheme";
 import { StudyFile } from "@/types/study-file.type";
+import { showAlert } from "@/utils/alert";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { Alert, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 
 interface FileListItemProps {
     file: StudyFile;
@@ -21,7 +22,7 @@ export const FileListItem: React.FC<FileListItemProps> = ({ file, onDelete, onRe
             const uri = localFileService.getAbsolutePath(file.localPath);
             await fileViewerService.openFile(uri, file.fileType);
         } catch (error) {
-            Alert.alert("Error", "Could not open file. It may have been deleted.");
+            showAlert("Error", "Could not open file. It may have been deleted.");
         }
     };
 
@@ -30,12 +31,12 @@ export const FileListItem: React.FC<FileListItemProps> = ({ file, onDelete, onRe
             const uri = localFileService.getAbsolutePath(file.localPath);
             await fileViewerService.shareFile(uri);
         } catch (error) {
-            Alert.alert("Error", "Could not share file.");
+            showAlert("Error", "Could not share file.");
         }
     };
 
     const handleDelete = () => {
-        Alert.alert(
+        showAlert(
             "Delete File",
             `Are you sure you want to delete "${file.fileName}"?`,
             [
@@ -49,7 +50,7 @@ export const FileListItem: React.FC<FileListItemProps> = ({ file, onDelete, onRe
                             await metadataService.deleteFile(file.id);
                             onDelete();
                         } catch (error) {
-                            Alert.alert("Error", "Failed to delete file");
+                            showAlert("Error", "Failed to delete file");
                         }
                     }
                 }

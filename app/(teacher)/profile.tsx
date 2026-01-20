@@ -1,8 +1,8 @@
+import { showAlert } from "@/utils/alert";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
     ActivityIndicator,
-    Alert,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
@@ -34,7 +34,7 @@ export default function ProfileScreen() {
     }, [user]);
 
     const handleLogout = async () => {
-        Alert.alert("Logout", "Are you sure you want to logout?", [
+        showAlert("Logout", "Are you sure you want to logout?", [
             { text: "Cancel", style: "cancel" },
             {
                 text: "Logout",
@@ -56,9 +56,9 @@ export default function ProfileScreen() {
                 designation
             });
             setIsEditing(false);
-            Alert.alert("Success", "Profile updated successfully");
+            showAlert("Success", "Profile updated successfully");
         } catch (error) {
-            Alert.alert("Error", "Failed to update profile");
+            showAlert("Error", "Failed to update profile");
         } finally {
             setLoading(false);
         }

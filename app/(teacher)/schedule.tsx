@@ -1,12 +1,13 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, FlatList, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, FlatList, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import AddScheduleModal from "../../components/Schedule/AddScheduleModal";
 import { scheduleService } from "../../services";
 import { useAuth } from "../../store/hooks/useAuth";
 import { useTheme } from "../../store/hooks/useTheme";
 import { ClassSchedule } from "../../types/schedule.type";
+import { showAlert } from "../../utils/alert";
 import { useInstitutionId } from "../../utils/useInstitutionId";
 
 export default function TeacherScheduleScreen() {
@@ -60,7 +61,7 @@ export default function TeacherScheduleScreen() {
     };
 
     const handleDelete = (schedule: ClassSchedule) => {
-        Alert.alert(
+        showAlert(
             "Delete Schedule",
             "Are you sure you want to delete this class schedule?",
             [
@@ -77,7 +78,7 @@ export default function TeacherScheduleScreen() {
                             fetchSchedules(true);
                         } catch (error: any) {
                             console.error("Delete schedule error:", error);
-                            Alert.alert("Error", `Failed to delete schedule: ${error.message || "Unknown error"}`);
+                            showAlert("Error", `Failed to delete schedule: ${error.message || "Unknown error"}`);
                         } finally {
                             setLoading(false);
                         }

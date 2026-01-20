@@ -1,7 +1,8 @@
+import { showAlert } from "@/utils/alert";
 import * as FileSystem from 'expo-file-system/legacy';
 import * as IntentLauncher from 'expo-intent-launcher';
 import * as Sharing from 'expo-sharing';
-import { Alert, Platform } from 'react-native';
+import { Platform } from 'react-native';
 
 export const fileViewerService = {
     /**
@@ -31,7 +32,7 @@ export const fileViewerService = {
             }
         } catch (error) {
             console.error('Error opening file:', error);
-            Alert.alert('Error', 'No app found to open this file.');
+            showAlert('Error', 'No app found to open this file.');
         }
     },
 
@@ -46,11 +47,11 @@ export const fileViewerService = {
                     dialogTitle: 'Share File'
                 });
             } else {
-                Alert.alert('Error', 'Sharing is not available on this device');
+                showAlert('Error', 'Sharing is not available on this device');
             }
         } catch (error) {
             console.error('Error sharing file:', error);
-            Alert.alert('Error', 'Failed to share file');
+            showAlert('Error', 'Failed to share file');
         }
     }
 };

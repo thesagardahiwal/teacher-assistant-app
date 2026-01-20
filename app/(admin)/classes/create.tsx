@@ -5,12 +5,12 @@ import { classService } from "@/services";
 import { useAcademicYears } from "@/store/hooks/useAcademicYears";
 import { useCourses } from "@/store/hooks/useCourses";
 import { useTheme } from "@/store/hooks/useTheme";
+import { showAlert } from "@/utils/alert";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -41,7 +41,7 @@ export default function CreateClass() {
 
   const handleSubmit = async () => {
     if (!semester || !name || !course || !academicYear || !institutionId) {
-      Alert.alert("Error", "Please fill in all required fields");
+      showAlert("Error", "Please fill in all required fields");
       return;
     }
 
@@ -55,11 +55,11 @@ export default function CreateClass() {
         name: name,
       });
 
-      Alert.alert("Success", "Class created successfully", [
+      showAlert("Success", "Class created successfully", [
         { text: "OK", onPress: () => router.back() }
       ]);
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to create class");
+      showAlert("Error", error.message || "Failed to create class");
     } finally {
       setLoading(false);
     }

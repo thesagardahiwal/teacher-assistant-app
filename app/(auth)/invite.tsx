@@ -3,9 +3,10 @@ import { account } from "@/services/appwrite/client";
 import { COLLECTIONS } from "@/services/appwrite/collections";
 import { databaseService } from "@/services/appwrite/database.service";
 import { invitationService } from "@/services/invitation.service";
+import { showAlert } from "@/utils/alert";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Keyboard, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
+import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
 import { ID, Query } from "react-native-appwrite";
 
 export default function InviteScreen() {
@@ -45,11 +46,11 @@ export default function InviteScreen() {
 
     const handleAccept = async () => {
         if (password !== confirmPassword) {
-            Alert.alert("Error", "Passwords do not match");
+            showAlert("Error", "Passwords do not match");
             return;
         }
         if (password.length < 8) {
-            Alert.alert("Error", "Password must be at least 8 characters");
+            showAlert("Error", "Password must be at least 8 characters");
             return;
         }
 
@@ -116,12 +117,12 @@ export default function InviteScreen() {
             // 6. Login
             await authService.login(inviteData.email, password);
 
-            Alert.alert("Success", "Account activated successfully!", [
+            showAlert("Success", "Account activated successfully!", [
                 { text: "OK", onPress: () => router.replace("/") }
             ]);
 
         } catch (e: any) {
-            Alert.alert("Error", e.message || "Failed to activate account");
+            showAlert("Error", e.message || "Failed to activate account");
             console.error(e);
         } finally {
             setSubmitting(false);

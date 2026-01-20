@@ -1,7 +1,7 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, FlatList, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, FlatList, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import AddScheduleModal from "../../../components/Schedule/AddScheduleModal";
 import StudentDetailsModal from "../../../components/Student/StudentDetailsModal";
 import { attendanceRecordService, attendanceService, scheduleService } from "../../../services";
@@ -11,6 +11,7 @@ import { useStudents } from "../../../store/hooks/useStudents";
 import { useTheme } from "../../../store/hooks/useTheme";
 import { Student } from "../../../types";
 import { ClassSchedule } from "../../../types/schedule.type";
+import { showAlert } from "../../../utils/alert";
 import { useInstitutionId } from "../../../utils/useInstitutionId";
 
 export default function TakeAttendanceScreen() {
@@ -58,7 +59,7 @@ export default function TakeAttendanceScreen() {
       setActiveSchedules(active);
     } catch (error) {
       console.error("Failed to fetch schedules", error);
-      Alert.alert("Error", "Failed to load class schedule");
+      showAlert("Error", "Failed to load class schedule");
     } finally {
       setLoadingSchedules(false);
     }
@@ -108,7 +109,7 @@ export default function TakeAttendanceScreen() {
   const handleSubmit = async () => {
     if (submitting) return;
     if (!selectedClassId || !institutionId || !user) {
-      Alert.alert("Error", "Missing information to submit attendance");
+      showAlert("Error", "Missing information to submit attendance");
       return;
     }
 
@@ -139,12 +140,12 @@ export default function TakeAttendanceScreen() {
 
       await Promise.all(promises);
 
-      Alert.alert("Success", "Attendance submitted successfully", [
+      showAlert("Success", "Attendance submitted successfully", [
         { text: "OK", onPress: () => router.back() }
       ]);
 
     } catch (error) {
-      Alert.alert("Error", "Failed to submit attendance");
+      showAlert("Error", "Failed to submit attendance");
       console.error(error);
     } finally {
       setSubmitting(false);

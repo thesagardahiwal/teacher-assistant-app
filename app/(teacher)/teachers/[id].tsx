@@ -160,6 +160,7 @@ export default function TeacherDetailScreen() {
                     {/* Unique combinations of Subject + Class from schedules */}
                     {Array.from(new Set(schedules.map(s => `${s.subject?.name}|${s.class?.name}`))).map((combo, idx) => {
                         const [subj, cls] = combo.split('|');
+                        console.log(cls)
                         return (
                             <View key={idx} className="flex-row p-4 border-b border-gray-100 dark:border-gray-800 last:border-0">
                                 <View className="flex-1"><Text className={`font-medium ${isDark ? "text-white" : "text-gray-800"}`}>{subj}</Text></View>

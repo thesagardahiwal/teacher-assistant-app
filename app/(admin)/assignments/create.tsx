@@ -7,12 +7,12 @@ import { useCourses } from "@/store/hooks/useCourses";
 import { useSubjects } from "@/store/hooks/useSubjects";
 import { useTeachers } from "@/store/hooks/useTeachers";
 import { useTheme } from "@/store/hooks/useTheme";
+import { showAlert } from "@/utils/alert";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
-    Alert,
     ScrollView,
     Text,
     TouchableOpacity,
@@ -48,7 +48,7 @@ export default function CreateAssignment() {
 
     const handleSubmit = async () => {
         if (!teacher || !selectedClass || !subject || !institutionId) {
-            Alert.alert("Error", "Please fill in all required fields (Teacher, Class, Subject)");
+            showAlert("Error", "Please fill in all required fields (Teacher, Class, Subject)");
             return;
         }
 
@@ -63,11 +63,11 @@ export default function CreateAssignment() {
 
             await fetchAssignments(institutionId);
 
-            Alert.alert("Success", "Assignment created successfully", [
+            showAlert("Success", "Assignment created successfully", [
                 { text: "OK", onPress: () => router.back() }
             ]);
         } catch (error: any) {
-            Alert.alert("Error", error.message || "Failed to create assignment");
+            showAlert("Error", error.message || "Failed to create assignment");
         } finally {
             setLoading(false);
         }

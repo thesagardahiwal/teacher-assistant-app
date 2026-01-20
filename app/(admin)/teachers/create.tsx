@@ -4,13 +4,13 @@ import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { teacherService } from "@/services";
 import { useTeachers } from "@/store/hooks/useTeachers";
 import { useTheme } from "@/store/hooks/useTheme";
+import { showAlert } from "@/utils/alert";
 import { getInviteLink } from "@/utils/linking";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -32,7 +32,7 @@ export default function CreateTeacher() {
 
   const handleSubmit = async () => {
     if (!name || !email || !institutionId) {
-      Alert.alert("Error", "Please fill in all required fields");
+      showAlert("Error", "Please fill in all required fields");
       return;
     }
 
@@ -51,7 +51,7 @@ export default function CreateTeacher() {
       setModalVisible(true);
 
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to create teacher");
+      showAlert("Error", error.message || "Failed to create teacher");
     } finally {
       setLoading(false);
     }

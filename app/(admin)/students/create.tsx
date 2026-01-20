@@ -7,13 +7,13 @@ import { useClasses } from "@/store/hooks/useClasses";
 import { useCourses } from "@/store/hooks/useCourses";
 import { useStudents } from "@/store/hooks/useStudents";
 import { useTheme } from "@/store/hooks/useTheme";
+import { showAlert } from "@/utils/alert";
 import { getInviteLink } from "@/utils/linking";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -49,7 +49,7 @@ export default function CreateStudent() {
 
   const handleSubmit = async () => {
     if (!name || !email || !roll || !course || !selectedClass || !institutionId) {
-      Alert.alert("Error", "Please fill in all required fields");
+      showAlert("Error", "Please fill in all required fields");
       return;
     }
 
@@ -76,7 +76,7 @@ export default function CreateStudent() {
       setModalVisible(true);
 
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to create student (invitation)");
+      showAlert("Error", error.message || "Failed to create student (invitation)");
     } finally {
       setLoading(false);
     }

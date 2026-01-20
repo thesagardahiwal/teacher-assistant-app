@@ -17,8 +17,8 @@ export const ResponsiveContainer = ({ children, className, style, ...props }: Re
             {...props}
         >
             <View
-                className="flex-1 w-full max-w-5xl"
-                style={Platform.OS === 'web' ? { maxWidth: 1080 } : undefined} // Enforce max-width on web explicitely if tailwind class issues arise, generally max-w-7xl is 80rem (1280px)
+                className="flex-1 w-full max-w-7xl"
+                style={Platform.OS === 'web' ? { maxWidth: 1280 } : undefined} // Enforce max-width on web explicitely if tailwind class issues arise, generally max-w-7xl is 80rem (1280px)
             >
                 {children}
             </View>

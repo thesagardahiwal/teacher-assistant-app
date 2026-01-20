@@ -1,13 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { assessmentResultService } from "../../../services/assessmentResult.service";
 import { studentService } from "../../../services/student.service";
 import { useAssessmentResults } from "../../../store/hooks/useAssessmentResults";
 import { useAuth } from "../../../store/hooks/useAuth";
 import { useTheme } from "../../../store/hooks/useTheme";
 import { Student } from "../../../types";
+import { showAlert } from "../../../utils/alert";
 import { useInstitutionId } from "../../../utils/useInstitutionId";
 
 export default function StudentDetailsScreen() {
@@ -35,7 +36,7 @@ export default function StudentDetailsScreen() {
             setStudent(studentData);
             getResultsByStudent(institutionId, id);
         } catch (error) {
-            Alert.alert("Error", "Failed to load student data");
+            showAlert("Error", "Failed to load student data");
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -47,7 +48,7 @@ export default function StudentDetailsScreen() {
     }, [id, institutionId]);
 
     const handleDeleteResult = async (resultId: string) => {
-        Alert.alert(
+        showAlert(
             "Delete Result",
             "Are you sure you want to delete this result?",
             [
@@ -61,7 +62,7 @@ export default function StudentDetailsScreen() {
                             // Refresh
                             if (institutionId && id) getResultsByStudent(institutionId, id, true);
                         } catch (error) {
-                            Alert.alert("Error", "Failed to delete result");
+                            showAlert("Error", "Failed to delete result");
                         }
                     }
                 }

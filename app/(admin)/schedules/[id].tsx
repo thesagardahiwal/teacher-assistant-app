@@ -7,12 +7,12 @@ import {
     scheduleService,
 } from "@/services";
 import { useTheme } from "@/store/hooks/useTheme";
+import { showAlert } from "@/utils/alert";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
-    Alert,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
@@ -129,7 +129,7 @@ export default function EditSchedule() {
 
             } catch (error) {
                 console.error("Failed to fetch schedule details", error);
-                Alert.alert("Error", "Failed to load schedule");
+                showAlert("Error", "Failed to load schedule");
                 router.back();
             } finally {
                 setLoading(false);
@@ -245,7 +245,7 @@ export default function EditSchedule() {
             !startTime ||
             !endTime
         ) {
-            Alert.alert("Error", "All fields required");
+            showAlert("Error", "All fields required");
             return;
         }
 
@@ -262,12 +262,12 @@ export default function EditSchedule() {
                 isActive,
             });
 
-            Alert.alert("Success", "Schedule updated", [
+            showAlert("Success", "Schedule updated", [
                 { text: "OK", onPress: () => router.back() },
             ]);
         } catch (err) {
             console.log(err);
-            Alert.alert("Error", "Failed to update schedule");
+            showAlert("Error", "Failed to update schedule");
         } finally {
             setSubmitting(false);
         }
@@ -275,7 +275,7 @@ export default function EditSchedule() {
 
     /* ---------- DELETE ---------- */
     const handleDelete = () => {
-        Alert.alert(
+        showAlert(
             "Delete Schedule",
             "Are you sure you want to delete this schedule?",
             [
@@ -289,7 +289,7 @@ export default function EditSchedule() {
                             await scheduleService.delete(scheduleId);
                             router.back();
                         } catch (error: any) {
-                            Alert.alert("Error", `Failed to delete: ${error.message || "Unknown error"}`);
+                            showAlert("Error", `Failed to delete: ${error.message || "Unknown error"}`);
                         } finally {
                             setSubmitting(false);
                         }

@@ -5,13 +5,13 @@ import { subjectService } from "@/services";
 import { useCourses } from "@/store/hooks/useCourses";
 import { useSubjects } from "@/store/hooks/useSubjects";
 import { useTheme } from "@/store/hooks/useTheme";
+import { showAlert } from "@/utils/alert";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
-    Alert,
     ScrollView,
     Text,
     TouchableOpacity,
@@ -55,7 +55,7 @@ export default function EditSubject() {
             setSemester(doc.semester.toString());
             setCourse(doc.course?.$id || "");
         } catch (error) {
-            Alert.alert("Error", "Failed to load subject");
+            showAlert("Error", "Failed to load subject");
             router.back();
         } finally {
             setLoading(false);
@@ -63,7 +63,7 @@ export default function EditSubject() {
     }
 
     const handleDelete = async () => {
-        Alert.alert("Delete", "Are you sure you want to delete this subject?", [
+        showAlert("Delete", "Are you sure you want to delete this subject?", [
             { text: "Cancel", style: "cancel" },
             {
                 text: "Delete",
@@ -74,7 +74,7 @@ export default function EditSubject() {
                         if (institutionId) await fetchSubjects(institutionId);
                         router.back();
                     } catch (error) {
-                        Alert.alert("Error", "Failed to delete");
+                        showAlert("Error", "Failed to delete");
                     }
                 }
             }
@@ -83,7 +83,7 @@ export default function EditSubject() {
 
     const handleSubmit = async () => {
         if (!name || !code || !course || !semester) {
-            Alert.alert("Error", "Please fill in all required fields");
+            showAlert("Error", "Please fill in all required fields");
             return;
         }
 
@@ -97,9 +97,9 @@ export default function EditSubject() {
             });
 
             if (institutionId) await fetchSubjects(institutionId);
-            Alert.alert("Success", "Subject updated successfully");
+            showAlert("Success", "Subject updated successfully");
         } catch (error: any) {
-            Alert.alert("Error", error.message || "Failed to update subject");
+            showAlert("Error", error.message || "Failed to update subject");
         } finally {
             setSaving(false);
         }

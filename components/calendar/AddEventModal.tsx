@@ -1,10 +1,11 @@
 import { localEventService } from "@/services/local/localEvent.service";
 import { useTheme } from "@/store/hooks/useTheme";
 import { LocalEvent } from "@/types/local-event.type";
+import { showAlert } from "@/utils/alert";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import React, { useState } from "react";
-import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 import uuid from 'react-native-uuid';
 
 interface AddEventModalProps {
@@ -49,7 +50,7 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({ visible, onClose, 
 
     const handleSave = async () => {
         if (!title.trim()) {
-            Alert.alert("Validation", "Please enter an event title");
+            showAlert("Validation", "Please enter an event title");
             return;
         }
 
@@ -71,12 +72,12 @@ export const AddEventModal: React.FC<AddEventModalProps> = ({ visible, onClose, 
             };
 
             await localEventService.addEvent(newEvent);
-            Alert.alert("Success", "Event added to calendar");
+            showAlert("Success", "Event added to calendar");
             onSuccess();
             onClose();
         } catch (error) {
             console.error(error);
-            Alert.alert("Error", "Failed to save event");
+            showAlert("Error", "Failed to save event");
         } finally {
             setLoading(false);
         }

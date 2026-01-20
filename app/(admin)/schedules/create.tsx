@@ -8,12 +8,12 @@ import {
 } from "@/services";
 import { useTeachers } from "@/store/hooks/useTeachers";
 import { useTheme } from "@/store/hooks/useTheme";
+import { showAlert } from "@/utils/alert";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
-    Alert,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
@@ -134,7 +134,7 @@ export default function CreateSchedule() {
             })
             .catch(err => {
                 console.error("Failed to fetch assignments", err);
-                Alert.alert("Error", "Failed to fetch class assignments");
+                showAlert("Error", "Failed to fetch class assignments");
             })
             .finally(() => setLoadingAssignments(false));
 
@@ -198,7 +198,7 @@ export default function CreateSchedule() {
             !academicYear ||
             !institutionId
         ) {
-            Alert.alert("Error", "Please fill all fields");
+            showAlert("Error", "Please fill all fields");
             return;
         }
 
@@ -216,11 +216,11 @@ export default function CreateSchedule() {
                 isActive: true,
             });
 
-            Alert.alert("Success", "Schedule created", [
+            showAlert("Success", "Schedule created", [
                 { text: "OK", onPress: () => router.back() },
             ]);
         } catch (e: any) {
-            Alert.alert("Error", e.message || "Failed to create schedule");
+            showAlert("Error", e.message || "Failed to create schedule");
         } finally {
             setLoading(false);
         }

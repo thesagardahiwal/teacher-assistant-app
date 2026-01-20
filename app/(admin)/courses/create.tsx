@@ -2,12 +2,12 @@ import { FormInput } from "@/components/admin/ui/FormInput";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { useCourses } from "@/store/hooks/useCourses";
 import { useTheme } from "@/store/hooks/useTheme";
+import { showAlert } from "@/utils/alert";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -28,7 +28,7 @@ export default function CreateCourse() {
 
   const handleSubmit = async () => {
     if (!name || !code || !durationYears || !institutionId) {
-      Alert.alert("Error", "Please fill in all required fields");
+      showAlert("Error", "Please fill in all required fields");
       return;
     }
 
@@ -42,11 +42,11 @@ export default function CreateCourse() {
         isActive: true, // Default to true
       });
 
-      Alert.alert("Success", "Course created successfully", [
+      showAlert("Success", "Course created successfully", [
         { text: "OK", onPress: () => router.back() }
       ]);
     } catch (error: any) {
-      Alert.alert("Error", error.message || "Failed to create course");
+      showAlert("Error", error.message || "Failed to create course");
     } finally {
       setLoading(false);
     }

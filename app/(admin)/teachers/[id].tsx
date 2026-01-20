@@ -9,13 +9,13 @@ import { useTheme } from "@/store/hooks/useTheme";
 import { Assessment } from "@/types/assessment.type";
 import { Attendance } from "@/types/attendance.type";
 import { ClassSchedule } from "@/types/schedule.type";
+import { showAlert } from "@/utils/alert";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
-    Alert,
     ScrollView,
     Text,
     TouchableOpacity,
@@ -41,7 +41,6 @@ export default function EditTeacher() {
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-
     useEffect(() => {
         if (id && institutionId) {
             loadData();
@@ -62,13 +61,12 @@ export default function EditTeacher() {
                 assessmentService.listByTeacher(institutionId!, id as string),
                 attendanceService.listByTeacher(institutionId!, id as string),
             ]);
-
             setSchedules(schRes.documents);
             setAssessments(assRes.documents);
             setAttendance(attRes.documents);
 
         } catch (error) {
-            Alert.alert("Error", "Failed to load teacher");
+            showAlert("Error", "Failed to load teacher");
             router.back();
         } finally {
             setLoading(false);
@@ -76,7 +74,7 @@ export default function EditTeacher() {
     }
 
     const handleDelete = async () => {
-        Alert.alert("Delete", "Are you sure you want to delete this teacher? This will NOT delete their Auth account, only their profile.", [
+        showAlert("Delete", "Are you sure you want to delete this teacher? This will NOT delete their Auth account, only their profile.", [
             { text: "Cancel", style: "cancel" },
             {
                 text: "Delete",
@@ -87,7 +85,7 @@ export default function EditTeacher() {
                         if (institutionId) await fetchTeachers(institutionId);
                         router.back();
                     } catch (error) {
-                        Alert.alert("Error", "Failed to delete");
+                        showAlert("Error", "Failed to delete");
                     }
                 }
             }
@@ -96,7 +94,7 @@ export default function EditTeacher() {
 
     const handleSubmit = async () => {
         if (!name || !email) {
-            Alert.alert("Error", "Please fill in all required fields");
+            showAlert("Error", "Please fill in all required fields");
             return;
         }
 
@@ -109,9 +107,9 @@ export default function EditTeacher() {
             });
 
             if (institutionId) await fetchTeachers(institutionId);
-            Alert.alert("Success", "Teacher updated successfully");
+            showAlert("Success", "Teacher updated successfully");
         } catch (error: any) {
-            Alert.alert("Error", error.message || "Failed to update teacher");
+            showAlert("Error", error.message || "Failed to update teacher");
         } finally {
             setSaving(false);
         }
