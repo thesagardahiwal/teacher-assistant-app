@@ -12,7 +12,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TeacherCalendar() {
     const { user } = useAuth();
@@ -68,7 +67,7 @@ export default function TeacherCalendar() {
     }
 
     return (
-        <SafeAreaView className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`} edges={['top']}>
+        <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
             <View className="px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex-row justify-between items-center">
                 <Text className={`text-xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>Calendar</Text>
                 <TouchableOpacity
@@ -95,6 +94,6 @@ export default function TeacherCalendar() {
                 onSuccess={loadData}
                 preSelectedDate={selectedDate}
             />
-        </SafeAreaView>
+        </View>
     );
 }
