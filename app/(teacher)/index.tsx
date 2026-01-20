@@ -198,7 +198,12 @@ export default function TeacherDashboard() {
                             bgColor="bg-teal-500"
                             onPress={() => router.push("/(teacher)/teachers")}
                         />
-                        <View className="flex-1" />
+                        <QuickAction
+                            icon="calendar-month"
+                            label="Calendar"
+                            bgColor="bg-cyan-500"
+                            onPress={() => router.push("/(teacher)/calendar")}
+                        />
                     </View>
                 </View>
 

@@ -1,4 +1,3 @@
-import ActionButton from "@/components/admin/ActionButtons";
 import StatCard from "@/components/admin/StatCard";
 import StatusRow from "@/components/admin/StatusRow";
 import { useClasses } from "@/store/hooks/useClasses";
@@ -6,6 +5,7 @@ import { useCourses } from "@/store/hooks/useCourses";
 import { useStudents } from "@/store/hooks/useStudents";
 import { useTeachers } from "@/store/hooks/useTeachers";
 import { institutionStorage } from "@/utils/institutionStorage";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
@@ -49,6 +49,32 @@ const AdminDashboard = () => {
     setRefreshing(false);
   }, [user]);
 
+  const QuickAction = ({
+    icon,
+    label,
+    onPress,
+    bgColor,
+  }: {
+    icon: keyof typeof Ionicons.glyphMap;
+    label: string;
+    onPress: () => void;
+    bgColor: string;
+    className?: string;
+  }) => (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.8}
+      className={`flex-1 p-4 rounded-2xl bg-card dark:bg-dark-card shadow-sm border border-border dark:border-dark-border min-h-[110px] justify-between`}
+    >
+      <View className={`w-10 h-10 rounded-full ${bgColor} items-center justify-center mb-2`}>
+        <Ionicons name={icon} size={20} color="white" />
+      </View>
+      <Text className="font-semibold text-sm text-textPrimary dark:text-dark-textPrimary">
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+
   return (
     <View className="flex-1 bg-background dark:bg-dark-background">
       <ScrollView
@@ -78,27 +104,79 @@ const AdminDashboard = () => {
         </View>
 
         {/* STATS GRID */}
-        <View className="flex-row flex-wrap justify-between mb-6">
+        <View className="flex-row flex-wrap justify-between mb-8">
           <StatCard onClick={() => router.navigate('/(admin)/courses')} title="Courses" value={`${courses?.length || 0}`} />
           <StatCard onClick={() => router.navigate('/(admin)/classes')} title="Classes" value={`${classes?.length || 0}`} />
           <StatCard onClick={() => router.navigate('/(admin)/teachers')} title="Teachers" value={`${teachers?.length || 0}`} />
           <StatCard onClick={() => router.navigate('/(admin)/students')} title="Students" value={`${students?.length || 0}`} />
         </View>
 
-        {/* QUICK ACTIONS */}
-        <Text className="text-lg font-semibold text-textPrimary dark:text-dark-textPrimary mb-3">
-          Quick Actions
+        {/* MANAGEMENT ACTIONS */}
+        <Text className="text-lg font-bold text-textPrimary dark:text-dark-textPrimary mb-4">
+          Management
         </Text>
 
-        <View className="bg-card dark:bg-dark-card rounded-2xl p-4 mb-6 border border-border dark:border-dark-border">
-          <ActionButton onClick={() => router.navigate('/(admin)/academic-years')} icon="calendar-outline" label="Academic Years" />
-          <ActionButton onClick={() => router.navigate('/(admin)/courses/create')} icon="book-outline" label="Add Course" />
-          <ActionButton onClick={() => router.navigate('/(admin)/subjects/create')} icon="library-outline" label="Add Subject" />
-          <ActionButton onClick={() => router.navigate('/(admin)/classes/create')} icon="school-outline" label="Create Class" />
-          <ActionButton onClick={() => router.navigate('/(admin)/teachers/create')} icon="person-add-outline" label="Add Teacher" />
-          <ActionButton onClick={() => router.navigate('/(admin)/students/create')} icon="person-outline" label="Add Student" />
-          <ActionButton onClick={() => router.navigate('/(admin)/assignments/create')} icon="link-outline" label="Assign Teacher" />
-          <ActionButton onClick={() => router.navigate('/(admin)/schedules')} icon="time-outline" label="Class Schedules" />
+        <View className="flex-row gap-3 mb-3">
+          <QuickAction
+            onPress={() => router.navigate('/(admin)/teachers/create')}
+            icon="person-add-outline"
+            label="Add Teacher"
+            bgColor="bg-blue-500"
+          />
+          <QuickAction
+            onPress={() => router.navigate('/(admin)/students/create')}
+            icon="school-outline"
+            label="Add Student"
+            bgColor="bg-indigo-500"
+          />
+        </View>
+        <View className="flex-row gap-3 mb-6">
+          <QuickAction
+            onPress={() => router.navigate('/(admin)/classes/create')}
+            icon="people-outline"
+            label="Create Class"
+            bgColor="bg-violet-500"
+          />
+          <QuickAction
+            onPress={() => router.navigate('/(admin)/assignments/create')}
+            icon="person-circle-outline"
+            label="Assign Teacher"
+            bgColor="bg-purple-500"
+          />
+        </View>
+
+        {/* ACADEMIC ACTIONS */}
+        <Text className="text-lg font-bold text-textPrimary dark:text-dark-textPrimary mb-4">
+          Academics
+        </Text>
+
+        <View className="flex-row gap-3 mb-3">
+          <QuickAction
+            onPress={() => router.navigate('/(admin)/courses/create')}
+            icon="book-outline"
+            label="Add Course"
+            bgColor="bg-amber-500"
+          />
+          <QuickAction
+            onPress={() => router.navigate('/(admin)/subjects/create')}
+            icon="library-outline"
+            label="Add Subject"
+            bgColor="bg-orange-500"
+          />
+        </View>
+        <View className="flex-row gap-3 mb-6">
+          <QuickAction
+            onPress={() => router.navigate('/(admin)/academic-years')}
+            icon="calendar-outline"
+            label="Academic Years"
+            bgColor="bg-emerald-500"
+          />
+          <QuickAction
+            onPress={() => router.navigate('/(admin)/schedules')}
+            icon="time-outline"
+            label="Schedules"
+            bgColor="bg-teal-500"
+          />
         </View>
 
         {/* SYSTEM STATUS */}
