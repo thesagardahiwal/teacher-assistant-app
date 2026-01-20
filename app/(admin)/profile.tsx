@@ -11,10 +11,12 @@ import {
   View,
 } from "react-native";
 import { useAuth } from "../../store/hooks/useAuth";
+import { useTheme } from "../../store/hooks/useTheme";
 
 const AdminProfile = () => {
   const router = useRouter();
   const { user, isLoading, logout, updateProfile } = useAuth();
+  const { isDark } = useTheme();
 
   const [isEditing, setIsEditing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -64,7 +66,7 @@ const AdminProfile = () => {
   if (isLoading || !user) {
     return (
       <View className="flex-1 justify-center items-center bg-background dark:bg-dark-background">
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color={isDark ? "#ffffff" : "#2563EB"} />
       </View>
     );
   }
@@ -74,7 +76,7 @@ const AdminProfile = () => {
       {/* Header */}
       <View className="px-6 py-6 flex-row items-center justify-between">
         <TouchableOpacity onPress={() => router.back()} className="p-2 -ml-2">
-          <Ionicons name="arrow-back" size={24} className="text-textPrimary dark:text-dark-textPrimary" />
+          <Ionicons name="arrow-back" size={24} color={isDark ? "#FFFFFF" : "#000000"} />
         </TouchableOpacity>
         <Text className="text-xl font-bold text-textPrimary dark:text-dark-textPrimary">My Profile</Text>
         <TouchableOpacity onPress={handleLogout} className="p-2 -mr-2">
@@ -100,14 +102,14 @@ const AdminProfile = () => {
         <View className="flex-row justify-end mb-4">
           {!isEditing && (
             <TouchableOpacity onPress={() => setIsEditing(true)} className="flex-row items-center bg-card dark:bg-dark-card border border-border dark:border-dark-border px-4 py-2 rounded-full">
-              <Ionicons name="create-outline" size={18} className="text-textPrimary dark:text-dark-textPrimary mr-2" />
+              <Ionicons name="create-outline" size={18} color={isDark ? "#FFFFFF" : "#000000"} style={{ marginRight: 8 }} />
               <Text className="text-textPrimary dark:text-dark-textPrimary font-medium">Edit Profile</Text>
             </TouchableOpacity>
           )}
         </View>
 
         {/* Form Fields */}
-        <View className="space-y-4">
+        <View className="gap-4">
           <View>
             <Text className="text-sm font-medium text-textSecondary dark:text-dark-textSecondary mb-1">Full Name</Text>
             <TextInput
@@ -125,7 +127,7 @@ const AdminProfile = () => {
               onChangeText={setDepartment}
               editable={isEditing}
               placeholder="e.g. Science"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={isDark ? "#9CA3AF" : "#94A3B8"}
               className={`bg-card dark:bg-dark-card text-textPrimary dark:text-dark-textPrimary border ${isEditing ? "border-primary dark:border-dark-primary" : "border-border dark:border-dark-border"} rounded-xl px-4 py-3`}
             />
           </View>
@@ -137,7 +139,7 @@ const AdminProfile = () => {
               onChangeText={setDesignation}
               editable={isEditing}
               placeholder="e.g. Principal"
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={isDark ? "#9CA3AF" : "#94A3B8"}
               className={`bg-card dark:bg-dark-card text-textPrimary dark:text-dark-textPrimary border ${isEditing ? "border-primary dark:border-dark-primary" : "border-border dark:border-dark-border"} rounded-xl px-4 py-3`}
             />
           </View>
@@ -147,7 +149,7 @@ const AdminProfile = () => {
             <Text className="text-sm font-medium text-textSecondary dark:text-dark-textSecondary mb-1">Institution</Text>
             <View className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 flex-row items-center justify-between">
               <Text className="text-gray-500 dark:text-gray-400">{typeof user?.institution === "string" ? user?.institution : user.institution?.name || "N/A"}</Text>
-              <Ionicons name="lock-closed-outline" size={16} color="#9CA3AF" />
+              <Ionicons name="lock-closed-outline" size={16} color={isDark ? "#9CA3AF" : "#9CA3AF"} />
             </View>
             <Text className="text-xs text-muted dark:text-dark-muted mt-1 ml-1">Contact support to change institution details.</Text>
           </View>
@@ -155,7 +157,7 @@ const AdminProfile = () => {
 
         {/* Action Buttons */}
         {isEditing && (
-          <View className="flex-row mt-8 space-x-4">
+          <View className="flex-row mt-8 gap-4">
             <TouchableOpacity onPress={() => { setIsEditing(false); setName(user.name); setDepartment(user.department || ""); setDesignation(user.designation || ""); }} className="flex-1 bg-gray-200 dark:bg-gray-700 py-3 rounded-xl items-center">
               <Text className="text-gray-700 dark:text-gray-200 font-bold">Cancel</Text>
             </TouchableOpacity>

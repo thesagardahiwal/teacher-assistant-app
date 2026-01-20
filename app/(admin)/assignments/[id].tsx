@@ -123,7 +123,7 @@ export default function EditAssignment() {
 
     const classOptions = classes
         .filter(c => !course || c.course?.$id === course)
-        .map(c => ({ label: `Year ${c.year} - Division ${c.division} (${c.course?.code})`, value: c.$id }));
+        .map(c => ({ label: `Year ${c.academicYear.label} - Division ${c.name} (${c.course?.code})`, value: c.$id }));
 
     const subjectOptions = subjects
         .filter(s => !course || s.course?.$id === course)

@@ -8,4 +8,5 @@ export * from "./role.type";
 export * from "./student.type";
 export * from "./subject.type";
 export * from "./teacher-assignment.type";
+export * from "./user.type";
 

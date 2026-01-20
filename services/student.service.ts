@@ -2,10 +2,11 @@ import { Query } from "react-native-appwrite";
 import { Student, StudentPayload } from "../types";
 import { COLLECTIONS } from "./appwrite/collections";
 import { databaseService } from "./appwrite/database.service";
+import { invitationService } from "./invitation.service";
 
 export const studentService = {
-  list(institutionId: string) {
-    return databaseService.list<Student>(
+  async list(institutionId: string) {
+    return await databaseService.list<Student>(
       COLLECTIONS.STUDENTS,
       [
         Query.equal("institution", institutionId),
@@ -14,9 +15,9 @@ export const studentService = {
     );
   },
 
-  listByClasses(institutionId: string, classIds: string[]) {
-    if (classIds.length === 0) return Promise.resolve({ documents: [], total: 0 });
-    return databaseService.list<Student>(
+  async listByClasses(institutionId: string, classIds: string[]) {
+    if (classIds.length === 0) return { documents: [], total: 0 };
+    return await databaseService.list<Student>(
       COLLECTIONS.STUDENTS,
       [
         Query.equal("institution", institutionId),
@@ -26,8 +27,8 @@ export const studentService = {
     );
   },
 
-  get(studentId: string) {
-    return databaseService.get<Student>(
+  async get(studentId: string) {
+    return await databaseService.get<Student>(
       COLLECTIONS.STUDENTS,
       studentId,
       [
@@ -41,23 +42,42 @@ export const studentService = {
     );
   },
 
-  create(data: Partial<StudentPayload>) {
-    return databaseService.create<Student>(
+  async create(data: Omit<StudentPayload, 'userId' | 'isActive' | 'currentYear'> & { isActive?: boolean; currentYear?: number }) {
+    // 1. Create Invitation
+    const invitation = await invitationService.createInvite({
+      email: data.email,
+      institution: data.institution,
+      role: "STUDENT",
+      course: data.course,
+      class: data.class,
+      createdBy: "ADMIN",
+    });
+
+    // 2. Create Student Document with temporary userId "invite:<token>"
+    // This allows us to link it later when user registers
+    const student = await databaseService.create<Student>(
       COLLECTIONS.STUDENTS,
-      data
+      {
+        ...data,
+        userId: `invite:${invitation.token}`,
+        isActive: data.isActive ?? false, // Inactive until accepted
+        currentYear: data.currentYear ?? 1,
+      },
     );
+
+    return { student, invitation };
   },
 
-  update(studentId: string, data: Partial<StudentPayload>) {
-    return databaseService.update<Student>(
+  async update(studentId: string, data: Partial<StudentPayload>) {
+    return await databaseService.update<Student>(
       COLLECTIONS.STUDENTS,
       studentId,
       data as any
     );
   },
 
-  delete(studentId: string) {
-    return databaseService.delete(
+  async delete(studentId: string) {
+    return await databaseService.delete(
       COLLECTIONS.STUDENTS,
       studentId
     );

@@ -40,4 +40,31 @@ describe("Schedule Service", () => {
 
         expect(res.documents.length).toBe(1);
     });
+    it("updates a schedule and sanitizes payload", async () => {
+        const payloadWithObjects = {
+            class: { $id: "c1", name: "Class 1" },
+            subject: [{ $id: "s1", name: "Subject 1" }], // Array case
+            teacher: "t1", // String case
+        };
+
+        (databases.updateDocument as jest.Mock).mockResolvedValue({
+            $id: "schedule1",
+            class: "c1",
+            subject: "s1",
+            teacher: "t1",
+        });
+
+        await scheduleService.update("schedule1", payloadWithObjects as any);
+
+        expect(databases.updateDocument).toHaveBeenCalledWith(
+            expect.anything(), // databaseId
+            expect.anything(), // collectionId
+            "schedule1",
+            expect.objectContaining({
+                class: "c1",
+                subject: "s1",
+                teacher: "t1",
+            })
+        );
+    });
 });

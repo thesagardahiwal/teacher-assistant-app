@@ -91,28 +91,26 @@ describe("Student Service", () => {
         const payload = {
             name: "John Doe",
             rollNumber: "123",
+            email: "john@example.com",
             course: "course1",
-            userId: "u1",
             class: "c1",
-            currentYear: 1,
-            isActive: true,
-            institution: "inst1"
+            institution: "inst1",
+            phone: '123'
         };
-        (databases.createDocument as jest.Mock).mockResolvedValue({
-            ...payload,
-            $id: "new_id",
-        });
+
+        const mockInvitation = { token: "abc", $id: "inv1" };
+        const mockStudent = { ...payload, $id: "new_id", userId: "invite:abc" };
+
+        jest.spyOn(require("@/services/invitation.service").invitationService, "createInvite")
+            .mockResolvedValue(mockInvitation);
+
+        (databases.createDocument as jest.Mock).mockResolvedValue(mockStudent);
 
         const res = await studentService.create(payload as any);
 
-        expect(databases.createDocument).toHaveBeenCalledWith(
-            expect.anything(),
-            COLLECTIONS.STUDENTS,
-            expect.anything(),
-            payload,
-            undefined
-        );
-        expect(res.$id).toBe("new_id");
+        expect(databases.createDocument).toHaveBeenCalled();
+        expect(res.student.$id).toBe("new_id");
+        expect(res.invitation.token).toBe("abc");
     });
 
     it("updates a student", async () => {

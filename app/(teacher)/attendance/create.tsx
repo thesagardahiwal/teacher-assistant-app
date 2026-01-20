@@ -3,12 +3,13 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, FlatList, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import StudentDetailsModal from "../../../components/Student/StudentDetailsModal";
-import { attendanceRecordService, attendanceService } from "../../../services";
+import { attendanceRecordService, attendanceService, scheduleService } from "../../../services";
 import { useAssignments } from "../../../store/hooks/useAssignments";
 import { useAuth } from "../../../store/hooks/useAuth";
 import { useStudents } from "../../../store/hooks/useStudents";
 import { useTheme } from "../../../store/hooks/useTheme";
 import { Student } from "../../../types";
+import { ClassSchedule } from "../../../types/schedule.type";
 import { useInstitutionId } from "../../../utils/useInstitutionId";
 
 export default function TakeAttendanceScreen() {
@@ -26,17 +27,53 @@ export default function TakeAttendanceScreen() {
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
   const [studentStatus, setStudentStatus] = useState<Record<string, boolean>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [activeSchedules, setActiveSchedules] = useState<ClassSchedule[]>([]);
+  const [loadingSchedules, setLoadingSchedules] = useState(true);
 
   // Modal State
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
-    if (institutionId) {
-      if (assignments.length === 0) fetchAssignments(institutionId);
+    const fetchActiveSchedules = async () => {
+      if (!user?.$id) return;
+      setLoadingSchedules(true);
+      try {
+        // Get today's day (e.g., "MON")
+        const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+        const today = days[new Date().getDay()];
+
+        // Get current time HH:mm
+        const now = new Date();
+        const currentTime = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+
+        const res = await scheduleService.listByTeacher(user.$id, today);
+
+        // Filter for active classes: startTime <= currentTime <= endTime
+        const active = res.documents.filter(schedule => {
+          return schedule.startTime <= currentTime && currentTime <= schedule.endTime;
+        });
+        setActiveSchedules(active);
+      } catch (error) {
+        console.error("Failed to fetch schedules", error);
+        Alert.alert("Error", "Failed to load class schedule");
+      } finally {
+        setLoadingSchedules(false);
+      }
+    };
+
+    fetchActiveSchedules();
+  }, [user]);
+
+  useEffect(() => {
+    if (institutionId && user?.$id) {
+      if (assignments.length === 0) fetchAssignments(institutionId, user.$id);
+      // NOTE: fetchStudents handles class filtering internally if we wanted to restrict student list strictly here too, 
+      // but filteredStudents in this component depends on selectedClassId which comes from assignments.
+      // So restricting assignments is enough to restrict class selection.
       if (allStudents.length === 0) fetchStudents(institutionId);
     }
-  }, [institutionId]);
+  }, [institutionId, user?.$id]);
 
   // Derived Data
   const filteredStudents = useMemo(() => {
@@ -172,28 +209,43 @@ export default function TakeAttendanceScreen() {
       <View className="flex-1 px-4 py-4 mb-20">
 
         {/* Class Selector */}
-        <Text className={`text-sm font-bold mb-2 ml-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>SELECT CLASS</Text>
+        <Text className={`text-sm font-bold mb-2 ml-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>SELECT ACTIVE CLASS</Text>
         <View className="h-24 mb-6">
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {assignments.map((assignment) => (
-              <TouchableOpacity
-                key={assignment.$id}
-                onPress={() => {
-                  setSelectedClassId(assignment.class.$id);
-                  setSelectedSubjectId(assignment.subject.$id);
-                }}
-                className={`mr-3 p-4 rounded-xl border w-40 justify-center h-20 ${selectedClassId === assignment.class.$id
-                  ? (isDark ? "bg-blue-900 border-blue-500" : "bg-blue-600 border-blue-600")
-                  : (isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200")}`}
-              >
-                <Text className={`font-bold text-lg mb-1 ${selectedClassId === assignment.class.$id ? "text-white" : (isDark ? "text-white" : "text-gray-900")}`}>
-                  {assignment.class.name ? `${assignment.class.name}` : "N/A"}
-                </Text>
-                <Text className={`${selectedClassId === assignment.class.$id ? "text-blue-200" : (isDark ? "text-gray-400" : "text-gray-500")}`} numberOfLines={1}>
-                  {assignment.subject.name}
-                </Text>
-              </TouchableOpacity>
-            ))}
+            {loadingSchedules ? (
+              <ActivityIndicator size="small" color="#2563EB" className="ml-4" />
+            ) : activeSchedules.length > 0 ? (
+              activeSchedules.map((schedule) => (
+                <TouchableOpacity
+                  key={schedule.$id}
+                  onPress={() => {
+                    setSelectedClassId(schedule.class.$id);
+                    setSelectedSubjectId(schedule.subject.$id);
+                  }}
+                  className={`mr-3 p-4 rounded-xl border w-40 justify-center h-20 ${selectedClassId === schedule.class.$id
+                    ? (isDark ? "bg-blue-900 border-blue-500" : "bg-blue-600 border-blue-600")
+                    : (isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200")}`}
+                >
+                  <Text className={`font-bold text-lg mb-1 ${selectedClassId === schedule.class.$id ? "text-white" : (isDark ? "text-white" : "text-gray-900")}`}>
+                    {schedule.class.name ? `${schedule.class.name}` : "N/A"}
+                  </Text>
+                  <Text className={`${selectedClassId === schedule.class.$id ? "text-blue-200" : (isDark ? "text-gray-400" : "text-gray-500")}`} numberOfLines={1}>
+                    {schedule.subject.name}
+                  </Text>
+                  <View className="flex-row items-center mt-1">
+                    <Ionicons name="time-outline" size={10} color={selectedClassId === schedule.class.$id ? "white" : (isDark ? "#9CA3AF" : "#6B7280")} />
+                    <Text className={`text-[10px] ml-1 ${selectedClassId === schedule.class.$id ? "text-blue-100" : (isDark ? "text-gray-400" : "text-gray-500")}`}>
+                      {schedule.startTime} - {schedule.endTime}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))
+            ) : (
+              <View className="flex-row items-center ml-2">
+                <MaterialCommunityIcons name="clock-alert-outline" size={24} color={isDark ? "#9CA3AF" : "#6B7280"} />
+                <Text className={`ml-2 ${isDark ? "text-gray-400" : "text-gray-500"}`}>No active classes found at {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+              </View>
+            )}
           </ScrollView>
         </View>
 
@@ -220,13 +272,16 @@ export default function TakeAttendanceScreen() {
               initialNumToRender={20}
               maxToRenderPerBatch={20}
               windowSize={10}
+              ListEmptyComponent={
+                <Text className={`text-center mt-10 ${isDark ? "text-gray-500" : "text-gray-400"}`}>No students found in this class</Text>
+              }
             />
           </>
         ) : (
           <View className="items-center justify-center py-20">
             <MaterialCommunityIcons name="gesture-tap" size={48} color={isDark ? "#4B5563" : "#D1D5DB"} />
             <Text className={`mt-4 text-center ${isDark ? "text-gray-500" : "text-gray-400"}`}>
-              Select a class above to start taking attendance
+              {activeSchedules.length > 0 ? "Select a class above to start taking attendance" : "No active classes to take attendance for"}
             </Text>
           </View>
         )}

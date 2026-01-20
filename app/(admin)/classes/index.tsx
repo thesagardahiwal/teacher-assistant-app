@@ -1,11 +1,12 @@
 import { PageHeader } from "@/components/admin/ui/PageHeader";
+import { FilterBar } from "@/components/ui/FilterBar";
 import { useAuth } from "@/store/hooks/useAuth";
 import { useClasses } from "@/store/hooks/useClasses";
 import { useTheme } from "@/store/hooks/useTheme";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from "react-native";
 
 export default function ClassesIndex() {
@@ -13,11 +14,19 @@ export default function ClassesIndex() {
   const { isDark } = useTheme();
   const institutionId = useInstitutionId();
   const { data, loading, fetchClasses } = useClasses();
+  const { user } = useAuth();
+  const isAdmin = user?.role === "ADMIN";
+
+  const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortConfig, setSortConfig] = useState<{ key: string; order: "asc" | "desc" }>({
+    key: "year",
+    order: "asc",
+  });
+
   useEffect(() => {
     if (institutionId) fetchClasses(institutionId);
   }, [institutionId]);
-
-  const [refreshing, setRefreshing] = React.useState(false);
 
   const onRefresh = React.useCallback(async () => {
     if (institutionId) {
@@ -26,6 +35,54 @@ export default function ClassesIndex() {
       setRefreshing(false);
     }
   }, [institutionId]);
+
+  const filteredData = useMemo(() => {
+    let result = [...data];
+
+    // Search
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (c) =>
+          c.academicYear?.label?.toLowerCase().includes(q) ||
+          c.course?.name?.toLowerCase().includes(q) ||
+          String(c.semester || "").includes(q)
+      );
+    }
+
+    // Sort
+    result.sort((a: any, b: any) => {
+      let valA = "";
+      let valB = "";
+
+      switch (sortConfig.key) {
+        case "year":
+          valA = a.academicYear?.label || "";
+          valB = b.academicYear?.label || "";
+          break;
+        case "course":
+          valA = a.course?.name || "";
+          valB = b.course?.name || "";
+          break;
+        case "semester":
+          valA = String(a.semester || "");
+          valB = String(b.semester || "");
+          break;
+        default:
+          valA = a[sortConfig.key];
+          valB = b[sortConfig.key];
+      }
+
+      if (typeof valA === "string") valA = valA.toLowerCase();
+      if (typeof valB === "string") valB = valB.toLowerCase();
+
+      if (valA < valB) return sortConfig.order === "asc" ? -1 : 1;
+      if (valA > valB) return sortConfig.order === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return result;
+  }, [data, searchQuery, sortConfig]);
 
   const renderItem = ({ item }: { item: any }) => (
     <TouchableOpacity
@@ -49,9 +106,6 @@ export default function ClassesIndex() {
     </TouchableOpacity>
   );
 
-  const { user } = useAuth();
-  const isAdmin = user?.role === "ADMIN";
-
   return (
     <View className={`flex-1 px-6 pt-6 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
       <PageHeader
@@ -68,18 +122,29 @@ export default function ClassesIndex() {
         }
       />
 
+      <FilterBar
+        onSearch={setSearchQuery}
+        onSortChange={(key, order) => setSortConfig({ key, order })}
+        sortOptions={[
+          { label: "Academic Year", value: "year" },
+          { label: "Course", value: "course" },
+          { label: "Semester", value: "semester" },
+        ]}
+      />
+
       {loading && !refreshing ? (
         <ActivityIndicator size="large" color="#2563EB" />
       ) : (
         <FlatList
-          data={data}
+          data={filteredData}
           renderItem={renderItem}
           keyExtractor={(item) => item.$id}
           refreshing={refreshing}
           onRefresh={onRefresh}
+          showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <Text className={`text-center mt-10 ${isDark ? "text-gray-500" : "text-gray-400"}`}>
-              No classes found.
+              {searchQuery ? "No matching classes found." : "No classes found."}
             </Text>
           }
         />

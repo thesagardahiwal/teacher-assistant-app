@@ -1,4 +1,5 @@
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { NextClassCard } from "@/components/teacher/NextClassCard";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
@@ -8,7 +9,7 @@ import { useAttendance } from "../../store/hooks/useAttendance";
 import { useAuth } from "../../store/hooks/useAuth";
 import { useStudents } from "../../store/hooks/useStudents";
 import { useTheme } from "../../store/hooks/useTheme";
-import { ClassSchedule } from "../../types/schedule.type";
+import { ClassScheduleWithStatus } from "../../types/schedule.type";
 import { useInstitutionId } from "../../utils/useInstitutionId";
 
 export default function TeacherDashboard() {
@@ -22,7 +23,7 @@ export default function TeacherDashboard() {
     const { data: students, fetchStudents } = useStudents();
 
     const [refreshing, setRefreshing] = useState(false);
-    const [nextClass, setNextClass] = useState<ClassSchedule | null>(null);
+    const [nextClass, setNextClass] = useState<ClassScheduleWithStatus | null>(null);
 
     const loadData = async () => {
         if (institutionId) {
@@ -33,29 +34,25 @@ export default function TeacherDashboard() {
             ]);
 
             if (user?.$id) {
-                // Fetch next class
                 const now = new Date();
                 const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
                 const currentDay = days[now.getDay()];
-                const currentTime = now.toTimeString().slice(0, 5); // HH:MM
+                const currentTime = now.toTimeString().slice(0, 5);
 
                 try {
-                    // 1. Try Next Class (Future)
                     let res = await scheduleService.getNextClassForTeacher(user.$id, currentDay, currentTime);
-
                     if (res && res.documents.length > 0) {
-                        setNextClass({ ...res.documents[0], status: 'Upcoming' } as any);
+                        setNextClass({ ...res.documents[0], status: 'Upcoming' });
                     } else {
-                        // 2. Fallback to Previous/Current Class
                         res = await scheduleService.getPreviousClassForTeacher(user.$id, currentDay, currentTime);
                         if (res && res.documents.length > 0) {
-                            setNextClass({ ...res.documents[0], status: 'Previous' } as any);
+                            setNextClass({ ...res.documents[0], status: 'Previous' });
                         } else {
                             setNextClass(null);
                         }
                     }
                 } catch (error) {
-                    console.error("Error fetching next/prev class:", error);
+                    console.error("Error fetching class:", error);
                 }
             }
         }
@@ -91,24 +88,16 @@ export default function TeacherDashboard() {
         <TouchableOpacity
             onPress={onPress}
             activeOpacity={0.8}
-            className={`flex-1 p-4 rounded-2xl ${isDark ? "bg-gray-800" : "bg-white"
-                } shadow-sm`}
+            className={`flex-1 p-4 rounded-2xl ${isDark ? "bg-gray-800" : "bg-white"} shadow-sm`}
         >
-            <View
-                className={`w-12 h-12 rounded-full ${bgColor} items-center justify-center mb-3`}
-            >
+            <View className={`w-12 h-12 rounded-full ${bgColor} items-center justify-center mb-3`}>
                 <MaterialCommunityIcons name={icon} size={22} color="white" />
             </View>
-
-            <Text
-                className={`font-semibold text-sm ${isDark ? "text-gray-200" : "text-gray-700"
-                    }`}
-            >
+            <Text className={`font-semibold text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
                 {label}
             </Text>
         </TouchableOpacity>
     );
-
 
     return (
         <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
@@ -116,7 +105,6 @@ export default function TeacherDashboard() {
                 contentContainerStyle={{ paddingBottom: 100 }}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
             >
-
                 {/* Header */}
                 <View className="flex-row justify-between items-center px-5 py-4">
                     <View>
@@ -147,57 +135,23 @@ export default function TeacherDashboard() {
 
                 {/* Next Class Card */}
                 <View className="px-5 mb-8">
-                    <Text className={`text-lg font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>Next Class</Text>
-                    {nextClass ? (
-                        <View className={`p-5 rounded-2xl ${isDark ? "bg-blue-900" : "bg-blue-600"} shadow-lg relative overflow-hidden`}>
-                            {/* Background decorations */}
-                            <View className="absolute -right-10 -top-10 w-32 h-32 rounded-full bg-white/10" />
-                            <View className="absolute -left-10 -bottom-10 w-24 h-24 rounded-full bg-white/10" />
-
-                            <View className="flex-row justify-between items-start mb-4">
-                                <View>
-                                    <Text className="text-blue-100 font-medium mb-1">
-                                        {(nextClass as any).status === 'Previous' ? "Previous / Current Class" : "Upcoming Class"}
-                                    </Text>
-                                    <Text className="text-white text-2xl font-bold">{nextClass.subject?.name || "Subject"}</Text>
-                                    <Text className="text-blue-100">{nextClass.class?.name ? `Class ${nextClass.class.name}` : "Class N/A"}</Text>
-                                </View>
-                                <View className="bg-white/20 p-2 rounded-lg">
-                                    <Ionicons name="notifications" size={20} color="white" />
-                                </View>
-                            </View>
-
-                            <View className="flex-row items-center bg-white/20 self-start px-3 py-1 rounded-full">
-                                <Ionicons name="time-outline" size={16} color="white" />
-                                <Text className="text-white ml-2 font-medium">{nextClass.startTime} - {nextClass.endTime}</Text>
-                            </View>
-                        </View>
-                    ) : (
-                        <View className={`p-6 rounded-2xl ${isDark ? "bg-gray-800" : "bg-gray-200"} items-center`}>
-                            <Text className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>No classes scheduled</Text>
-                        </View>
-                    )}
+                    <Text className={`text-lg font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>Today's Next Class</Text>
+                    <NextClassCard nextClass={nextClass} isDark={isDark} />
                 </View>
 
                 {/* Quick Actions */}
-                {/* Quick Actions */}
                 <View className="px-5 mb-8">
-                    <Text
-                        className={`text-lg font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"
-                            }`}
-                    >
+                    <Text className={`text-lg font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>
                         Quick Actions
                     </Text>
 
-                    {/* Row 1 */}
                     <View className="flex-row gap-4 mb-4">
                         <QuickAction
                             icon="check-circle-outline"
-                            label="Take Attendance"
+                            label="Attendance"
                             bgColor="bg-green-500"
-                            onPress={() => router.push("/(teacher)/attendance/create")}
+                            onPress={() => router.push("/(teacher)/attendance")}
                         />
-
                         <QuickAction
                             icon="calendar-clock"
                             label="My Schedule"
@@ -206,24 +160,31 @@ export default function TeacherDashboard() {
                         />
                     </View>
 
-                    {/* Row 2 */}
-                    <View className="flex-row gap-4">
+                    <View className="flex-row gap-4 mb-4">
+                        <QuickAction
+                            icon="clipboard-text-outline"
+                            label="Assessments"
+                            bgColor="bg-red-500"
+                            onPress={() => router.push("/(teacher)/assessments")}
+                        />
                         <QuickAction
                             icon="format-list-bulleted"
                             label="My Classes"
                             bgColor="bg-indigo-500"
                             onPress={() => router.push("/(teacher)/classes")}
                         />
+                    </View>
 
+                    <View className="flex-row gap-4">
                         <QuickAction
                             icon="account-search"
                             label="Find Student"
                             bgColor="bg-orange-500"
                             onPress={() => router.push("/(teacher)/students")}
                         />
+                        <View className="flex-1" />
                     </View>
                 </View>
-
 
                 {/* Recent Activity */}
                 <View className="px-5">

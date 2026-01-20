@@ -1,7 +1,8 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, FlatList, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import AddScheduleModal from "../../components/Schedule/AddScheduleModal";
 import { scheduleService } from "../../services";
 import { useAuth } from "../../store/hooks/useAuth";
 import { useTheme } from "../../store/hooks/useTheme";
@@ -16,7 +17,9 @@ export default function TeacherScheduleScreen() {
 
     const [schedules, setSchedules] = useState<ClassSchedule[]>([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const [selectedDay, setSelectedDay] = useState<string>("MON");
+    const [selectedSchedule, setSelectedSchedule] = useState<ClassSchedule | null>(null);
 
     const days = [
         { id: "MON", label: "Mon" },
@@ -32,9 +35,9 @@ export default function TeacherScheduleScreen() {
         fetchSchedules();
     }, [institutionId, user, selectedDay]);
 
-    const fetchSchedules = async () => {
+    const fetchSchedules = async (isRefresh = false) => {
         if (!user?.$id) return;
-        setLoading(true);
+        if (!isRefresh) setLoading(true);
         try {
             const res = await scheduleService.listByTeacher(user.$id, selectedDay);
             setSchedules(res.documents);
@@ -42,7 +45,43 @@ export default function TeacherScheduleScreen() {
             console.error("Failed to fetch schedules", error);
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
+    };
+
+    const onRefresh = () => {
+        setRefreshing(true);
+        fetchSchedules(true);
+    };
+
+    const handleEdit = (schedule: ClassSchedule) => {
+        setSelectedSchedule(schedule);
+        setModalVisible(true);
+    };
+
+    const handleDelete = (schedule: ClassSchedule) => {
+        Alert.alert(
+            "Delete Schedule",
+            "Are you sure you want to delete this class schedule?",
+            [
+                { text: "Cancel", style: "cancel" },
+                {
+                    text: "Delete",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            setLoading(true);
+                            await scheduleService.deactivate(schedule.$id);
+                            fetchSchedules(true);
+                        } catch (error) {
+                            Alert.alert("Error", "Failed to delete schedule");
+                        } finally {
+                            setLoading(false);
+                        }
+                    },
+                },
+            ]
+        );
     };
 
     const renderItem = ({ item }: { item: ClassSchedule }) => (
@@ -61,17 +100,44 @@ export default function TeacherScheduleScreen() {
                     </Text>
                 </View>
             </View>
+            <View className="flex-row items-center">
+                <TouchableOpacity onPress={() => handleEdit(item)} className="p-2 mr-1 bg-blue-100 rounded-full dark:bg-blue-900/30">
+                    <MaterialCommunityIcons name="pencil" size={20} color="#2563EB" />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => handleDelete(item)} className="p-2 bg-red-100 rounded-full dark:bg-red-900/30">
+                    <MaterialCommunityIcons name="delete" size={20} color="#EF4444" />
+                </TouchableOpacity>
+            </View>
         </View>
     );
 
+    const [modalVisible, setModalVisible] = useState(false);
+
+    const onScheduleAdded = () => {
+        fetchSchedules(true);
+    };
+
     return (
         <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+            <AddScheduleModal
+                visible={modalVisible}
+                onClose={() => {
+                    setModalVisible(false);
+                    setSelectedSchedule(null);
+                }}
+                onSave={onScheduleAdded}
+                initialSchedule={selectedSchedule}
+            />
+
             {/* Header */}
             <View className="flex-row items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
                 <TouchableOpacity onPress={() => router.back()} className="mr-3">
-                    <Ionicons name="arrow-back" size={24} color={isDark ? "white" : "black"} />
+                    <Ionicons name="arrow-back" size={24} color={isDark ? "#FFFFFF" : "#000000"} />
                 </TouchableOpacity>
                 <Text className={`text-xl font-bold flex-1 ${isDark ? "text-white" : "text-gray-900"}`}>My Schedule</Text>
+                <TouchableOpacity onPress={() => setModalVisible(true)} className="p-2">
+                    <Ionicons name="add" size={28} color={isDark ? "#FFFFFF" : "#2563EB"} />
+                </TouchableOpacity>
             </View>
 
             {/* Day Selector */}
@@ -104,9 +170,12 @@ export default function TeacherScheduleScreen() {
                         keyExtractor={(item) => item.$id}
                         showsVerticalScrollIndicator={false}
                         contentContainerStyle={{ paddingBottom: 20 }}
+                        refreshControl={
+                            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                        }
                         ListEmptyComponent={
                             <View className="items-center justify-center mt-20">
-                                <MaterialCommunityIcons name="calendar-clock" size={48} color={isDark ? "#374151" : "#D1D5DB"} />
+                                <MaterialCommunityIcons name="calendar-clock" size={48} color={isDark ? "#9CA3AF" : "#D1D5DB"} />
                                 <Text className={`mt-4 text-center ${isDark ? "text-gray-500" : "text-gray-400"}`}>
                                     No classes scheduled for {days.find(d => d.id === selectedDay)?.label}
                                 </Text>

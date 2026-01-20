@@ -1,7 +1,6 @@
 import { Link, Stack, useRouter } from "expo-router";
 import React from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../store/hooks/useAuth";
 
 const ProfileItem = ({ label, value }: { label: string; value: string | undefined }) => (
@@ -21,7 +20,7 @@ const Profile = () => {
     };
 
     return (
-        <SafeAreaView className="flex-1 bg-background dark:bg-dark-background">
+        <View className="flex-1 bg-background dark:bg-dark-background">
             <Stack.Screen options={{ headerShown: false }} />
 
             {/* Header */}
@@ -76,7 +75,7 @@ const Profile = () => {
                 </Text>
 
             </ScrollView>
-        </SafeAreaView>
+        </View>
     );
 };
 

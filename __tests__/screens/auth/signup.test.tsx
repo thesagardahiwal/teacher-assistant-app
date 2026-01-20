@@ -44,4 +44,23 @@ describe("Signup Screen", () => {
             });
         });
     });
+
+    it("toggles password visibility", () => {
+        const { getByPlaceholderText, getByTestId } = render(<Signup />);
+        const passwordInput = getByPlaceholderText("Password");
+
+        // Default: secureTextEntry is true
+        expect(passwordInput.props.secureTextEntry).toBe(true);
+
+        // Toggle visibility
+        const toggleButton = getByTestId("toggle-password");
+        fireEvent.press(toggleButton);
+
+        // secureTextEntry should be false
+        expect(passwordInput.props.secureTextEntry).toBe(false);
+
+        // Toggle back
+        fireEvent.press(toggleButton);
+        expect(passwordInput.props.secureTextEntry).toBe(true);
+    });
 });

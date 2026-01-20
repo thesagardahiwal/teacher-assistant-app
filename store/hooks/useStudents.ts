@@ -1,3 +1,4 @@
+import { StudentPayload } from "../../types";
 import { useAppDispatch, useAppSelector } from "../hooks";
 import { createStudent, fetchStudents } from "../slices/student.slice";
 
@@ -9,7 +10,7 @@ export const useStudents = () => {
     ...state,
     fetchStudents: (institutionId: string, classIds?: string[]) =>
       dispatch(fetchStudents({ institutionId, classIds })),
-    createStudent: (data: Partial<any>) =>
+    createStudent: (data: Omit<StudentPayload, 'userId' | 'isActive' | 'currentYear'> & { isActive?: boolean; currentYear?: number }) =>
       dispatch(createStudent(data)),
   };
 };

@@ -56,4 +56,23 @@ describe("Login Screen", () => {
             expect(mockLogin).toHaveBeenCalledWith("test@example.com", "password123", "teacher");
         });
     });
+
+    it("toggles password visibility", () => {
+        const { getByPlaceholderText, getByTestId } = render(<Login />);
+        const passwordInput = getByPlaceholderText("Password");
+
+        // Default: secureTextEntry is true
+        expect(passwordInput.props.secureTextEntry).toBe(true);
+
+        // Toggle visibility
+        const toggleButton = getByTestId("toggle-password");
+        fireEvent.press(toggleButton);
+
+        // secureTextEntry should be false
+        expect(passwordInput.props.secureTextEntry).toBe(false);
+
+        // Toggle back
+        fireEvent.press(toggleButton);
+        expect(passwordInput.props.secureTextEntry).toBe(true);
+    });
 });

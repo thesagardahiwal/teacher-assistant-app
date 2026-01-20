@@ -1,7 +1,6 @@
 import { Link, Stack } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, RefreshControl, Text, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import AttendanceCard from "../../components/Student/AttendanceCard";
 import { attendanceRecordService } from "../../services/attendanceRecord.service";
 import { useAuth } from "../../store/hooks/useAuth";
@@ -36,7 +35,7 @@ const Attendance = () => {
   }, []);
 
   return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-dark-background">
+    <View className="flex-1 bg-background dark:bg-dark-background">
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* Header */}
@@ -69,7 +68,7 @@ const Attendance = () => {
           }
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 };
 

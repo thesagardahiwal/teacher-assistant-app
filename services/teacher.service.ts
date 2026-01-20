@@ -2,6 +2,7 @@ import { Query } from "react-native-appwrite";
 import { User, UserPayload } from "../types/user.type";
 import { COLLECTIONS } from "./appwrite/collections";
 import { databaseService } from "./appwrite/database.service";
+import { invitationService } from "./invitation.service";
 
 export const teacherService = {
   list(institutionId: string) {
@@ -27,5 +28,28 @@ export const teacherService = {
       teacherId,
       data as any
     );
+  },
+  async create(data: Omit<UserPayload, 'userId' | "isActive">) {
+    // 1. Create Invitation
+    // Teacher invitations might need different fields or just use same structure
+    const invitation = await invitationService.createInvite({ // Reusing student invite structure for now, maybe rename method to createInvite later
+      email: data.email,
+      institution: data.institution,
+      role: "TEACHER",
+      createdBy: "ADMIN",
+    });
+
+    // 2. Create User Document (Teacher Profile)
+    const teacher = await databaseService.create<User>(
+      COLLECTIONS.USERS,
+      {
+        ...data,
+        userId: `invite:${invitation.token}`,
+        isActive: false, // Inactive until accepted
+        role: "TEACHER",
+      }
+    );
+
+    return { teacher, invitation };
   },
 };

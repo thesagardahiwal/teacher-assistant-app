@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, FlatList, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, FlatList, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useAssignments } from "../../store/hooks/useAssignments";
 import { useAuth } from "../../store/hooks/useAuth";
 import { useStudents } from "../../store/hooks/useStudents";
@@ -9,6 +10,7 @@ import { Student } from "../../types";
 import { useInstitutionId } from "../../utils/useInstitutionId";
 
 export default function StudentsScreen() {
+    const router = useRouter();
     const { isDark } = useTheme();
     const { data: students, loading, fetchStudents } = useStudents();
     const { data: assignments, fetchAssignments } = useAssignments();
@@ -42,7 +44,10 @@ export default function StudentsScreen() {
     }, [students, search]);
 
     const renderItem = ({ item }: { item: Student }) => (
-        <View className={`flex-row items-center p-4 mb-3 rounded-xl border ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"} shadow-sm`}>
+        <TouchableOpacity
+            onPress={() => router.push(`/(teacher)/students/${item.$id}`)}
+            className={`flex-row items-center p-4 mb-3 rounded-xl border ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"} shadow-sm text-left`}
+        >
             <View className="w-10 h-10 rounded-full bg-indigo-500 items-center justify-center mr-4">
                 <Text className="text-white font-bold">{item.name?.charAt(0) || "?"}</Text>
             </View>
@@ -53,7 +58,8 @@ export default function StudentsScreen() {
             <View className={`px-2 py-1 rounded-md ${isDark ? "bg-indigo-900/50" : "bg-indigo-50"}`}>
                 <Text className="text-indigo-500 font-medium text-xs">{item.class?.name ? `${item.class.name}` : "No Class"}</Text>
             </View>
-        </View>
+            <Ionicons name="chevron-forward" size={20} color={isDark ? "#9CA3AF" : "#9CA3AF"} />
+        </TouchableOpacity>
     );
 
     return (

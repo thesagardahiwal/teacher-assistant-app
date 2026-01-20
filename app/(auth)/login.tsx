@@ -1,4 +1,5 @@
-import { useLocalSearchParams } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -12,13 +13,17 @@ import {
   View
 } from "react-native";
 import { useAuth } from "../../store/hooks/useAuth";
+import { useTheme } from "../../store/hooks/useTheme";
 
 const Login = () => {
   const { login, isLoading, error } = useAuth();
+  const { isDark } = useTheme();
   const { type } = useLocalSearchParams<{ type: string }>();
+  const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [localError, setLocalError] = useState("");
 
   const handleLogin = async () => {
@@ -74,7 +79,7 @@ const Login = () => {
           <TextInput
             className="bg-card dark:bg-dark-card border border-border dark:border-dark-border rounded-xl px-4 py-4 mb-4 text-textPrimary dark:text-dark-textPrimary"
             placeholder="Email"
-            placeholderTextColor="#94A3B8"
+            placeholderTextColor={isDark ? "#9CA3AF" : "#94A3B8"}
             autoCapitalize="none"
             keyboardType="email-address"
             value={email}
@@ -82,14 +87,27 @@ const Login = () => {
           />
 
           {/* Password */}
-          <TextInput
-            className="bg-card dark:bg-dark-card border border-border dark:border-dark-border rounded-xl px-4 py-4 mb-3 text-textPrimary dark:text-dark-textPrimary"
-            placeholder="Password"
-            placeholderTextColor="#94A3B8"
-            secureTextEntry
-            value={password}
-            onChangeText={(text) => { setPassword(text); setLocalError(""); }}
-          />
+          <View className="relative mb-3">
+            <TextInput
+              className="bg-card dark:bg-dark-card border border-border dark:border-dark-border rounded-xl px-4 py-4 text-textPrimary dark:text-dark-textPrimary pr-12"
+              placeholder="Password"
+              placeholderTextColor={isDark ? "#9CA3AF" : "#94A3B8"}
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={(text) => { setPassword(text); setLocalError(""); }}
+            />
+            <TouchableOpacity
+              onPress={() => setShowPassword(!showPassword)}
+              className="absolute right-4 top-4"
+              testID="toggle-password"
+            >
+              <Ionicons
+                name={showPassword ? "eye-off" : "eye"}
+                size={24}
+                color={isDark ? "#9CA3AF" : "#94A3B8"}
+              />
+            </TouchableOpacity>
+          </View>
 
           {/* Error */}
           {displayError ? (

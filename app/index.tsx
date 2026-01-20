@@ -1,6 +1,5 @@
 import { Link, Redirect } from "expo-router";
 import { Text, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../store/hooks/useAuth";
 
 export default function Index() {
@@ -26,7 +25,7 @@ export default function Index() {
 
   // If not authenticated, show Landing Page
   return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-dark-background items-center justify-center px-6">
+    <View className="flex-1 bg-background dark:bg-dark-background items-center justify-center px-6">
       <View className="items-center mb-10">
         <Text className="text-4xl font-bold text-primary dark:text-dark-primary mb-2">
           Teachora
@@ -52,6 +51,6 @@ export default function Index() {
       <Text className="text-sm text-center text-muted dark:text-dark-muted mt-10">
         © 2024 Teachora · Secure Academic Platform
       </Text>
-    </SafeAreaView>
+    </View>
   );
 }

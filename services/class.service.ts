@@ -14,6 +14,20 @@ export const classService = {
     );
   },
 
+  listByTeacher(institutionId: string, teacherId: string) {
+    return databaseService.list<any>(
+      COLLECTIONS.TEACHER_ASSIGNMENTS,
+      [
+        Query.equal("institution", institutionId),
+        Query.equal("teacher", teacherId),
+        Query.select(["class.*"])
+      ]
+    ).then(response => ({
+      ...response,
+      documents: response.documents.map(doc => doc.class).filter((c, i, a) => a.findIndex(t => t.$id === c.$id) === i)
+    }));
+  },
+
   listByAcademicYear(institutionId: string, academicYearId: string) {
     return databaseService.list<Class>(
       COLLECTIONS.CLASSES,

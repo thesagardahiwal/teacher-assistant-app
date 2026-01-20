@@ -10,6 +10,14 @@ export const fetchClasses = createAsyncThunk(
   }
 );
 
+export const fetchClassesByTeacher = createAsyncThunk(
+  "classes/fetchByTeacher",
+  async ({ institutionId, teacherId }: { institutionId: string; teacherId: string }) => {
+    const res = await classService.listByTeacher(institutionId, teacherId);
+    return res.documents;
+  }
+);
+
 const classSlice = createSlice({
   name: "classes",
   initialState: { data: [] as Class[], loading: false },
@@ -17,7 +25,10 @@ const classSlice = createSlice({
   extraReducers: (b) => {
     b.addCase(fetchClasses.fulfilled, (s, a) => {
       s.data = a.payload;
-    });
+    })
+      .addCase(fetchClassesByTeacher.fulfilled, (s, a) => {
+        s.data = a.payload;
+      });
   },
 });
 

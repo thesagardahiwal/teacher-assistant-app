@@ -18,6 +18,10 @@ export interface ClassSchedule extends Models.Document {
     isActive: boolean;
 };
 
+export interface ClassScheduleWithStatus extends ClassSchedule {
+    status: 'Previous' | 'Upcoming';
+}
+
 export interface ClassSchedulePayload {
     $id: string;
     class: string;

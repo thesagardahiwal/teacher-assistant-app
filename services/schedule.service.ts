@@ -175,10 +175,27 @@ export const scheduleService = {
     /* ---------------- UPDATE ---------------- */
 
     update(scheduleId: string, data: Partial<ClassSchedulePayload>) {
+        const payload: any = { ...data };
+
+        // Sanitize relationship fields to ensure they are strings (IDs)
+        const relationshipFields = ["class", "subject", "teacher", "academicYear", "institution"];
+        relationshipFields.forEach(field => {
+            if (payload[field]) {
+                if (Array.isArray(payload[field])) {
+                    // If array,取 first item, if object take $id, else string
+                    const first = payload[field][0];
+                    payload[field] = typeof first === 'object' ? first.$id : first;
+                } else if (typeof payload[field] === 'object') {
+                    // If object, take $id
+                    payload[field] = payload[field].$id;
+                }
+            }
+        });
+
         return databaseService.update<ClassSchedule>(
             COLLECTIONS.CLASS_SCHEDULE,
             scheduleId,
-            data as any
+            payload
         );
     },
 

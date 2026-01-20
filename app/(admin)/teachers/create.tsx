@@ -1,8 +1,10 @@
+import { InviteSuccessModal } from "@/components/admin/modals/InviteSuccessModal";
 import { FormInput } from "@/components/admin/ui/FormInput";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
-import { authService } from "@/services/appwrite/auth.service";
+import { teacherService } from "@/services";
 import { useTeachers } from "@/store/hooks/useTeachers";
 import { useTheme } from "@/store/hooks/useTheme";
+import { getInviteLink } from "@/utils/linking";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -25,6 +27,8 @@ export default function CreateTeacher() {
   const [email, setEmail] = useState("");
 
   const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [inviteLink, setInviteLink] = useState("");
 
   const handleSubmit = async () => {
     if (!name || !email || !institutionId) {
@@ -34,19 +38,18 @@ export default function CreateTeacher() {
 
     setLoading(true);
     try {
-      await authService.createUser({
+      const { invitation } = await teacherService.create({
         name,
         email,
-        password: "Teachora@123", // Default password
+        institution: institutionId,
         role: "TEACHER",
-        institutionId,
       });
 
       await fetchTeachers(institutionId);
 
-      Alert.alert("Success", "Teacher created successfully. Default password is 'Teachora@123'", [
-        { text: "OK", onPress: () => router.back() }
-      ]);
+      setInviteLink(getInviteLink(invitation.token));
+      setModalVisible(true);
+
     } catch (error: any) {
       Alert.alert("Error", error.message || "Failed to create teacher");
     } finally {
@@ -61,11 +64,7 @@ export default function CreateTeacher() {
       <ScrollView showsVerticalScrollIndicator={false}>
         <View className={`p-6 rounded-2xl mb-6 ${isDark ? "bg-gray-800" : "bg-white"}`}>
 
-          <View className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-            <Text className={`text-sm ${isDark ? "text-blue-300" : "text-blue-700"}`}>
-              New teachers will be created with default password: <Text className="font-bold">Teachora@123</Text>
-            </Text>
-          </View>
+          {/* Removed Default Password Warning */}
 
           <FormInput
             label="Full Name"
@@ -93,10 +92,20 @@ export default function CreateTeacher() {
           {loading ? (
             <ActivityIndicator color="white" />
           ) : (
-            <Text className="text-white font-bold text-lg">Create Teacher</Text>
+            <Text className="text-white font-bold text-lg">Send Invitation</Text>
           )}
         </TouchableOpacity>
       </ScrollView>
+
+      <InviteSuccessModal
+        visible={modalVisible}
+        onClose={() => {
+          setModalVisible(false);
+          router.back();
+        }}
+        inviteLink={inviteLink}
+        email={email}
+      />
     </View>
   );
 }

@@ -15,8 +15,8 @@ export interface User extends Models.Document {
     institution: Institution; // Institution ID
 }
 
-export interface UserPayload extends Models.Document {
-    $id: string;
+export interface UserPayload {
+    $id?: string;
     userId: string; // Appwrite Auth User ID
     name: string;
     email: string;

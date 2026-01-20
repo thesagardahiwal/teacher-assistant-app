@@ -1,5 +1,5 @@
 import { useAppDispatch, useAppSelector } from "../hooks";
-import { createSubject, fetchSubjects } from "../slices/subject.slice";
+import { createSubject, fetchSubjects, fetchSubjectsByTeacher } from "../slices/subject.slice";
 
 export const useSubjects = () => {
   const dispatch = useAppDispatch();
@@ -11,5 +11,7 @@ export const useSubjects = () => {
       dispatch(fetchSubjects(institutionId)),
     createSubject: (data: Partial<any>) =>
       dispatch(createSubject(data)),
+    fetchSubjectsByTeacher: (institutionId: string, teacherId: string) =>
+      dispatch(fetchSubjectsByTeacher({ institutionId, teacherId })),
   };
 };

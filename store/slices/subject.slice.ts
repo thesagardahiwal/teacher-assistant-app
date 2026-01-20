@@ -22,6 +22,14 @@ export const fetchSubjects = createAsyncThunk(
   }
 );
 
+export const fetchSubjectsByTeacher = createAsyncThunk(
+  "subjects/fetchByTeacher",
+  async ({ institutionId, teacherId }: { institutionId: string; teacherId: string }) => {
+    const res = await subjectService.listByTeacher(institutionId, teacherId);
+    return res.documents;
+  }
+);
+
 export const createSubject = createAsyncThunk(
   "subjects/create",
   async (data: Partial<SubjectPayload>) => {
@@ -45,6 +53,17 @@ const subjectSlice = createSlice({
       .addCase(fetchSubjects.rejected, (state) => {
         state.loading = false;
         state.error = "Failed to load subjects";
+      })
+      .addCase(fetchSubjectsByTeacher.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchSubjectsByTeacher.fulfilled, (state, action) => {
+        state.loading = false;
+        state.data = action.payload;
+      })
+      .addCase(fetchSubjectsByTeacher.rejected, (state) => {
+        state.loading = false;
+        state.error = "Failed to load teacher subjects";
       })
       .addCase(createSubject.fulfilled, (state, action) => {
         state.data.push(action.payload);

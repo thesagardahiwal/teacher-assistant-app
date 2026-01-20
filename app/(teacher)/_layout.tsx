@@ -1,22 +1,10 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
-import { ActivityIndicator, View } from "react-native";
-import { useAuthGuard } from "../../hooks/useAuthGuard";
+import React from "react";
 import { useTheme } from "../../store/hooks/useTheme";
 
 export default function TeacherLayout() {
-  const { isAuthorized, isLoading } = useAuthGuard(["TEACHER"]);
   const { isDark } = useTheme();
-
-  if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
-  if (!isAuthorized) return null;
 
   return (
     <Tabs
@@ -28,8 +16,8 @@ export default function TeacherLayout() {
           height: 60,
           paddingTop: 5,
         },
-        tabBarActiveTintColor: "#2563EB", // primary color
-        tabBarInactiveTintColor: "#9CA3AF", // muted text
+        tabBarActiveTintColor: isDark ? "#60A5FA" : "#2563EB",
+        tabBarInactiveTintColor: isDark ? "#9CA3AF" : "#6B7280",
       }}
     >
       <Tabs.Screen
@@ -80,6 +68,18 @@ export default function TeacherLayout() {
 
       <Tabs.Screen
         name="schedule"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="assessments"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="students/[id]"
         options={{
           href: null,
         }}

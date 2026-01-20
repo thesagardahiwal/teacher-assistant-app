@@ -11,6 +11,10 @@ import teacherReducer from "./slices/teacher.slice";
 
 import attendanceReducer from "./slices/attendance.slice";
 
+import assessmentReducer from "./slices/assessment.slice";
+import assessmentResultReducer from "./slices/assessmentResult.slice";
+import performanceReducer from "./slices/performance.slice";
+
 export const store = configureStore({
   reducer: {
     auth: authReducer,
@@ -22,7 +26,10 @@ export const store = configureStore({
     students: studentReducer,
     assignments: assignmentReducer,
     attendance: attendanceReducer,
-    adminOnboarding: adminOnboardingReducer
+    adminOnboarding: adminOnboardingReducer,
+    assessments: assessmentReducer,
+    assessmentResults: assessmentResultReducer,
+    performance: performanceReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false }),

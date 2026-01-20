@@ -1,7 +1,6 @@
 import { Link } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import AttendanceCard from "../../components/Student/AttendanceCard";
 import { attendanceRecordService } from "../../services/attendanceRecord.service";
 import { useAuth } from "../../store/hooks/useAuth";
@@ -60,7 +59,7 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-dark-background">
+    <View className="flex-1 bg-background dark:bg-dark-background">
       <ScrollView
         contentContainerStyle={{ paddingBottom: 100 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
@@ -135,6 +134,22 @@ const Dashboard = () => {
           </Link>
         </View>
 
+        {/* Quick Links */}
+        <View className="flex-row gap-4 mb-6">
+          <Link href="/(student)/assessments" asChild>
+            <TouchableOpacity className="flex-1 bg-blue-100 dark:bg-blue-900/30 p-4 rounded-2xl items-center flex-row">
+              <View className="w-10 h-10 bg-blue-500 rounded-full items-center justify-center mr-3">
+                <Text className="text-white text-xl">A</Text>
+                {/* Ideally use Icon here if available */}
+              </View>
+              <View>
+                <Text className="font-bold text-blue-900 dark:text-blue-100">My Results</Text>
+                <Text className="text-xs text-blue-700 dark:text-blue-300">Check grades</Text>
+              </View>
+            </TouchableOpacity>
+          </Link>
+        </View>
+
         {/* Recent List */}
         {loading && !refreshing ? (
           <ActivityIndicator size="large" className="mt-10" />
@@ -149,7 +164,7 @@ const Dashboard = () => {
         )}
 
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 

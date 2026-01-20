@@ -1,5 +1,5 @@
 import { useAppDispatch, useAppSelector } from "../hooks";
-import { fetchClasses } from "../slices/class.slice";
+import { fetchClasses, fetchClassesByTeacher } from "../slices/class.slice";
 
 export const useClasses = () => {
   const dispatch = useAppDispatch();
@@ -9,5 +9,7 @@ export const useClasses = () => {
     ...state,
     fetchClasses: (institutionId: string) =>
       dispatch(fetchClasses(institutionId)),
+    fetchClassesByTeacher: (institutionId: string, teacherId: string) =>
+      dispatch(fetchClassesByTeacher({ institutionId, teacherId })),
   };
 };

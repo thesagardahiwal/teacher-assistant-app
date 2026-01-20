@@ -29,7 +29,7 @@ export const fetchStudents = createAsyncThunk(
 
 export const createStudent = createAsyncThunk(
   "students/create",
-  async (data: Partial<StudentPayload>) => {
+  async (data: Omit<StudentPayload, 'userId' | 'isActive' | 'currentYear'> & { isActive?: boolean; currentYear?: number }) => {
     return await studentService.create(data);
   }
 );
@@ -52,7 +52,7 @@ const studentSlice = createSlice({
         state.error = "Failed to load students";
       })
       .addCase(createStudent.fulfilled, (state, action) => {
-        state.data.push(action.payload);
+        state.data.push(action.payload.student);
       });
   },
 });

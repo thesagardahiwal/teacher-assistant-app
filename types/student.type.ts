@@ -12,13 +12,13 @@ export interface Student extends Models.Document {
     class: Class;
     currentYear: number;
     isActive: boolean;
-    email?: string;
+    email: string;
     institution: Institution; // Institution ID
 }
 
 
-export interface StudentPayload extends Models.Document {
-    $id: string;
+export interface StudentPayload {
+    $id?: string;
     name: string;
     rollNumber: string;
     course: string;
@@ -27,4 +27,5 @@ export interface StudentPayload extends Models.Document {
     currentYear: number;
     isActive: boolean;
     institution: string; // Institution ID
+    email: string;
 }

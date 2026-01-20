@@ -157,7 +157,7 @@ export default function ProfileScreen() {
 
                     <TouchableOpacity
                         onPress={handleLogout}
-                        className="flex-row items-center justify-center mt-10 p-4 rounded-xl bg-red-50 border border-red-100"
+                        className="flex-row items-center justify-center mt-10 p-4 rounded-xl bg-red-50 border border-red-100 dark:bg-red-900/10 dark:border-red-900/30"
                     >
                         <Ionicons name="log-out-outline" size={20} color="#DC2626" />
                         <Text className="ml-2 font-bold text-red-600">Logout</Text>
