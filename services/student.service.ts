@@ -15,6 +15,23 @@ export const studentService = {
     );
   },
 
+  async getByUserId(userId: string) {
+    const response = await databaseService.list<Student>(
+      COLLECTIONS.STUDENTS,
+      [
+        Query.equal("userId", userId),
+        Query.limit(1),
+        Query.select([
+          "*",
+          "course.*",
+          "class.*",
+          "institution.*"
+        ])
+      ]
+    );
+    return response.documents[0] || null;
+  },
+
   async listByClasses(institutionId: string, classIds: string[]) {
     if (classIds.length === 0) return { documents: [], total: 0 };
     return await databaseService.list<Student>(

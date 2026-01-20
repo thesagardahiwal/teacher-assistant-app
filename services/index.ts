@@ -1,4 +1,5 @@
 export * from "./academicYear.service";
+export * from "./assessment.service";
 export * from "./assignment.service";
 export * from "./attendance.service";
 export * from "./attendanceRecord.service";

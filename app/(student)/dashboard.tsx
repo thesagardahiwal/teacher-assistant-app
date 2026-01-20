@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -140,7 +141,6 @@ const Dashboard = () => {
             <TouchableOpacity className="flex-1 bg-blue-100 dark:bg-blue-900/30 p-4 rounded-2xl items-center flex-row">
               <View className="w-10 h-10 bg-blue-500 rounded-full items-center justify-center mr-3">
                 <Text className="text-white text-xl">A</Text>
-                {/* Ideally use Icon here if available */}
               </View>
               <View>
                 <Text className="font-bold text-blue-900 dark:text-blue-100">My Results</Text>
@@ -148,23 +148,52 @@ const Dashboard = () => {
               </View>
             </TouchableOpacity>
           </Link>
+
+          <Link href="/(student)/calendar" asChild>
+            <TouchableOpacity className="flex-1 bg-purple-100 dark:bg-purple-900/30 p-4 rounded-2xl items-center flex-row">
+              <View className="w-10 h-10 bg-purple-500 rounded-full items-center justify-center mr-3">
+                <Ionicons name="calendar-outline" size={24} color="white" />
+              </View>
+              <View>
+                <Text className="font-bold text-purple-900 dark:text-purple-100">Calendar</Text>
+                <Text className="text-xs text-purple-700 dark:text-purple-300">Schedules & Dues</Text>
+              </View>
+            </TouchableOpacity>
+          </Link>
+        </View>
+
+        <View className="flex-row gap-4 mb-6">
+          <Link href="/(student)/study-vault" asChild>
+            <TouchableOpacity className="flex-1 bg-amber-100 dark:bg-amber-900/30 p-4 rounded-2xl items-center flex-row">
+              <View className="w-10 h-10 bg-amber-500 rounded-full items-center justify-center mr-3">
+                <Ionicons name="folder-open-outline" size={24} color="white" />
+              </View>
+              <View>
+                <Text className="font-bold text-amber-900 dark:text-amber-100">Study Vault</Text>
+                <Text className="text-xs text-amber-700 dark:text-amber-300">Offline Files</Text>
+              </View>
+            </TouchableOpacity>
+          </Link>
+          <View className="flex-1" />
         </View>
 
         {/* Recent List */}
-        {loading && !refreshing ? (
-          <ActivityIndicator size="large" className="mt-10" />
-        ) : records.length > 0 ? (
-          records.slice(0, 5).map(record => (
-            <AttendanceCard key={record.$id} record={record} />
-          ))
-        ) : (
-          <View className="items-center py-10 opacity-50">
-            <Text className="text-textSecondary dark:text-dark-textSecondary text-lg">No records found</Text>
-          </View>
-        )}
+        {
+          loading && !refreshing ? (
+            <ActivityIndicator size="large" className="mt-10" />
+          ) : records.length > 0 ? (
+            records.slice(0, 5).map(record => (
+              <AttendanceCard key={record.$id} record={record} />
+            ))
+          ) : (
+            <View className="items-center py-10 opacity-50">
+              <Text className="text-textSecondary dark:text-dark-textSecondary text-lg">No records found</Text>
+            </View>
+          )
+        }
 
-      </ScrollView>
-    </View>
+      </ScrollView >
+    </View >
   );
 };
 

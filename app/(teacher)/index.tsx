@@ -183,7 +183,12 @@ export default function TeacherDashboard() {
                             bgColor="bg-orange-500"
                             onPress={() => router.push("/(teacher)/students")}
                         />
-                        <View className="flex-1" />
+                        <QuickAction
+                            icon="folder-open"
+                            label="Study Vault"
+                            bgColor="bg-amber-500"
+                            onPress={() => router.push("/(teacher)/study-vault")}
+                        />
                     </View>
                 </View>
 
