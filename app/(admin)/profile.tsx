@@ -67,117 +67,186 @@ const AdminProfile = () => {
 
   if (isLoading || !user) {
     return (
-      <View className="flex-1 justify-center items-center bg-background dark:bg-dark-background">
+      <View className="flex-1 justify-center items-center bg-gray-50 dark:bg-gray-900">
         <ActivityIndicator size="large" color={isDark ? "#ffffff" : "#2563EB"} />
       </View>
     );
   }
 
+  const InputField = ({ label, value, onChangeText, placeholder, editable }: any) => (
+    <View className="mb-4">
+      <Text className={`text-sm font-medium mb-1.5 ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+        {label}
+      </Text>
+      {editable ? (
+        <TextInput
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={placeholder}
+          placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"}
+          className={`px-4 py-3.5 rounded-xl border text-base ${isDark
+              ? "bg-gray-800 border-gray-700 text-white focus:border-blue-500"
+              : "bg-white border-gray-200 text-gray-900 focus:border-blue-500"
+            }`}
+        />
+      ) : (
+        <View className={`px-4 py-3.5 rounded-xl border ${isDark ? "bg-gray-800/50 border-gray-800" : "bg-gray-50 border-gray-100"
+          }`}>
+          <Text className={`text-base font-medium ${isDark ? "text-gray-200" : "text-gray-900"}`}>
+            {value || "Not Set"}
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 bg-background dark:bg-dark-background"
+      className="flex-1 bg-gray-50 dark:bg-gray-900"
     >
-      <ScrollView className="flex-1">
+      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 40 }}>
         {/* Header */}
-        <View className="px-6 py-6 flex-row items-center justify-between">
-          <TouchableOpacity onPress={() => router.back()} className="p-2 -ml-2">
-            <Ionicons name="arrow-back" size={24} color={isDark ? "#FFFFFF" : "#000000"} />
-          </TouchableOpacity>
-          <Text className="text-xl font-bold text-textPrimary dark:text-dark-textPrimary">My Profile</Text>
-          <TouchableOpacity onPress={handleLogout} className="p-2 -mr-2">
-            <Ionicons name="log-out-outline" size={24} color="#EF4444" />
-          </TouchableOpacity>
+        <View className="h-64 bg-blue-600 dark:bg-blue-900 relative">
+          <View className="absolute inset-0 bg-black/10" />
+          <View className="flex-row items-center justify-between px-6 pt-14">
+            <TouchableOpacity
+              onPress={() => router.back()}
+              className="w-10 h-10 bg-white/20 rounded-full items-center justify-center backdrop-blur-sm"
+            >
+              <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+            <Text className="text-xl font-bold text-white">Profile</Text>
+            <TouchableOpacity
+              onPress={handleLogout}
+              className="w-10 h-10 bg-red-500/20 rounded-full items-center justify-center backdrop-blur-sm border border-red-500/30"
+            >
+              <Ionicons name="log-out-outline" size={20} color="#FECACA" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Extended background content to overlap with card */}
+          <View className="absolute bottom-0 left-0 right-0 h-10 bg-gray-50 dark:bg-gray-900 rounded-t-3xl" />
         </View>
 
-        <View className="px-6 pb-10">
+        {/* Profile Card */}
+        <View className="px-6 -mt-24">
+          <View className={`rounded-3xl p-6 shadow-sm ${isDark ? "bg-gray-800 shadow-none border border-gray-700" : "bg-white shadow-gray-200"}`}>
+            <View className="items-center -mt-16 mb-4">
+              <View className="w-28 h-28 rounded-full bg-white dark:bg-gray-800 p-2 shadow-lg shadow-black/10">
+                <View className="flex-1 rounded-full bg-blue-100 dark:bg-blue-900/50 items-center justify-center border-4 border-blue-50 dark:border-blue-900">
+                  <Text className="text-4xl font-bold text-blue-600 dark:text-blue-400">
+                    {user.name?.charAt(0).toUpperCase() || "A"}
+                  </Text>
+                </View>
+              </View>
 
-          {/* Avatar / Initials */}
-          <View className="items-center mb-8">
-            <View className="w-24 h-24 rounded-full bg-primary dark:bg-dark-primary items-center justify-center mb-4">
-              <Text className="text-4xl font-bold text-white">{user.name?.charAt(0) || "A"}</Text>
+              {!isEditing && (
+                <TouchableOpacity
+                  onPress={() => setIsEditing(true)}
+                  className="absolute bottom-0 right-0 bg-blue-600 w-10 h-10 rounded-full items-center justify-center shadow-lg shadow-blue-600/30 border-2 border-white dark:border-gray-800"
+                >
+                  <Ionicons name="pencil" size={18} color="white" />
+                </TouchableOpacity>
+              )}
             </View>
-            <Text className="text-2xl font-bold text-textPrimary dark:text-dark-textPrimary">{user.name}</Text>
-            <Text className="text-textSecondary dark:text-dark-textSecondary">{user.email}</Text>
-            <View className="bg-blue-100 dark:bg-blue-900/30 px-3 py-1 rounded-full mt-2">
-              <Text className="text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-wider">{user.role}</Text>
+
+            <View className="items-center mb-6">
+              <Text className={`text-2xl font-bold text-center ${isDark ? "text-white" : "text-gray-900"}`}>
+                {user.name}
+              </Text>
+              <Text className={`text-center mt-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                {user.email}
+              </Text>
+              <View className={`mt-3 px-4 py-1.5 rounded-full ${isDark ? "bg-blue-900/30" : "bg-blue-50"}`}>
+                <Text className={`text-xs font-bold uppercase tracking-wider ${isDark ? "text-blue-400" : "text-blue-700"}`}>
+                  {user.role}
+                </Text>
+              </View>
             </View>
-          </View>
 
-          {/* Edit Toggle */}
-          <View className="flex-row justify-end mb-4">
-            {!isEditing && (
-              <TouchableOpacity onPress={() => setIsEditing(true)} className="flex-row items-center bg-card dark:bg-dark-card border border-border dark:border-dark-border px-4 py-2 rounded-full">
-                <Ionicons name="create-outline" size={18} color={isDark ? "#FFFFFF" : "#000000"} style={{ marginRight: 8 }} />
-                <Text className="text-textPrimary dark:text-dark-textPrimary font-medium">Edit Profile</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-
-          {/* Form Fields */}
-          <View className="gap-4">
-            <View>
-              <Text className="text-sm font-medium text-textSecondary dark:text-dark-textSecondary mb-1">Full Name</Text>
-              <TextInput
+            {/* Form Fields */}
+            <View className="space-y-4">
+              <InputField
+                label="Full Name"
                 value={name}
                 onChangeText={setName}
                 editable={isEditing}
-                className={`bg-card dark:bg-dark-card text-textPrimary dark:text-dark-textPrimary border ${isEditing ? "border-primary dark:border-dark-primary" : "border-border dark:border-dark-border"} rounded-xl px-4 py-3`}
+                placeholder="Enter your full name"
               />
-            </View>
 
-            <View>
-              <Text className="text-sm font-medium text-textSecondary dark:text-dark-textSecondary mb-1">Department</Text>
-              <TextInput
-                value={department}
-                onChangeText={setDepartment}
-                editable={isEditing}
-                placeholder="e.g. Science"
-                placeholderTextColor={isDark ? "#9CA3AF" : "#94A3B8"}
-                className={`bg-card dark:bg-dark-card text-textPrimary dark:text-dark-textPrimary border ${isEditing ? "border-primary dark:border-dark-primary" : "border-border dark:border-dark-border"} rounded-xl px-4 py-3`}
-              />
-            </View>
-
-            <View>
-              <Text className="text-sm font-medium text-textSecondary dark:text-dark-textSecondary mb-1">Designation</Text>
-              <TextInput
-                value={designation}
-                onChangeText={setDesignation}
-                editable={isEditing}
-                placeholder="e.g. Principal"
-                placeholderTextColor={isDark ? "#9CA3AF" : "#94A3B8"}
-                className={`bg-card dark:bg-dark-card text-textPrimary dark:text-dark-textPrimary border ${isEditing ? "border-primary dark:border-dark-primary" : "border-border dark:border-dark-border"} rounded-xl px-4 py-3`}
-              />
-            </View>
-
-            {/* Read-only Institution Info */}
-            <View>
-              <Text className="text-sm font-medium text-textSecondary dark:text-dark-textSecondary mb-1">Institution</Text>
-              <View className="bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 flex-row items-center justify-between">
-                <Text className="text-gray-500 dark:text-gray-400">{typeof user?.institution === "string" ? user?.institution : user.institution?.name || "N/A"}</Text>
-                <Ionicons name="lock-closed-outline" size={16} color={isDark ? "#9CA3AF" : "#9CA3AF"} />
+              <View className="flex-row space-x-4">
+                <View className="flex-1">
+                  <InputField
+                    label="Department"
+                    value={department}
+                    onChangeText={setDepartment}
+                    editable={isEditing}
+                    placeholder="Department"
+                  />
+                </View>
+                <View className="flex-1">
+                  <InputField
+                    label="Designation"
+                    value={designation}
+                    onChangeText={setDesignation}
+                    editable={isEditing}
+                    placeholder="Designation"
+                  />
+                </View>
               </View>
-              <Text className="text-xs text-muted dark:text-dark-muted mt-1 ml-1">Contact support to change institution details.</Text>
-            </View>
-          </View>
 
-          {/* Action Buttons */}
-          {isEditing && (
-            <View className="flex-row mt-8 gap-4">
-              <TouchableOpacity onPress={() => { setIsEditing(false); setName(user.name); setDepartment(user.department || ""); setDesignation(user.designation || ""); }} className="flex-1 bg-gray-200 dark:bg-gray-700 py-3 rounded-xl items-center">
-                <Text className="text-gray-700 dark:text-gray-200 font-bold">Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleSave} disabled={submitting} className="flex-1 bg-primary dark:bg-dark-primary py-3 rounded-xl items-center">
-                {submitting ? (
-                  <ActivityIndicator color="white" />
-                ) : (
-                  <Text className="text-white font-bold">Save Changes</Text>
+              <View className="mb-4">
+                <Text className={`text-sm font-medium mb-1.5 ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+                  Institution
+                </Text>
+                <View className={`flex-row items-center justify-between px-4 py-3.5 rounded-xl border ${isDark ? "bg-gray-900/50 border-gray-700" : "bg-gray-50 border-gray-200"
+                  }`}>
+                  <Text className={`text-base ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                    {typeof user?.institution === "string" ? user?.institution : user.institution?.name || "N/A"}
+                  </Text>
+                  <Ionicons name="lock-closed" size={16} color={isDark ? "#6B7280" : "#9CA3AF"} />
+                </View>
+                {isEditing && (
+                  <Text className="text-xs text-gray-400 mt-1 ml-1">
+                    Contact system administrator to change institution.
+                  </Text>
                 )}
-              </TouchableOpacity>
+              </View>
             </View>
-          )}
 
+            {/* Action Buttons */}
+            {isEditing && (
+              <View className="flex-row gap-3 mt-6">
+                <TouchableOpacity
+                  onPress={() => {
+                    setIsEditing(false);
+                    setName(user.name);
+                    setDepartment(user.department || "");
+                    setDesignation(user.designation || "");
+                  }}
+                  className={`flex-1 py-3.5 rounded-xl items-center border ${isDark ? "border-gray-600" : "border-gray-300"
+                    }`}
+                >
+                  <Text className={`font-semibold ${isDark ? "text-gray-300" : "text-gray-700"}`}>Cancel</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={handleSave}
+                  disabled={submitting}
+                  className="flex-1 bg-blue-600 py-3.5 rounded-xl items-center shadow-lg shadow-blue-600/20"
+                >
+                  {submitting ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <Text className="text-white font-bold">Save Changes</Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
         </View>
+
       </ScrollView>
     </KeyboardAvoidingView>
   );

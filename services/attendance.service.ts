@@ -15,6 +15,10 @@ export const attendanceService = {
         );
     },
 
+    listByTeacher(institutionId: string, teacherId: string) {
+        return this.list(institutionId, [Query.equal("teacher", teacherId)]);
+    },
+
     get(attendanceId: string) {
         return databaseService.get<Attendance>(
             COLLECTIONS.ATTENDANCE,

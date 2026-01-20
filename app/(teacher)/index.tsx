@@ -190,6 +190,16 @@ export default function TeacherDashboard() {
                             onPress={() => router.push("/(teacher)/study-vault")}
                         />
                     </View>
+
+                    <View className="flex-row gap-4 mt-4">
+                        <QuickAction
+                            icon="account-tie"
+                            label="Teachers"
+                            bgColor="bg-teal-500"
+                            onPress={() => router.push("/(teacher)/teachers")}
+                        />
+                        <View className="flex-1" />
+                    </View>
                 </View>
 
                 {/* Recent Activity */}

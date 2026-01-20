@@ -98,6 +98,20 @@ export default function TeacherLayout() {
           href: null,
         }}
       />
+
+      <Tabs.Screen
+        name="teachers/index"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="teachers/[id]"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
