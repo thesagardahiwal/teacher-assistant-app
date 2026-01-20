@@ -51,7 +51,7 @@ export default function ClassesScreen() {
 
     return (
         <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
-            <View className="px-5 py-4">
+            <View className="px-5 py-4 w-full">
                 <Text className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>My Classes</Text>
             </View>
 
@@ -67,6 +67,7 @@ export default function ClassesScreen() {
                     contentContainerStyle={{ padding: 20 }}
                     refreshing={refreshing}
                     onRefresh={onRefresh}
+                    className="w-full flex-1"
                     ListEmptyComponent={
                         <View className="items-center justify-center mt-20">
                             <Text className={`${isDark ? "text-gray-500" : "text-gray-400"}`}>No classes assigned</Text>

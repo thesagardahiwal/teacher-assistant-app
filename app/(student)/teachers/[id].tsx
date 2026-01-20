@@ -115,11 +115,11 @@ export default function StudentTeacherDetailScreen() {
 
     return (
         <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
-            <View className="px-6 pt-6">
+            <View className="px-6 pt-6 mb-4 w-full">
                 <PageHeader title="Teacher Profile" showBack={true} />
             </View>
 
-            <ScrollView contentContainerStyle={{ paddingBottom: 40, paddingHorizontal: 24 }}>
+            <ScrollView className="flex-1 w-full" contentContainerStyle={{ paddingBottom: 40, paddingHorizontal: 24 }}>
 
                 {/* A. Profile Card */}
                 <View className={`p-6 rounded-2xl mb-6 items-center ${isDark ? "bg-gray-800" : "bg-white shadow-sm shadow-gray-200"}`}>

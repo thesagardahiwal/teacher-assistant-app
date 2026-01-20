@@ -99,30 +99,32 @@ export default function TeachersIndex() {
   );
 
   return (
-    <View className={`flex-1 px-6 pt-6 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
-      <PageHeader
-        title="Teachers"
-        rightAction={
-          isAdmin ? (
-            <TouchableOpacity
-              onPress={() => router.push("/(admin)/teachers/create")}
-              className="bg-blue-600 p-2 rounded-full"
-            >
-              <Ionicons name="add" size={24} color="white" />
-            </TouchableOpacity>
-          ) : null
-        }
-      />
+    <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+      <View className="px-6 pt-6 w-full">
+        <PageHeader
+          title="Teachers"
+          rightAction={
+            isAdmin ? (
+              <TouchableOpacity
+                onPress={() => router.push("/(admin)/teachers/create")}
+                className="bg-blue-600 p-2 rounded-full"
+              >
+                <Ionicons name="add" size={24} color="white" />
+              </TouchableOpacity>
+            ) : null
+          }
+        />
 
-      <FilterBar
-        onSearch={setSearchQuery}
-        onSortChange={(key, order) => setSortConfig({ key, order })}
-        sortOptions={[
-          { label: "Name", value: "name" },
-          { label: "Department", value: "department" },
-          { label: "Designation", value: "designation" },
-        ]}
-      />
+        <FilterBar
+          onSearch={setSearchQuery}
+          onSortChange={(key, order) => setSortConfig({ key, order })}
+          sortOptions={[
+            { label: "Name", value: "name" },
+            { label: "Department", value: "department" },
+            { label: "Designation", value: "designation" },
+          ]}
+        />
+      </View>
 
       {loading && !refreshing ? (
         <ActivityIndicator size="large" color="#2563EB" />
@@ -134,6 +136,8 @@ export default function TeachersIndex() {
           refreshing={refreshing}
           onRefresh={onRefresh}
           showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 20 }}
+          className="w-full flex-1"
           ListEmptyComponent={
             <Text className={`text-center mt-10 ${isDark ? "text-gray-500" : "text-gray-400"}`}>
               {searchQuery ? "No matching teachers found." : "No teachers found."}

@@ -64,7 +64,7 @@ const Dashboard = () => {
       <ScrollView
         contentContainerStyle={{ paddingBottom: 100 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        className="px-6"
+        className="w-full px-6 pt-6"
       >
         {/* Header */}
         <View className="mb-6 flex-row justify-between items-center">
@@ -125,14 +125,14 @@ const Dashboard = () => {
           />
         </View>
 
-        {/* Quick Links */}
-        <View className="flex-row gap-4 mb-6">
+        {/* Quick Links Flattened Grid */}
+        <View className="flex-row flex-wrap gap-4 mb-6">
           <Link href="/(student)/assessments" asChild>
-            <TouchableOpacity className="flex-1 bg-blue-100 dark:bg-blue-900/30 p-4 rounded-2xl items-center flex-row">
+            <TouchableOpacity className="w-[47%] md:w-[23%] bg-blue-100 dark:bg-blue-900/30 p-4 rounded-2xl items-center flex-row mb-2">
               <View className="w-10 h-10 bg-blue-500 rounded-full items-center justify-center mr-3">
                 <Text className="text-white text-xl">A</Text>
               </View>
-              <View>
+              <View className="flex-1">
                 <Text className="font-bold text-blue-900 dark:text-blue-100">My Results</Text>
                 <Text className="text-xs text-blue-700 dark:text-blue-300">Check grades</Text>
               </View>
@@ -140,42 +140,42 @@ const Dashboard = () => {
           </Link>
 
           <Link href="/(student)/calendar" asChild>
-            <TouchableOpacity className="flex-1 bg-purple-100 dark:bg-purple-900/30 p-4 rounded-2xl items-center flex-row">
+            <TouchableOpacity className="w-[47%] md:w-[23%] bg-purple-100 dark:bg-purple-900/30 p-4 rounded-2xl items-center flex-row mb-2">
               <View className="w-10 h-10 bg-purple-500 rounded-full items-center justify-center mr-3">
                 <Ionicons name="calendar-outline" size={24} color="white" />
               </View>
-              <View>
+              <View className="flex-1">
                 <Text className="font-bold text-purple-900 dark:text-purple-100">Calendar</Text>
                 <Text className="text-xs text-purple-700 dark:text-purple-300">Schedules & Dues</Text>
               </View>
             </TouchableOpacity>
           </Link>
-        </View>
 
-        <View className="flex-row gap-4 mb-6">
           <Link href="/(student)/study-vault" asChild>
-            <TouchableOpacity className="flex-1 bg-amber-100 dark:bg-amber-900/30 p-4 rounded-2xl items-center flex-row">
+            <TouchableOpacity className="w-[47%] md:w-[23%] bg-amber-100 dark:bg-amber-900/30 p-4 rounded-2xl items-center flex-row mb-2">
               <View className="w-10 h-10 bg-amber-500 rounded-full items-center justify-center mr-3">
                 <Ionicons name="folder-open-outline" size={24} color="white" />
               </View>
-              <View>
+              <View className="flex-1">
                 <Text className="font-bold text-amber-900 dark:text-amber-100">Study Vault</Text>
                 <Text className="text-xs text-amber-700 dark:text-amber-300">Offline Files</Text>
               </View>
             </TouchableOpacity>
           </Link>
+
           <Link href="/(student)/teachers" asChild>
-            <TouchableOpacity className="flex-1 bg-green-100 dark:bg-green-900/30 p-4 rounded-2xl items-center flex-row">
+            <TouchableOpacity className="w-[47%] md:w-[23%] bg-green-100 dark:bg-green-900/30 p-4 rounded-2xl items-center flex-row mb-2">
               <View className="w-10 h-10 bg-green-500 rounded-full items-center justify-center mr-3">
                 <Ionicons name="people-outline" size={24} color="white" />
               </View>
-              <View>
+              <View className="flex-1">
                 <Text className="font-bold text-green-900 dark:text-green-100">Teachers</Text>
                 <Text className="text-xs text-green-700 dark:text-green-300">View Faculty</Text>
               </View>
             </TouchableOpacity>
           </Link>
         </View>
+
         {/* Recent Activity Header */}
         <View className="flex-row justify-between items-center mb-4">
           <Text className="text-xl font-bold text-textPrimary dark:text-dark-textPrimary">
@@ -204,7 +204,7 @@ const Dashboard = () => {
         }
 
       </ScrollView >
-    </View >
+    </View>
   );
 };
 

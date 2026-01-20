@@ -172,19 +172,21 @@ export default function EditTeacher() {
     );
 
     return (
-        <View className={`flex-1 px-6 pt-6 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
-            <PageHeader
-                title={isAdmin ? "Edit Teacher" : "Teacher Details"}
-                rightAction={
-                    isAdmin ? (
-                        <TouchableOpacity onPress={handleDelete} className="bg-red-100 dark:bg-red-900 p-2 rounded-full">
-                            <Ionicons name="trash-outline" size={20} color="#EF4444" />
-                        </TouchableOpacity>
-                    ) : null
-                }
-            />
+        <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+            <View className="px-6 pt-6 w-full">
+                <PageHeader
+                    title={isAdmin ? "Edit Teacher" : "Teacher Details"}
+                    rightAction={
+                        isAdmin ? (
+                            <TouchableOpacity onPress={handleDelete} className="bg-red-100 dark:bg-red-900 p-2 rounded-full">
+                                <Ionicons name="trash-outline" size={20} color="#EF4444" />
+                            </TouchableOpacity>
+                        ) : null
+                    }
+                />
+            </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }} className="w-full px-6 pt-4 flex-1">
                 <View className={`p-6 rounded-2xl mb-6 ${isDark ? "bg-gray-800" : "bg-white"}`}>
 
                     <FormInput

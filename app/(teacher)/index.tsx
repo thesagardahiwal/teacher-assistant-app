@@ -81,16 +81,18 @@ export default function TeacherDashboard() {
         label,
         onPress,
         bgColor,
+        className,
     }: {
         icon: keyof typeof MaterialCommunityIcons.glyphMap;
         label: string;
         onPress: () => void;
         bgColor: string;
+        className?: string; // Added optional className
     }) => (
         <TouchableOpacity
             onPress={onPress}
             activeOpacity={0.8}
-            className={`flex-1 p-4 rounded-2xl ${isDark ? "bg-gray-800" : "bg-white"} shadow-sm`}
+            className={`p-4 rounded-2xl ${isDark ? "bg-gray-800" : "bg-white"} shadow-sm ${className || ''}`}
         >
             <View className={`w-12 h-12 rounded-full ${bgColor} items-center justify-center mb-3`}>
                 <MaterialCommunityIcons name={icon} size={22} color="white" />
@@ -104,6 +106,7 @@ export default function TeacherDashboard() {
     return (
         <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
             <ScrollView
+                className="w-full flex-1"
                 contentContainerStyle={{ paddingBottom: 100 }}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
             >
@@ -121,15 +124,15 @@ export default function TeacherDashboard() {
                 </View>
 
                 {/* Stats Grid */}
-                <View className="flex-row flex-wrap px-3 mb-6">
+                <View className="flex-row flex-wrap px-3 mb-6 justify-between">
                     {stats.map((stat, index) => (
-                        <View key={index} className="w-1/3 p-2">
+                        <View key={index} className="w-[32%] md:w-[32%] p-1">
                             <View className={`p-3 rounded-xl items-center ${isDark ? "bg-gray-800" : "bg-white"} shadow-sm h-32 justify-center`}>
                                 <View className={`w-10 h-10 rounded-full ${stat.bg} items-center justify-center mb-2`}>
                                     <MaterialCommunityIcons name={stat.icon as any} size={20} color={'white'} className={stat.color} />
                                 </View>
-                                <Text className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>{stat.value}</Text>
-                                <Text className={`text-xs text-center ${isDark ? "text-gray-400" : "text-gray-500"}`}>{stat.label}</Text>
+                                <Text className={`text-xl md:text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>{stat.value}</Text>
+                                <Text className={`text-[10px] md:text-xs text-center ${isDark ? "text-gray-400" : "text-gray-500"}`}>{stat.label}</Text>
                             </View>
                         </View>
                     ))}
@@ -146,59 +149,58 @@ export default function TeacherDashboard() {
                         Quick Actions
                     </Text>
 
-                    <View className="flex-row gap-4 mb-4">
+                    <View className="flex-row flex-wrap gap-3">
                         <QuickAction
+                            className="w-[48%] md:w-[23%]"
                             icon="check-circle-outline"
                             label="Attendance"
                             bgColor="bg-green-500"
                             onPress={() => router.push("/(teacher)/attendance")}
                         />
                         <QuickAction
+                            className="w-[48%] md:w-[23%]"
                             icon="calendar-clock"
                             label="My Schedule"
                             bgColor="bg-purple-500"
                             onPress={() => router.push("/(teacher)/schedule")}
                         />
-                    </View>
-
-                    <View className="flex-row gap-4 mb-4">
                         <QuickAction
+                            className="w-[48%] md:w-[23%]"
                             icon="clipboard-text-outline"
                             label="Assessments"
                             bgColor="bg-red-500"
                             onPress={() => router.push("/(teacher)/assessments")}
                         />
                         <QuickAction
+                            className="w-[48%] md:w-[23%]"
                             icon="format-list-bulleted"
                             label="My Classes"
                             bgColor="bg-indigo-500"
                             onPress={() => router.push("/(teacher)/classes")}
                         />
-                    </View>
-
-                    <View className="flex-row gap-4">
                         <QuickAction
+                            className="w-[48%] md:w-[23%]"
                             icon="account-search"
                             label="Find Student"
                             bgColor="bg-orange-500"
                             onPress={() => router.push("/(teacher)/students")}
                         />
                         <QuickAction
+                            className="w-[48%] md:w-[23%]"
                             icon="folder-open"
                             label="Study Vault"
                             bgColor="bg-amber-500"
                             onPress={() => router.push("/(teacher)/study-vault")}
                         />
-                    </View>
-
-                    <View className="flex-row gap-4 mt-4">
                         <QuickAction
+                            className="w-[48%] md:w-[23%]"
                             icon="account-tie"
                             label="Teachers"
                             bgColor="bg-teal-500"
                             onPress={() => router.push("/(teacher)/teachers")}
                         />
                         <QuickAction
+                            className="w-[48%] md:w-[23%]"
                             icon="calendar-month"
                             label="Calendar"
                             bgColor="bg-cyan-500"

@@ -78,7 +78,7 @@ const AdminDashboard = () => {
   return (
     <View className="flex-1 bg-background dark:bg-dark-background">
       <ScrollView
-        className="flex-1"
+        className="flex-1 w-full"
         contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -105,10 +105,10 @@ const AdminDashboard = () => {
 
         {/* STATS GRID */}
         <View className="flex-row flex-wrap justify-between mb-8">
-          <StatCard onClick={() => router.navigate('/(admin)/courses')} title="Courses" value={`${courses?.length || 0}`} />
-          <StatCard onClick={() => router.navigate('/(admin)/classes')} title="Classes" value={`${classes?.length || 0}`} />
-          <StatCard onClick={() => router.navigate('/(admin)/teachers')} title="Teachers" value={`${teachers?.length || 0}`} />
-          <StatCard onClick={() => router.navigate('/(admin)/students')} title="Students" value={`${students?.length || 0}`} />
+          <StatCard className="w-[48%] md:w-[23%]" onClick={() => router.navigate('/(admin)/courses')} title="Courses" value={`${courses?.length || 0}`} />
+          <StatCard className="w-[48%] md:w-[23%]" onClick={() => router.navigate('/(admin)/classes')} title="Classes" value={`${classes?.length || 0}`} />
+          <StatCard className="w-[48%] md:w-[23%]" onClick={() => router.navigate('/(admin)/teachers')} title="Teachers" value={`${teachers?.length || 0}`} />
+          <StatCard className="w-[48%] md:w-[23%]" onClick={() => router.navigate('/(admin)/students')} title="Students" value={`${students?.length || 0}`} />
         </View>
 
         {/* MANAGEMENT ACTIONS */}
@@ -116,28 +116,30 @@ const AdminDashboard = () => {
           Management
         </Text>
 
-        <View className="flex-row gap-3 mb-3">
+        <View className="flex-row flex-wrap gap-3 mb-6">
           <QuickAction
+            className="w-full md:w-[48%] lg:w-[23%]"
             onPress={() => router.navigate('/(admin)/teachers/create')}
             icon="person-add-outline"
             label="Add Teacher"
             bgColor="bg-blue-500"
           />
           <QuickAction
+            className="w-full md:w-[48%] lg:w-[23%]"
             onPress={() => router.navigate('/(admin)/students/create')}
             icon="school-outline"
             label="Add Student"
             bgColor="bg-indigo-500"
           />
-        </View>
-        <View className="flex-row gap-3 mb-6">
           <QuickAction
+            className="w-full md:w-[48%] lg:w-[23%]"
             onPress={() => router.navigate('/(admin)/classes/create')}
             icon="people-outline"
             label="Create Class"
             bgColor="bg-violet-500"
           />
           <QuickAction
+            className="w-full md:w-[48%] lg:w-[23%]"
             onPress={() => router.navigate('/(admin)/assignments/create')}
             icon="person-circle-outline"
             label="Assign Teacher"
@@ -150,28 +152,30 @@ const AdminDashboard = () => {
           Academics
         </Text>
 
-        <View className="flex-row gap-3 mb-3">
+        <View className="flex-row flex-wrap gap-3 mb-6">
           <QuickAction
+            className="w-full md:w-[31%]"
             onPress={() => router.navigate('/(admin)/courses/create')}
             icon="book-outline"
             label="Add Course"
             bgColor="bg-amber-500"
           />
           <QuickAction
+            className="w-full md:w-[31%]"
             onPress={() => router.navigate('/(admin)/subjects/create')}
             icon="library-outline"
             label="Add Subject"
             bgColor="bg-orange-500"
           />
-        </View>
-        <View className="flex-row gap-3 mb-6">
           <QuickAction
+            className="w-full md:w-[31%]"
             onPress={() => router.navigate('/(admin)/academic-years')}
             icon="calendar-outline"
             label="Academic Years"
             bgColor="bg-emerald-500"
           />
           <QuickAction
+            className="w-full md:w-[31%]"
             onPress={() => router.navigate('/(admin)/schedules')}
             icon="time-outline"
             label="Schedules"

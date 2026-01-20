@@ -165,7 +165,7 @@ export default function AttendanceDetailScreen() {
                 </View>
             </View>
 
-            <ScrollView className="flex-1 px-5 pt-4" contentContainerStyle={{ paddingBottom: 100 }}>
+            <ScrollView className="flex-1 px-5 pt-4 w-full" contentContainerStyle={{ paddingBottom: 100 }}>
                 {records.map((record) => (
                     <View
                         key={record.$id}

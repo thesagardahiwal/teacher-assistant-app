@@ -58,88 +58,94 @@ const Login = () => {
 
   const displayError = localError || getErrorMessage(error);
 
+
+  const content = (
+    <View className="flex-1 justify-center px-6 w-full max-w-sm md:max-w-md self-center">
+      {/* App Name */}
+      <Text className="text-3xl font-bold text-center text-primary dark:text-dark-primary mb-2">
+        Teachora
+      </Text>
+
+      <Text className="text-base text-center text-textSecondary dark:text-dark-textSecondary mb-8">
+        Secure login to continue
+      </Text>
+
+      {/* Email */}
+      <TextInput
+        className="bg-card dark:bg-dark-card border border-border dark:border-dark-border rounded-xl px-4 py-4 mb-4 text-textPrimary dark:text-dark-textPrimary"
+        placeholder="Email"
+        placeholderTextColor={isDark ? "#9CA3AF" : "#94A3B8"}
+        autoCapitalize="none"
+        keyboardType="email-address"
+        value={email}
+        onChangeText={(text) => { setEmail(text); setLocalError(""); }}
+      />
+
+      {/* Password */}
+      <View className="relative mb-3">
+        <TextInput
+          className="bg-card dark:bg-dark-card border border-border dark:border-dark-border rounded-xl px-4 py-4 text-textPrimary dark:text-dark-textPrimary pr-12"
+          placeholder="Password"
+          placeholderTextColor={isDark ? "#9CA3AF" : "#94A3B8"}
+          secureTextEntry={!showPassword}
+          value={password}
+          onChangeText={(text) => { setPassword(text); setLocalError(""); }}
+        />
+        <TouchableOpacity
+          onPress={() => setShowPassword(!showPassword)}
+          className="absolute right-4 top-4"
+          testID="toggle-password"
+        >
+          <Ionicons
+            name={showPassword ? "eye-off" : "eye"}
+            size={24}
+            color={isDark ? "#9CA3AF" : "#94A3B8"}
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Error */}
+      {displayError ? (
+        <Text className="text-error text-center mb-3">
+          {displayError}
+        </Text>
+      ) : null}
+
+      {/* Login Button */}
+      <TouchableOpacity
+        onPress={handleLogin}
+        disabled={isLoading}
+        className="bg-primary dark:bg-dark-primary rounded-xl py-4 items-center mt-2"
+      >
+        {isLoading ? (
+          <ActivityIndicator color="#FFFFFF" />
+        ) : (
+          <Text className="text-white font-semibold text-base">
+            Login
+          </Text>
+        )}
+      </TouchableOpacity>
+
+      {/* Footer */}
+      <Text className="text-sm text-center text-muted dark:text-dark-muted mt-6">
+        © Teachora · Secure Academic Platform
+      </Text>
+    </View>
+  );
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       className="flex-1 bg-background dark:bg-dark-background"
     >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View className="flex-1 justify-center px-6">
-
-          {/* App Name */}
-          <Text className="text-3xl font-bold text-center text-primary dark:text-dark-primary mb-2">
-            Teachora
-          </Text>
-
-          <Text className="text-base text-center text-textSecondary dark:text-dark-textSecondary mb-8">
-            Secure login to continue
-          </Text>
-
-          {/* Email */}
-          <TextInput
-            className="bg-card dark:bg-dark-card border border-border dark:border-dark-border rounded-xl px-4 py-4 mb-4 text-textPrimary dark:text-dark-textPrimary"
-            placeholder="Email"
-            placeholderTextColor={isDark ? "#9CA3AF" : "#94A3B8"}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={(text) => { setEmail(text); setLocalError(""); }}
-          />
-
-          {/* Password */}
-          <View className="relative mb-3">
-            <TextInput
-              className="bg-card dark:bg-dark-card border border-border dark:border-dark-border rounded-xl px-4 py-4 text-textPrimary dark:text-dark-textPrimary pr-12"
-              placeholder="Password"
-              placeholderTextColor={isDark ? "#9CA3AF" : "#94A3B8"}
-              secureTextEntry={!showPassword}
-              value={password}
-              onChangeText={(text) => { setPassword(text); setLocalError(""); }}
-            />
-            <TouchableOpacity
-              onPress={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-4"
-              testID="toggle-password"
-            >
-              <Ionicons
-                name={showPassword ? "eye-off" : "eye"}
-                size={24}
-                color={isDark ? "#9CA3AF" : "#94A3B8"}
-              />
-            </TouchableOpacity>
-          </View>
-
-          {/* Error */}
-          {displayError ? (
-            <Text className="text-error text-center mb-3">
-              {displayError}
-            </Text>
-          ) : null}
-
-          {/* Login Button */}
-          <TouchableOpacity
-            onPress={handleLogin}
-            disabled={isLoading}
-            className="bg-primary dark:bg-dark-primary rounded-xl py-4 items-center mt-2"
-          >
-            {isLoading ? (
-              <ActivityIndicator color="#FFFFFF" />
-            ) : (
-              <Text className="text-white font-semibold text-base">
-                Login
-              </Text>
-            )}
-          </TouchableOpacity>
-
-          {/* Footer */}
-          <Text className="text-sm text-center text-muted dark:text-dark-muted mt-6">
-            © Teachora · Secure Academic Platform
-          </Text>
-
-        </View>
-      </TouchableWithoutFeedback>
+      {Platform.OS === "web" ? content : (
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          {content}
+        </TouchableWithoutFeedback>
+      )}
     </KeyboardAvoidingView>
   );
+
 };
 
 export default Login;
