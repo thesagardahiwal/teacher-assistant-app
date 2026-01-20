@@ -189,6 +189,7 @@ export default function AttendanceDetailScreen() {
 
                         {canEdit && (
                             <Switch
+                                testID={`switch-${record.$id}`}
                                 value={record.present}
                                 onValueChange={(val) => toggleAttendance(record.$id, val)}
                                 trackColor={{ false: "#EF4444", true: "#22C55E" }}
