@@ -11,7 +11,7 @@ interface CalendarAgendaProps {
     schedules: ClassSchedule[];
     assessments: Assessment[];
     localEvents?: LocalEvent[];
-    role: "TEACHER" | "STUDENT";
+    role: "TEACHER" | "STUDENT" | "PRINCIPAL" | "ADMIN";
     refreshing?: boolean;
     onRefresh?: () => void;
     onDateSelected?: (date: string) => void;

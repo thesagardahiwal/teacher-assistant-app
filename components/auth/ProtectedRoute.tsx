@@ -22,8 +22,10 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
                     router.replace("/(student)/dashboard");
                 } else if (user.role === "TEACHER") {
                     router.replace("/(teacher)");
-                } else if (["ADMIN", "PRINCIPAL", "VICE_PRINCIPAL"].includes(user.role)) {
+                } else if (["ADMIN"].includes(user.role)) {
                     router.replace("/(admin)/dashboard");
+                } else if (["PRINCIPAL", "VICE_PRINCIPAL"].includes(user.role)) {
+                    router.replace("/(principal)/dashboard");
                 }
             }
         }

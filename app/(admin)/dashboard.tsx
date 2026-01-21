@@ -4,6 +4,7 @@ import { useClasses } from "@/store/hooks/useClasses";
 import { useCourses } from "@/store/hooks/useCourses";
 import { useStudents } from "@/store/hooks/useStudents";
 import { useTeachers } from "@/store/hooks/useTeachers";
+import { useTheme } from "@/store/hooks/useTheme";
 import { institutionStorage } from "@/utils/institutionStorage";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -18,7 +19,7 @@ const AdminDashboard = () => {
   const { data: classes, fetchClasses } = useClasses();
   const { data: teachers, fetchTeachers } = useTeachers();
   const { data: students, fetchStudents } = useStudents();
-
+  const { isDark } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
 
   const loadData = async () => {
@@ -54,22 +55,23 @@ const AdminDashboard = () => {
     label,
     onPress,
     bgColor,
+    className,
   }: {
     icon: keyof typeof Ionicons.glyphMap;
     label: string;
     onPress: () => void;
     bgColor: string;
-    className?: string;
+    className?: string; // Added optional className
   }) => (
     <TouchableOpacity
       onPress={onPress}
       activeOpacity={0.8}
-      className={`flex-1 p-4 rounded-2xl bg-card dark:bg-dark-card shadow-sm border border-border dark:border-dark-border min-h-[110px] justify-between`}
+      className={`p-4 rounded-2xl ${isDark ? "bg-gray-800" : "bg-white"} shadow-sm ${className || ''}`}
     >
-      <View className={`w-10 h-10 rounded-full ${bgColor} items-center justify-center mb-2`}>
-        <Ionicons name={icon} size={20} color="white" />
+      <View className={`w-12 h-12 rounded-full ${bgColor} items-center justify-center mb-3`}>
+        <Ionicons name={icon} size={22} color="white" />
       </View>
-      <Text className="font-semibold text-sm text-textPrimary dark:text-dark-textPrimary">
+      <Text className={`font-semibold text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
         {label}
       </Text>
     </TouchableOpacity>
@@ -118,28 +120,28 @@ const AdminDashboard = () => {
 
         <View className="flex-row flex-wrap gap-3 mb-6">
           <QuickAction
-            className="w-full md:w-[48%] lg:w-[23%]"
+            className="w-[48%] md:w-[23%]"
             onPress={() => router.navigate('/(admin)/teachers/create')}
             icon="person-add-outline"
             label="Add Teacher"
             bgColor="bg-blue-500"
           />
           <QuickAction
-            className="w-full md:w-[48%] lg:w-[23%]"
+            className="w-[48%] md:w-[23%]"
             onPress={() => router.navigate('/(admin)/students/create')}
             icon="school-outline"
             label="Add Student"
             bgColor="bg-indigo-500"
           />
           <QuickAction
-            className="w-full md:w-[48%] lg:w-[23%]"
+            className="w-[48%] md:w-[23%]"
             onPress={() => router.navigate('/(admin)/classes/create')}
             icon="people-outline"
             label="Create Class"
             bgColor="bg-violet-500"
           />
           <QuickAction
-            className="w-full md:w-[48%] lg:w-[23%]"
+            className="w-[48%] md:w-[23%]"
             onPress={() => router.navigate('/(admin)/assignments/create')}
             icon="person-circle-outline"
             label="Assign Teacher"
@@ -154,28 +156,28 @@ const AdminDashboard = () => {
 
         <View className="flex-row flex-wrap gap-3 mb-6">
           <QuickAction
-            className="w-full md:w-[31%]"
+            className="w-[48%] md:w-[23%]"
             onPress={() => router.navigate('/(admin)/courses/create')}
             icon="book-outline"
             label="Add Course"
             bgColor="bg-amber-500"
           />
           <QuickAction
-            className="w-full md:w-[31%]"
+            className="w-[48%] md:w-[23%]"
             onPress={() => router.navigate('/(admin)/subjects/create')}
             icon="library-outline"
             label="Add Subject"
             bgColor="bg-orange-500"
           />
           <QuickAction
-            className="w-full md:w-[31%]"
+            className="w-[48%] md:w-[23%]"
             onPress={() => router.navigate('/(admin)/academic-years')}
             icon="calendar-outline"
             label="Academic Years"
             bgColor="bg-emerald-500"
           />
           <QuickAction
-            className="w-full md:w-[31%]"
+            className="w-[48%] md:w-[23%]"
             onPress={() => router.navigate('/(admin)/schedules')}
             icon="time-outline"
             label="Schedules"

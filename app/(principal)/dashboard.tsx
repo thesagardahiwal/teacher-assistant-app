@@ -1,4 +1,3 @@
-import ActionButton from "@/components/admin/ActionButtons";
 import StatCard from "@/components/admin/StatCard";
 import StatusRow from "@/components/admin/StatusRow";
 import { useAuth } from "@/store/hooks/useAuth";
@@ -6,7 +5,9 @@ import { useClasses } from "@/store/hooks/useClasses";
 import { useCourses } from "@/store/hooks/useCourses";
 import { useStudents } from "@/store/hooks/useStudents";
 import { useTeachers } from "@/store/hooks/useTeachers";
+import { useTheme } from "@/store/hooks/useTheme";
 import { institutionStorage } from "@/utils/institutionStorage";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
@@ -14,6 +15,7 @@ import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-
 const PrincipalDashboard = () => {
   const { user } = useAuth();
   const router = useRouter();
+  const { isDark } = useTheme();
   const { data: courses, fetchCourses } = useCourses();
   const { data: classes, fetchClasses } = useClasses();
   const { data: teachers, fetchTeachers } = useTeachers();
@@ -48,6 +50,33 @@ const PrincipalDashboard = () => {
     setRefreshing(false);
   }, [user]);
 
+  const QuickAction = ({
+    icon,
+    label,
+    onPress,
+    bgColor,
+    className,
+  }: {
+    icon: keyof typeof Ionicons.glyphMap;
+    label: string;
+    onPress: () => void;
+    bgColor: string;
+    className?: string; // Added optional className
+  }) => (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.8}
+      className={`p-4 rounded-2xl ${isDark ? "bg-gray-800" : "bg-white"} shadow-sm ${className || ''}`}
+    >
+      <View className={`w-12 h-12 rounded-full ${bgColor} items-center justify-center mb-3`}>
+        <Ionicons name={icon} size={22} color="white" />
+      </View>
+      <Text className={`font-semibold text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+
   return (
     <View className="flex-1 bg-background dark:bg-dark-background">
       <ScrollView
@@ -72,7 +101,7 @@ const PrincipalDashboard = () => {
               Principal Dashboard
             </Text>
           </View>
-          <TouchableOpacity onPress={() => router.push("/(principal)/principal-profile")} className="bg-card dark:bg-dark-card p-2 rounded-full border border-border dark:border-dark-border">
+          <TouchableOpacity onPress={() => router.push("/(principal)/profile")} className="bg-card dark:bg-dark-card p-2 rounded-full border border-border dark:border-dark-border">
             <View className="w-8 h-8 rounded-full bg-blue-600 dark:bg-blue-500 items-center justify-center">
               <Text className="text-white font-bold text-lg">{user?.name?.charAt(0)}</Text>
             </View>
@@ -81,10 +110,10 @@ const PrincipalDashboard = () => {
 
         {/* STATS GRID - Read Only Access */}
         <View className="flex-row flex-wrap justify-between mb-6">
-          <StatCard onClick={() => router.navigate('/(admin)/courses')} title="Courses" value={`${courses?.length || 0}`} />
-          <StatCard onClick={() => router.navigate('/(admin)/classes')} title="Classes" value={`${classes?.length || 0}`} />
-          <StatCard onClick={() => router.navigate('/(admin)/teachers')} title="Teachers" value={`${teachers?.length || 0}`} />
-          <StatCard onClick={() => router.navigate('/(admin)/students')} title="Students" value={`${students?.length || 0}`} />
+          <StatCard onClick={() => router.navigate('/(principal)/courses')} title="Courses" value={`${courses?.length || 0}`} />
+          <StatCard onClick={() => router.navigate('/(principal)/classes')} title="Classes" value={`${classes?.length || 0}`} />
+          <StatCard onClick={() => router.navigate('/(principal)/teachers')} title="Teachers" value={`${teachers?.length || 0}`} />
+          <StatCard onClick={() => router.navigate('/(principal)/students')} title="Students" value={`${students?.length || 0}`} />
         </View>
 
         {/* QUICK ACTIONS - Limited for Principal */}
@@ -92,9 +121,63 @@ const PrincipalDashboard = () => {
           Quick Actions
         </Text>
 
-        <View className="bg-card dark:bg-dark-card rounded-2xl p-4 mb-6 border border-border dark:border-dark-border">
-          <ActionButton onClick={() => router.navigate('/(admin)/assignments/create')} icon="link-outline" label="Assign Teacher" />
-          {/* Principal can manage assignments, but not create core entities */}
+        <View className="flex-row flex-wrap gap-3 mb-6">
+          <QuickAction
+            className="w-[48%] md:w-[23%]"
+            onPress={() => router.navigate('/(principal)/teachers')}
+            icon="school-outline"
+            label="Teachers"
+            bgColor="bg-blue-500"
+          />
+          <QuickAction
+            className="w-[48%] md:w-[23%]"
+            onPress={() => router.navigate('/(principal)/students')}
+            icon="people-outline"
+            label="Students"
+            bgColor="bg-indigo-500"
+          />
+          <QuickAction
+            className="w-[48%] md:w-[23%]"
+            onPress={() => router.navigate('/(principal)/classes')}
+            icon="calendar-outline"
+            label="Classes"
+            bgColor="bg-violet-500"
+          />
+          <QuickAction
+            className="w-[48%] md:w-[23%]"
+            onPress={() => router.navigate('/(principal)/assignments/create')}
+            icon="link-outline"
+            label="Assign Teacher"
+            bgColor="bg-purple-500"
+          />
+        </View>
+
+        {/* ACADEMIC OPERATIONS */}
+        <Text className="text-lg font-semibold text-textPrimary dark:text-dark-textPrimary mb-3">
+          Academic Operations
+        </Text>
+        <View className="flex-row flex-wrap gap-3 mb-6">
+          <QuickAction
+            className="w-[48%] md:w-[31%]"
+            onPress={() => router.navigate('/(principal)/attendance')}
+            icon="clipboard-outline"
+            label="Attendance"
+            bgColor="bg-teal-500"
+          />
+          <QuickAction
+            className="w-[48%] md:w-[31%]"
+            onPress={() => router.navigate('/(principal)/schedule')}
+            icon="time-outline"
+            label="My Schedule"
+            bgColor="bg-orange-500"
+          />
+          <QuickAction
+            className="w-[48%] md:w-[31%]"
+            onPress={() => router.navigate('/(principal)/assessments')}
+            icon="document-text-outline"
+            label="Assessments"
+            bgColor="bg-rose-500"
+          />
         </View>
 
         {/* SYSTEM STATUS */}

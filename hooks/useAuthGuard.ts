@@ -9,12 +9,14 @@ export const useAuthGuard = (allowedRoles: string[] = []) => {
   useEffect(() => {
     if (isLoading) return;
 
+
+
     if (!isAuthenticated) {
       router.replace("/(auth)/login");
     } else if (allowedRoles.length > 0 && (!role || !allowedRoles.includes(role))) {
       router.replace("/");
     }
-  }, [isLoading, isAuthenticated, role, allowedRoles]);
+  }, [isLoading, isAuthenticated, role, JSON.stringify(allowedRoles), router]);
 
   // Derived state - synchronous to avoid flickers
   // If loading, we aren't "authorized" yet in a final sense, but we shouldn't block rendering if we want to show a spinner

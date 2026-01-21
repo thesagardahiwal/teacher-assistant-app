@@ -1,26 +1,33 @@
-import { Link, Redirect } from "expo-router";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Link, useRouter } from "expo-router";
+import { useEffect } from "react";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import { useAuth } from "../store/hooks/useAuth";
 
 export default function Index() {
   const { isAuthenticated, role, isLoading } = useAuth();
+  const router = useRouter();
 
-  if (isAuthenticated && !isLoading) {
-    switch (role) {
-      case "PRINCIPAL":
-      case "VICE_PRINCIPAL":
-        return <Redirect href="/(principal)/dashboard" />;
-      case "ADMIN":
-        return <Redirect href="/(admin)/dashboard" />;
-      case "TEACHER":
-        return <Redirect href="/(teacher)" />;
-      case "STUDENT":
-        return <Redirect href="/(student)/dashboard" />;
-      default:
-        // If role matches none, stay here or go to login? 
-        // Likely shouldn't happen if authenticated.
-        break;
+  useEffect(() => {
+    if (isAuthenticated && !isLoading && role) {
+      if (role === "PRINCIPAL" || role === "VICE_PRINCIPAL") {
+        router.replace("/(principal)/dashboard");
+      } else if (role === "ADMIN") {
+        router.replace("/(admin)/dashboard");
+      } else if (role === "TEACHER") {
+        router.replace("/(teacher)");
+      } else if (role === "STUDENT") {
+        router.replace("/(student)/dashboard");
+      }
     }
+  }, [isAuthenticated, isLoading, role, router]);
+
+  if (isLoading || isAuthenticated) {
+    return (
+      <View className="flex-1 items-center justify-center bg-background dark:bg-dark-background">
+        <ActivityIndicator size="large" className="text-primary" />
+        <Text className="mt-4 text-textSecondary dark:text-dark-textSecondary font-medium">Redirecting...</Text>
+      </View>
+    );
   }
 
   // If not authenticated, show Landing Page

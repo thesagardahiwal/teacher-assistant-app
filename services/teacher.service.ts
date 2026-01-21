@@ -1,4 +1,5 @@
 import { Query } from "react-native-appwrite";
+import { TEACHING_ROLES } from "../types/role.type";
 import { User, UserPayload } from "../types/user.type";
 import { COLLECTIONS } from "./appwrite/collections";
 import { databaseService } from "./appwrite/database.service";
@@ -10,7 +11,7 @@ export const teacherService = {
       COLLECTIONS.USERS,
       [
         Query.equal("institution", institutionId),
-        Query.equal("role", "TEACHER"),
+        Query.equal("role", TEACHING_ROLES),
       ]
     );
   },

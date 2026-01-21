@@ -21,7 +21,7 @@ const DAYS = [
     { id: "MON", label: "Monday" },
     { id: "TUE", label: "Tuesday" },
     { id: "WED", label: "Wednesday" },
-    { id: "THU", label: "Thursday" },
+    { id: "THUR", label: "Thursday" },
     { id: "FRI", label: "Friday" },
     { id: "SAT", label: "Saturday" },
     { id: "SUN", label: "Sunday" },

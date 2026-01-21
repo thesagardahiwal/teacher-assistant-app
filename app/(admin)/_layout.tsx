@@ -120,11 +120,26 @@ export default function AdminLayout() {
             <Tabs.Screen name="profile" options={{ href: null }} />
 
             {/* Sub-screens */}
+            {/* Hidden Create Screens */}
+            <Tabs.Screen name="teachers/create" options={{ href: null }} />
+            <Tabs.Screen name="students/create" options={{ href: null }} />
+            <Tabs.Screen name="classes/create" options={{ href: null }} />
+            <Tabs.Screen name="courses/create" options={{ href: null }} />
+            <Tabs.Screen name="subjects/create" options={{ href: null }} />
+            <Tabs.Screen name="academic-years/create" options={{ href: null }} />
+            <Tabs.Screen name="schedules/create" options={{ href: null }} />
+            <Tabs.Screen name="assignments/create" options={{ href: null }} />
+            <Tabs.Screen name="promotion/create" options={{ href: null }} />
+
+            {/* Hidden Detail Screens */}
             <Tabs.Screen name="teachers/[id]" options={{ href: null }} />
             <Tabs.Screen name="students/[id]" options={{ href: null }} />
             <Tabs.Screen name="classes/[id]" options={{ href: null }} />
             <Tabs.Screen name="courses/[id]" options={{ href: null }} />
-            {/* ... add catch-all for others or rely on file system */}
+            <Tabs.Screen name="subjects/[id]" options={{ href: null }} />
+            <Tabs.Screen name="academic-years/[id]" options={{ href: null }} />
+            <Tabs.Screen name="schedules/[id]" options={{ href: null }} />
+            <Tabs.Screen name="assignments/[id]" options={{ href: null }} />
 
           </Tabs>
         </View>
