@@ -26,7 +26,7 @@ export default function TeacherScheduleScreen() {
         { id: "MON", label: "Mon" },
         { id: "TUE", label: "Tue" },
         { id: "WED", label: "Wed" },
-        { id: "THUR", label: "Thu" },
+        { id: "THU", label: "Thu" },
         { id: "FRI", label: "Fri" },
         { id: "SAT", label: "Sat" },
         { id: "SUN", label: "Sun" },
