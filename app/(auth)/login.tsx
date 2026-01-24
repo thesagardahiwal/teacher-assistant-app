@@ -126,6 +126,18 @@ const Login = () => {
         )}
       </TouchableOpacity>
 
+      {/* Sign Up Link */}
+      <View className="flex-row justify-center mt-6">
+        <Text className="text-textSecondary dark:text-dark-textSecondary">
+          Don't have an account?{" "}
+        </Text>
+        <TouchableOpacity onPress={() => router.push("/(auth)/signup")}>
+          <Text className="text-primary dark:text-dark-primary font-semibold">
+            Sign up
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       {/* Footer */}
       <Text className="text-sm text-center text-muted dark:text-dark-muted mt-6">
         © Teachora · Secure Academic Platform

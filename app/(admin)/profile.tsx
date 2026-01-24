@@ -27,12 +27,18 @@ const AdminProfile = () => {
   const [name, setName] = useState("");
   const [department, setDepartment] = useState("");
   const [designation, setDesignation] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [bloodGroup, setBloodGroup] = useState("");
 
   useEffect(() => {
     if (user) {
       setName(user.name || "");
       setDepartment(user.department || "");
       setDesignation(user.designation || "");
+      setPhone(user.phone || "");
+      setAddress(user.address || "");
+      setBloodGroup(user.bloodGroup || "");
     }
   }, [user]);
 
@@ -49,6 +55,9 @@ const AdminProfile = () => {
         name,
         department,
         designation,
+        phone,
+        address,
+        bloodGroup
       });
       setIsEditing(false);
       showAlert("Success", "Profile updated successfully");
@@ -195,6 +204,37 @@ const AdminProfile = () => {
                   />
                 </View>
               </View>
+
+              <View className="flex-row space-x-4">
+                <View className="flex-1">
+                  <InputField
+                    label="Phone"
+                    value={phone}
+                    onChangeText={setPhone}
+                    editable={isEditing}
+                    placeholder="+91..."
+                    keyboardType="phone-pad"
+                  />
+                </View>
+                <View className="w-1/3">
+                  <InputField
+                    label="Blood Group"
+                    value={bloodGroup}
+                    onChangeText={setBloodGroup}
+                    editable={isEditing}
+                    placeholder="O+"
+                  />
+                </View>
+              </View>
+
+              <InputField
+                label="Address"
+                value={address}
+                onChangeText={setAddress}
+                editable={isEditing}
+                placeholder="Enter your address"
+                multiline
+              />
 
               <View className="mb-4">
                 <Text className={`text-sm font-medium mb-1.5 ${isDark ? "text-gray-400" : "text-gray-600"}`}>

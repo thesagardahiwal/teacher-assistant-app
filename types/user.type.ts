@@ -13,6 +13,9 @@ export interface User extends Models.Document {
     designation?: string;
     isActive: boolean;
     institution: Institution; // Institution ID
+    bloodGroup?: string;
+    phone?: string;
+    address?: string;
 }
 
 export interface UserPayload {
@@ -25,4 +28,7 @@ export interface UserPayload {
     designation?: string;
     isActive: boolean;
     institution: string; // Institution ID
+    bloodGroup?: string;
+    phone?: string;
+    address?: string;
 }

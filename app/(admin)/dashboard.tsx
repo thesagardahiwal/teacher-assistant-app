@@ -89,7 +89,7 @@ const AdminDashboard = () => {
       >
 
         {/* HEADER */}
-        <View className="mb-6 sticky top-0 z-10 flex-row items-center justify-between">
+        <View className="mb-6 flex-row items-center justify-between">
           <View>
             <Text className="text-sm text-textSecondary dark:text-dark-textSecondary">
               Welcome back,

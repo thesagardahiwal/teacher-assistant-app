@@ -17,4 +17,11 @@ export const institutionService = {
             data
         );
     },
+
+    create(data: Omit<Institution, keyof import("react-native-appwrite").Models.Document>) {
+        return databaseService.create<Institution>(
+            COLLECTIONS.INSTITUTIONS,
+            data
+        );
+    },
 };

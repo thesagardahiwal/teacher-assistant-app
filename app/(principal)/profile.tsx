@@ -22,6 +22,9 @@ export default function ProfileScreen() {
     const [name, setName] = useState(user?.name || "");
     const [department, setDepartment] = useState(user?.department || "");
     const [designation, setDesignation] = useState(user?.designation || "");
+    const [phone, setPhone] = useState(user?.phone || "");
+    const [address, setAddress] = useState(user?.address || "");
+    const [bloodGroup, setBloodGroup] = useState(user?.bloodGroup || "");
     const [loading, setLoading] = useState(false);
 
     // Update state when user data changes
@@ -30,6 +33,9 @@ export default function ProfileScreen() {
             setName(user.name);
             setDepartment(user.department || "");
             setDesignation(user.designation || "");
+            setPhone(user.phone || "");
+            setAddress(user.address || "");
+            setBloodGroup(user.bloodGroup || "");
         }
     }, [user]);
 
@@ -53,7 +59,10 @@ export default function ProfileScreen() {
             await updateProfile(user.$id, {
                 name,
                 department,
-                designation
+                designation,
+                phone,
+                address,
+                bloodGroup
             });
             setIsEditing(false);
             showAlert("Success", "Profile updated successfully");
@@ -198,6 +207,37 @@ export default function ProfileScreen() {
                                     />
                                 </View>
                             </View>
+
+                            <View className="flex-row gap-4">
+                                <View className="flex-1">
+                                    <InputField
+                                        label="Phone"
+                                        value={phone}
+                                        onChangeText={setPhone}
+                                        editable={isEditing}
+                                        placeholder="+91..."
+                                        keyboardType="phone-pad"
+                                    />
+                                </View>
+                                <View className="w-1/3">
+                                    <InputField
+                                        label="Blood Group"
+                                        value={bloodGroup}
+                                        onChangeText={setBloodGroup}
+                                        editable={isEditing}
+                                        placeholder="O+"
+                                    />
+                                </View>
+                            </View>
+
+                            <InputField
+                                label="Address"
+                                value={address}
+                                onChangeText={setAddress}
+                                editable={isEditing}
+                                placeholder="Enter your address"
+                                multiline
+                            />
                         </View>
 
                         {/* Action Buttons */}
