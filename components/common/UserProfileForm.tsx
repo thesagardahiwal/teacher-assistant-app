@@ -1,6 +1,7 @@
 import { FormInput } from "@/components/admin/ui/FormInput";
 import { ProfileFieldConfig } from "@/config/user-profile.config";
 import { useTheme } from "@/store/hooks/useTheme";
+import { getErrorMessage, validators } from "@/utils/validators";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 
@@ -27,6 +28,7 @@ export const UserProfileForm = ({
 }: UserProfileFormProps) => {
     const { isDark } = useTheme();
     const [formData, setFormData] = useState<any>({});
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [changed, setChanged] = useState(false);
 
     // Helper to access nested paths like "institution.name"
@@ -45,16 +47,60 @@ export const UserProfileForm = ({
             });
             setFormData(data);
         }
-    }, [initialData]); // Run only when initialData changes reference or is loaded
+    }, [initialData]);
+
+    const validateField = (name: string, value: any, fieldConfig: ProfileFieldConfig) => {
+        if (fieldConfig.required) {
+            if (!validators.isRequired(value)) {
+                return getErrorMessage('required', fieldConfig.label);
+            }
+        }
+        if (value && fieldConfig.type === 'email' && !validators.isValidEmail(value)) {
+            return getErrorMessage('email', fieldConfig.label);
+        }
+        if (value && fieldConfig.type === 'phone' && !validators.isValidPhone(value)) {
+            return getErrorMessage('phone', fieldConfig.label);
+        }
+        return "";
+    };
 
     const handleChange = (name: string, value: string) => {
+        const fieldConfig = config.find(f => f.name === name);
         setFormData((prev: any) => ({ ...prev, [name]: value }));
         setChanged(true);
+
+        if (fieldConfig) {
+            const error = validateField(name, value, fieldConfig);
+            setErrors(prev => ({ ...prev, [name]: error }));
+        }
+    };
+
+    const validateForm = () => {
+        const newErrors: { [key: string]: string } = {};
+        let isValid = true;
+
+        config.forEach(field => {
+            if (!field.editable && !readOnly) return; // Skip non-editable fields if we are in edit mode? 
+            // Actually, hidden fields might not need validation, but readOnly fields definitely don't.
+            // If the field is marked as editable: true, we validate it.
+            if (field.editable) {
+                const error = validateField(field.name, formData[field.name], field);
+                if (error) {
+                    newErrors[field.name] = error;
+                    isValid = false;
+                }
+            }
+        });
+
+        setErrors(newErrors);
+        return isValid;
     };
 
     const handleSubmit = async () => {
-        await onSubmit(formData);
-        setChanged(false); // Reset changed status after successful submit if parent doesn't unmount
+        if (validateForm()) {
+            await onSubmit(formData);
+            setChanged(false);
+        }
     };
 
     // Group fields by section
@@ -103,6 +149,8 @@ export const UserProfileForm = ({
                     field.type === 'email' ? 'email-address' :
                         field.type === 'phone' ? 'phone-pad' : 'default'
                 }
+                required={field.required}
+                error={errors[field.name]}
             />
         );
     };
@@ -114,6 +162,8 @@ export const UserProfileForm = ({
             </View>
         );
     }
+
+    const hasErrors = Object.values(errors).some(e => !!e);
 
     return (
         <View>
@@ -149,8 +199,8 @@ export const UserProfileForm = ({
 
                     <TouchableOpacity
                         onPress={handleSubmit}
-                        disabled={saving || (!changed && !showCancel)}
-                        className={`flex-1 py-4 rounded-xl items-center ${(changed || showCancel) ? "bg-blue-600 shadow-lg shadow-blue-600/20" : "bg-gray-300 dark:bg-gray-800"
+                        disabled={saving || (!changed && !showCancel) || hasErrors}
+                        className={`flex-1 py-4 rounded-xl items-center ${(changed || showCancel) && !hasErrors ? "bg-blue-600 shadow-lg shadow-blue-600/20" : "bg-gray-300 dark:bg-gray-800"
                             }`}
                     >
                         {saving ? (

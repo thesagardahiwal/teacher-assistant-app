@@ -142,16 +142,21 @@ export default function EditTeacher() {
         </View>
     );
 
+    // Customize config for Edit mode: Email should be read-only
+    const editConfig = AdminTeacherProfileConfig.map(field =>
+        field.name === 'email' ? { ...field, editable: false } : field
+    );
+
     return (
         <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"} p-4`}>
             <PageHeader title="Teacher Details" />
             <ScrollView className="flex-1 p-4">
 
                 {/* Reusable Profile Form */}
-                <View className={`mb-6 p-4 rounded-2xl ${isDark ? "bg-gray-900" : "bg-white"}`}>
+                <View className={`mb-6 p-4 rounded-2xl ${isDark ? "bg-gray-800" : "bg-white"}`}>
                     <UserProfileForm
                         initialData={teacher}
-                        config={AdminTeacherProfileConfig}
+                        config={editConfig}
                         onSubmit={handleUpdate}
                         loading={loading}
                         saving={saving}

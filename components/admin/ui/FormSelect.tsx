@@ -23,6 +23,7 @@ interface FormSelectProps {
     placeholder?: string;
     error?: string;
     editable?: boolean;
+    required?: boolean;
 }
 
 export const FormSelect = ({
@@ -33,6 +34,7 @@ export const FormSelect = ({
     placeholder = "Select an option",
     error,
     editable = true,
+    required = false,
 }: FormSelectProps) => {
     const { isDark } = useTheme();
     const [visible, setVisible] = useState(false);
@@ -41,9 +43,12 @@ export const FormSelect = ({
 
     return (
         <View className="mb-4">
-            <Text className={`text-sm font-medium mb-1.5 ${isDark ? "text-gray-300" : "text-gray-700"}`}>
-                {label}
-            </Text>
+            <View className="flex-row mb-1.5">
+                <Text className={`text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                    {label}
+                </Text>
+                {required && <Text className="text-red-500 ml-0.5">*</Text>}
+            </View>
 
             <TouchableOpacity
                 onPress={editable ? () => setVisible(true) : undefined}

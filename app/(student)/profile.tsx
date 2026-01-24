@@ -105,7 +105,7 @@ const Profile = () => {
                 {/* User Profile Form */}
                 <UserProfileForm
                     initialData={student}
-                    config={StudentProfileConfig}
+                    config={StudentProfileConfig.map(f => f.name === 'email' ? { ...f, editable: false } : f)}
                     onSubmit={handleSave}
                     loading={loading}
                     saving={saving}

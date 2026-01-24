@@ -142,7 +142,7 @@ export default function TeacherDetail() {
                 <View className={`mb-6 p-4 rounded-2xl ${isDark ? "bg-gray-800" : "bg-white"}`}>
                     <UserProfileForm
                         initialData={teacher}
-                        config={AdminTeacherProfileConfig} // Using same config as Admin
+                        config={AdminTeacherProfileConfig.map(f => f.name === 'email' ? { ...f, editable: false } : f)}
                         onSubmit={handleUpdate}
                         loading={loading}
                         saving={saving}

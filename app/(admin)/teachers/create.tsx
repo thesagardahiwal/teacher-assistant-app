@@ -1,12 +1,14 @@
 import { InviteSuccessModal } from "@/components/admin/modals/InviteSuccessModal";
-import { FormInput } from "@/components/admin/ui/FormInput";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
+import { UserProfileForm } from "@/components/common/UserProfileForm";
+import { AdminTeacherProfileConfig } from "@/config/user-profile.config";
 import { teacherService } from "@/services";
 import { useTeachers } from "@/store/hooks/useTeachers";
 import { useTheme } from "@/store/hooks/useTheme";
 import { showAlert } from "@/utils/alert";
 import { getInviteLink } from "@/utils/linking";
 import { useInstitutionId } from "@/utils/useInstitutionId";
+import { validators } from "@/utils/validators";
 import { Ionicons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
@@ -42,40 +44,18 @@ export default function CreateTeacher() {
   // Mode Selection: "manual" or "bulk"
   const [mode, setMode] = useState<"manual" | "bulk">("manual");
 
-  /* ---------- MANUAL FORM STATE ---------- */
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  // Additional fields
-  const [department, setDepartment] = useState("");
-  const [designation, setDesignation] = useState("");
-  const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
-  const [bloodGroup, setBloodGroup] = useState("");
-
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [inviteLink, setInviteLink] = useState("");
+  const [createdEmail, setCreatedEmail] = useState("");
 
   /* ---------- BULK UPLOAD STATE ---------- */
   const [parsedData, setParsedData] = useState<ParsedTeacher[]>([]);
   const [bulkProcessing, setBulkProcessing] = useState(false);
   const [bulkSummary, setBulkSummary] = useState<{ created: number; failed: number } | null>(null);
 
-  const handleManualSubmit = async () => {
-    // 1. Validation
-    if (!name.trim()) {
-      showAlert("Error", "Full Name is required");
-      return;
-    }
-    if (!email.trim()) {
-      showAlert("Error", "Email Address is required");
-      return;
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.trim())) {
-      showAlert("Error", "Please enter a valid email address");
-      return;
-    }
+  const handleManualSubmit = async (data: any) => {
+    // Validation is handled by UserProfileForm before calling this
     if (!institutionId) {
       showAlert("Error", "Institution ID missing. Please relogin.");
       return;
@@ -84,24 +64,23 @@ export default function CreateTeacher() {
     setLoading(true);
     try {
       const { invitation } = await teacherService.create({
-        name: name.trim(),
-        email: email.trim(),
+        name: data.name.trim(),
+        email: data.email.trim(),
         institution: institutionId,
         role: "TEACHER",
-        // Extended fields
-        department: department.trim() || undefined,
-        designation: designation.trim() || undefined,
-        phone: phone.trim() || undefined,
-        address: address.trim() || undefined,
-        bloodGroup: bloodGroup.trim() || undefined,
+        department: data.department?.trim() || undefined,
+        designation: data.designation?.trim() || undefined,
+        phone: data.phone?.trim() || undefined,
+        address: data.address?.trim() || undefined,
+        bloodGroup: data.bloodGroup?.trim() || undefined,
       });
 
       await fetchTeachers(institutionId);
 
       setInviteLink(getInviteLink(invitation.token));
+      setCreatedEmail(data.email.trim());
       setModalVisible(true);
 
-      // Reset form on success (optional, but keep modal open first)
     } catch (error: any) {
       showAlert("Error", error.message || "Failed to create teacher");
     } finally {
@@ -123,10 +102,6 @@ export default function CreateTeacher() {
       const file = result.assets[0];
       let content = "";
       if (Platform.OS === 'web') {
-        // On web, we might need to fetch the blob or use FileReader if uri is blob:
-        // DocumentPicker on Expo Web returns a File object usually but wrapper might differ
-        // Expo Document Picker web implementation usually returns a Blob URI.
-        // Fetching it is the easiest way.
         const response = await fetch(file.uri);
         content = await response.text();
       } else {
@@ -150,12 +125,8 @@ export default function CreateTeacher() {
     }
 
     const headers = rows[0].split(",").map(h => h.trim().toLowerCase());
-    const required = ["fullname", "email"]; // Mapping keys below
 
-    // Check basic headers presence (fuzzy match)
     // We expect headers: fullName, email, designation, department, phone, address, bloodGroup
-    // Let's assume order doesn't matter, we map by index.
-
     const mapIndex: Record<string, number> = {};
     headers.forEach((h, i) => {
       if (h.includes("name")) mapIndex["name"] = i;
@@ -175,10 +146,7 @@ export default function CreateTeacher() {
     const parsed: ParsedTeacher[] = [];
 
     for (let i = 1; i < rows.length; i++) {
-      // Handle CSV quotes if simple splitting fails? 
-      // For now simple split as per strict constraints timeboxed.
-      // If row has commas inside values, this simple split breaks. 
-      // But implementing full CSV regex parser is heavy. Assuming standard simple CSV.
+      // Simple split
       const cols = rows[i].split(",").map(c => c.trim());
 
       // Pad cols if short
@@ -199,7 +167,7 @@ export default function CreateTeacher() {
 
       if (!p.name) { status = "INVALID"; error = "Missing Name"; }
       else if (!p.email) { status = "INVALID"; error = "Missing Email"; }
-      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)) { status = "INVALID"; error = "Invalid Email"; }
+      else if (!validators.isValidEmail(p.email)) { status = "INVALID"; error = "Invalid Email"; }
 
       parsed.push({
         ...p,
@@ -251,9 +219,6 @@ export default function CreateTeacher() {
     await fetchTeachers(institutionId);
     setBulkSummary({ created, failed });
     setBulkProcessing(false);
-
-    // Clean up parsed data partially or keep for review?
-    // Requirement says "Show final summary". We show it.
   };
 
   /* ---------- RENDER HELPERS ---------- */
@@ -265,84 +230,15 @@ export default function CreateTeacher() {
           Teacher Details
         </Text>
 
-        <FormInput
-          label="Full Name *"
-          placeholder="John Doe"
-          value={name}
-          onChangeText={setName}
+        {/* Reusing UserProfileForm for consistent validation and UX */}
+        <UserProfileForm
+          initialData={{}} // Empty for create
+          config={AdminTeacherProfileConfig}
+          onSubmit={handleManualSubmit}
+          loading={loading}
+          saving={loading}
         />
-
-        <FormInput
-          label="Email Address *"
-          placeholder="john@example.com"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-        />
-
-        <View className="flex-row gap-4">
-          <View className="flex-1">
-            <FormInput
-              label="Department"
-              placeholder="Science"
-              value={department}
-              onChangeText={setDepartment}
-            />
-          </View>
-          <View className="flex-1">
-            <FormInput
-              label="Designation"
-              placeholder="Senior Teacher"
-              value={designation}
-              onChangeText={setDesignation}
-            />
-          </View>
-        </View>
-
-        <View className="flex-row gap-4">
-          <View className="flex-1">
-            <FormInput
-              label="Phone"
-              placeholder="+91..."
-              value={phone}
-              onChangeText={setPhone}
-              keyboardType="phone-pad"
-            />
-          </View>
-          <View className="w-1/3">
-            <FormInput
-              label="Blood Group"
-              placeholder="O+"
-              value={bloodGroup}
-              onChangeText={setBloodGroup}
-            />
-          </View>
-        </View>
-
-        <FormInput
-          label="Address"
-          placeholder="Enter address..."
-          value={address}
-          onChangeText={setAddress}
-          multiline
-          numberOfLines={3}
-        />
-
       </View>
-
-      <TouchableOpacity
-        onPress={handleManualSubmit}
-        disabled={loading}
-        className={`py-4 rounded-xl items-center mb-10 ${loading ? "bg-blue-400" : "bg-blue-600"
-          }`}
-      >
-        {loading ? (
-          <ActivityIndicator color="white" />
-        ) : (
-          <Text className="text-white font-bold text-lg">Create & Invite</Text>
-        )}
-      </TouchableOpacity>
     </ScrollView>
   );
 
@@ -458,12 +354,10 @@ export default function CreateTeacher() {
         visible={modalVisible}
         onClose={() => {
           setModalVisible(false);
-          router.back(); // Or stay on page if manual/bulk flow differs? 
-          // For manual, typically go back. For bulk, maybe stay?
-          // Keeping behavior same for manual.
+          router.back();
         }}
         inviteLink={inviteLink}
-        email={email} // This is manual email only. For bulk, we show summary inline.
+        email={createdEmail}
       />
     </View>
   );

@@ -1,3 +1,4 @@
+import { FormInput } from "@/components/admin/ui/FormInput";
 import { FormSelect } from "@/components/admin/ui/FormSelect";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
 import {
@@ -10,6 +11,7 @@ import { useTeachers } from "@/store/hooks/useTeachers";
 import { useTheme } from "@/store/hooks/useTheme";
 import { showAlert } from "@/utils/alert";
 import { useInstitutionId } from "@/utils/useInstitutionId";
+import { getErrorMessage, validators } from "@/utils/validators";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
@@ -18,7 +20,6 @@ import {
     Platform,
     ScrollView,
     Text,
-    TextInput,
     TouchableOpacity,
     View,
 } from "react-native";
@@ -52,6 +53,7 @@ export default function CreateSchedule() {
 
     const [loading, setLoading] = useState(false);
     const [loadingAssignments, setLoadingAssignments] = useState(false);
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
     /* ---------------- INITIAL LOAD ---------------- */
 
@@ -63,20 +65,19 @@ export default function CreateSchedule() {
     }, [institutionId]);
 
     const fetchAcademicYears = async (instId: string) => {
-        const res = await academicYearService.list(instId);
-
-        const options = res.documents.map((ay: any) => ({
-            label: ay.label,
-            value: ay.$id,
-        }));
-
-        setAcademicYears(options);
-
-        const current = res.documents.find((ay: any) => ay.isCurrent);
-        if (current) setAcademicYear(current.$id);
+        try {
+            const res = await academicYearService.list(instId);
+            const options = res.documents.map((ay: any) => ({
+                label: ay.label,
+                value: ay.$id,
+            }));
+            setAcademicYears(options);
+            const current = res.documents.find((ay: any) => ay.isCurrent);
+            if (current) setAcademicYear(current.$id);
+        } catch (error) {
+            console.error("Failed to fetch academic years", error);
+        }
     };
-
-    /* ---------------- LOAD ASSIGNMENTS ---------------- */
 
     /* ---------------- LOAD CLASSES ---------------- */
     useEffect(() => {
@@ -184,23 +185,43 @@ export default function CreateSchedule() {
     ];
 
 
+    const validate = () => {
+        const newErrors: { [key: string]: string } = {};
+
+        if (!academicYear) newErrors.academicYear = getErrorMessage('required', 'Academic Year');
+        if (!selectedClass) newErrors.selectedClass = getErrorMessage('required', 'Class');
+        if (!teacher) newErrors.teacher = getErrorMessage('required', 'Teacher');
+        if (!subject) newErrors.subject = getErrorMessage('required', 'Subject');
+        if (!dayOfWeek) newErrors.dayOfWeek = getErrorMessage('required', 'Day');
+
+        if (!validators.isRequired(startTime)) {
+            newErrors.startTime = getErrorMessage('required', 'Start Time');
+        } else if (!validators.isValidTimeFormat(startTime)) {
+            newErrors.startTime = getErrorMessage('time', 'Start Time');
+        }
+
+        if (!validators.isRequired(endTime)) {
+            newErrors.endTime = getErrorMessage('required', 'End Time');
+        } else if (!validators.isValidTimeFormat(endTime)) {
+            newErrors.endTime = getErrorMessage('time', 'End Time');
+        }
+
+        if (!newErrors.startTime && !newErrors.endTime && !validators.isTimeRangeValid(startTime, endTime)) {
+            newErrors.endTime = getErrorMessage('timeRange', 'End Time'); // Show range error on EndTime
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
     /* ---------------- SUBMIT ---------------- */
 
     const handleSubmit = async () => {
-        if (
-            !teacher ||
-            !selectedClass ||
-            !subject ||
-            !dayOfWeek ||
-            !startTime ||
-            !endTime ||
-            !academicYear ||
-            !institutionId
-        ) {
-            showAlert("Error", "Please fill all fields");
+        if (!validate()) {
             return;
         }
+
+        if (!institutionId) return;
 
         setLoading(true);
         try {
@@ -231,32 +252,42 @@ export default function CreateSchedule() {
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
-            className="flex-1 bg-background p-4 dark:bg-dark-background"
+            className={`flex-1 p-4 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}
         >
             <View style={{ flex: 1 }}>
                 <PageHeader title="Create Schedule" />
 
-                <ScrollView className="px-6">
+                <ScrollView className="px-2" showsVerticalScrollIndicator={false}>
                     <FormSelect
                         label="Academic Year"
                         value={academicYear}
-                        onChange={setAcademicYear}
+                        onChange={(val) => {
+                            setAcademicYear(val);
+                            if (val) setErrors(prev => ({ ...prev, academicYear: "" }));
+                        }}
                         options={academicYears}
                         placeholder="Select Academic Year"
+                        required
+                        error={errors.academicYear}
                     />
 
                     <FormSelect
                         label="Class"
                         value={selectedClass}
-                        onChange={setSelectedClass}
+                        onChange={(val) => {
+                            setSelectedClass(val);
+                            if (val) setErrors(prev => ({ ...prev, selectedClass: "" }));
+                        }}
                         options={availableClasses}
                         placeholder={academicYear ? "Select Class" : "Select Academic Year First"}
+                        required
+                        error={errors.selectedClass}
                     />
 
                     {loadingAssignments && (
                         <View className="py-3">
                             <ActivityIndicator />
-                            <Text className="text-xs text-center text-gray-500 mt-1">
+                            <Text className={`text-xs text-center mt-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
                                 Loading class assignments...
                             </Text>
                         </View>
@@ -265,51 +296,68 @@ export default function CreateSchedule() {
                     <FormSelect
                         label="Teacher"
                         value={teacher}
-                        onChange={setTeacher}
+                        onChange={(val) => {
+                            setTeacher(val);
+                            if (val) setErrors(prev => ({ ...prev, teacher: "" }));
+                        }}
                         options={teacherOptions}
                         placeholder={selectedClass ? "Select Teacher (Assigned)" : "Select Class First"}
+                        required
+                        error={errors.teacher}
                     />
 
                     <FormSelect
                         label="Subject"
                         value={subject}
-                        onChange={setSubject}
+                        onChange={(val) => {
+                            setSubject(val);
+                            if (val) setErrors(prev => ({ ...prev, subject: "" }));
+                        }}
                         options={subjectOptions}
                         placeholder={teacher ? "Select Subject" : "Select Teacher First"}
+                        required
+                        error={errors.subject}
                     />
 
                     <FormSelect
                         label="Day"
                         value={dayOfWeek}
-                        onChange={(v) => setDayOfWeek(v as "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN")}
+                        onChange={(v) => {
+                            setDayOfWeek(v as any);
+                            if (v) setErrors(prev => ({ ...prev, dayOfWeek: "" }));
+                        }}
                         options={days}
                         placeholder="Select Day"
+                        required
+                        error={errors.dayOfWeek}
                     />
 
                     {/* TIME */}
                     <View className="flex-row gap-4 mb-6">
                         <View className="flex-1">
-                            <Text className="mb-2 font-semibold text-textSecondary dark:text-dark-textSecondary">
-                                Start Time
-                            </Text>
-                            <TextInput
+                            <FormInput
+                                label="Start Time"
                                 placeholder="09:00"
-                                placeholderTextColor={isDark ? "#9CA3AF" : "#6B7280"}
                                 value={startTime}
-                                onChangeText={setStartTime}
-                                className="p-4 rounded-xl border bg-card border-border dark:bg-dark-card dark:border-dark-border text-textPrimary dark:text-dark-textPrimary"
+                                onChangeText={(val) => {
+                                    setStartTime(val);
+                                    if (val) setErrors(prev => ({ ...prev, startTime: "" }));
+                                }}
+                                required
+                                error={errors.startTime}
                             />
                         </View>
                         <View className="flex-1">
-                            <Text className="mb-2 font-semibold text-textSecondary dark:text-dark-textSecondary">
-                                End Time
-                            </Text>
-                            <TextInput
+                            <FormInput
+                                label="End Time"
                                 placeholder="10:00"
-                                placeholderTextColor={isDark ? "#9CA3AF" : "#6B7280"}
                                 value={endTime}
-                                onChangeText={setEndTime}
-                                className="p-4 rounded-xl border bg-card border-border dark:bg-dark-card dark:border-dark-border text-textPrimary dark:text-dark-textPrimary"
+                                onChangeText={(val) => {
+                                    setEndTime(val);
+                                    if (val) setErrors(prev => ({ ...prev, endTime: "" }));
+                                }}
+                                required
+                                error={errors.endTime}
                             />
                         </View>
                     </View>
@@ -317,7 +365,7 @@ export default function CreateSchedule() {
                     <TouchableOpacity
                         onPress={handleSubmit}
                         disabled={loading}
-                        className="mt-4 py-4 rounded-xl bg-primary dark:bg-dark-primary items-center"
+                        className={`mt-4 py-4 rounded-xl items-center ${loading ? "bg-blue-400" : "bg-blue-600"}`}
                     >
                         {loading ? (
                             <ActivityIndicator color="white" />
