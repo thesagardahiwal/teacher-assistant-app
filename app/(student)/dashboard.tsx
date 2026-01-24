@@ -15,6 +15,8 @@ const StatCard = ({ label, value, colorClass, textColorClass }: any) => (
   </View>
 );
 
+import { academicYearService } from "../../services/academicYear.service";
+
 const Dashboard = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -25,12 +27,23 @@ const Dashboard = () => {
   const fetchAttendance = async () => {
     try {
       if (!user?.$id) return;
-      // Note: Assuming user.$id is the student ID for STUDENT role (as per partial fix) 
-      // OR we need to find the student ID if user.$id is the Auth ID.
-      // Based on fix: user object for student has $id as student doc ID.
+
+      const institutionId = typeof user.institution === 'string' ? user.institution : user.institution.$id;
+
+      // Fetch Academic Years to find current
+      const yearsRes = await academicYearService.list(institutionId);
+      const currentYear = yearsRes.documents.find(y => y.isCurrent);
+
       const res = await attendanceRecordService.listByStudent(user.$id);
 
-      const allRecords = res.documents;
+      // Filter by Current Academic Year
+      const allRecords = res.documents.filter(r => {
+        if (!currentYear) return true; // Fallback if no current year set (or partial setup)
+        const rYear = r.attendance?.class?.academicYear;
+        const rYearId = typeof rYear === 'string' ? rYear : rYear?.$id;
+        return rYearId === currentYear.$id;
+      });
+
       const presentCount = allRecords.filter(r => r.present).length;
       const totalCount = allRecords.length;
       const percentage = totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 0;

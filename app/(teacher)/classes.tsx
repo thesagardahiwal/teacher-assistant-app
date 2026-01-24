@@ -13,6 +13,8 @@ export default function ClassesScreen() {
     const { user } = useAuth();
     const institutionId = useInstitutionId();
 
+    const currentAssignments = assignments.filter(a => a.class?.academicYear?.isCurrent);
+
     useEffect(() => {
         if (institutionId && user?.$id) {
             fetchAssignments(institutionId, user.$id);
@@ -55,13 +57,13 @@ export default function ClassesScreen() {
                 <Text className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>My Classes</Text>
             </View>
 
-            {loading && !refreshing && assignments.length === 0 ? (
+            {loading && !refreshing && currentAssignments.length === 0 ? (
                 <View className="flex-1 items-center justify-center">
                     <ActivityIndicator size="large" color="#2563EB" />
                 </View>
             ) : (
                 <FlatList
-                    data={assignments}
+                    data={currentAssignments}
                     keyExtractor={(item) => item.$id}
                     renderItem={renderItem}
                     contentContainerStyle={{ padding: 20 }}
