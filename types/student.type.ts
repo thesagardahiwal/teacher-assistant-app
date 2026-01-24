@@ -14,6 +14,11 @@ export interface Student extends Models.Document {
     isActive: boolean;
     email: string;
     institution: Institution; // Institution ID
+    seatNumber?: string;
+    PRN?: string;
+    bloodGroup?: string;
+    phone?: string;
+    address?: string;
 }
 
 
@@ -28,4 +33,9 @@ export interface StudentPayload {
     isActive: boolean;
     institution: string; // Institution ID
     email: string;
+    seatNumber?: string;
+    PRN?: string;
+    bloodGroup?: string;
+    phone?: string;
+    address?: string;
 }

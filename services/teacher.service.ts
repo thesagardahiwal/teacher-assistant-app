@@ -1,4 +1,4 @@
-import { Query } from "react-native-appwrite";
+import { ID, Query } from "react-native-appwrite";
 import { TEACHING_ROLES } from "../types/role.type";
 import { User, UserPayload } from "../types/user.type";
 import { COLLECTIONS } from "./appwrite/collections";
@@ -40,12 +40,14 @@ export const teacherService = {
       createdBy: "ADMIN",
     });
 
+    const userId = ID.unique();
     // 2. Create User Document (Teacher Profile)
-    const teacher = await databaseService.create<User>(
+    const teacher = await databaseService.createUserDocument<User>(
       COLLECTIONS.USERS,
+      userId,
       {
         ...data,
-        userId: `invite:${invitation.token}`,
+        userId,
         isActive: false, // Inactive until accepted
         role: "TEACHER",
       }
