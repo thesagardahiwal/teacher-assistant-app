@@ -164,7 +164,7 @@ export default function CreateTeacher() {
       else if (h.includes("designation")) mapIndex["designation"] = i;
       else if (h.includes("phone")) mapIndex["phone"] = i;
       else if (h.includes("address")) mapIndex["address"] = i;
-      else if (h.includes("bloodGroup")) mapIndex["bloodGroup"] = i;
+      else if (h.includes("blood")) mapIndex["bloodGroup"] = i;
     });
 
     if (mapIndex["name"] === undefined || mapIndex["email"] === undefined) {

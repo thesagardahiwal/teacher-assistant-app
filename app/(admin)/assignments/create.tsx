@@ -78,11 +78,11 @@ export default function CreateAssignment() {
 
     const classOptions = classes
         .filter(c => !course || c.course?.$id === course) // Filter by course if selected
-        .map(c => ({ label: `Semester ${c.semester} (${c.course?.code})`, value: c.$id }));
+        .map(c => ({ label: `Year: ${c.academicYear.label} Class: ${c.name} (${c.course?.code})`, value: c.$id }));
 
     const subjectOptions = subjects
         .filter(s => !course || s.course?.$id === course) // Filter by course if selected
-        .map(s => ({ label: `${s.name} (${s.code}) - Sem ${s.semester}`, value: s.$id }));
+        .map(s => ({ label: `${s.name} (${s.code}) - Semester ${s.semester}`, value: s.$id }));
 
     return (
         <View className={`flex-1 px-6 pt-6 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>

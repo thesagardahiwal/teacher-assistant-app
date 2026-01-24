@@ -1,14 +1,17 @@
-import { FormInput } from "@/components/admin/ui/FormInput";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
+import { UserProfileForm } from "@/components/common/UserProfileForm";
+import { AdminTeacherProfileConfig } from "@/config/user-profile.config";
 import { assessmentService, scheduleService } from "@/services";
+import { assignmentService } from "@/services/assignment.service";
 import { attendanceService } from "@/services/attendance.service";
 import { userService } from "@/services/user.service";
-import { useAuth } from "@/store/hooks/useAuth";
 import { useTeachers } from "@/store/hooks/useTeachers";
 import { useTheme } from "@/store/hooks/useTheme";
 import { Assessment } from "@/types/assessment.type";
 import { Attendance } from "@/types/attendance.type";
 import { ClassSchedule } from "@/types/schedule.type";
+import { TeacherAssignment } from "@/types/teacher-assignment.type";
+import { User } from "@/types/user.type";
 import { showAlert } from "@/utils/alert";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -18,29 +21,38 @@ import {
     ActivityIndicator,
     ScrollView,
     Text,
-    TouchableOpacity,
-    View,
+    View
 } from "react-native";
+
+const SectionHeader = ({ title, icon }: { title: string; icon?: keyof typeof MaterialCommunityIcons.glyphMap }) => {
+    const { isDark } = useTheme();
+    return (
+        <View className="flex-row items-center mb-4 mt-6 border-b border-gray-100 dark:border-gray-800 pb-2">
+            {icon && <MaterialCommunityIcons name={icon} size={20} color={isDark ? "#9CA3AF" : "#4B5563"} style={{ marginRight: 8 }} />}
+            <Text className={`text-lg font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
+                {title}
+            </Text>
+        </View>
+    );
+};
 
 export default function EditTeacher() {
     const router = useRouter();
     const { id } = useLocalSearchParams();
     const { isDark } = useTheme();
     const institutionId = useInstitutionId();
-    const { user } = useAuth();
     const { fetchTeachers } = useTeachers();
 
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [department, setDepartment] = useState("");
-    const [designation, setDesignation] = useState("");
+    const [teacher, setTeacher] = useState<User | null>(null);
 
     const [schedules, setSchedules] = useState<ClassSchedule[]>([]);
     const [assessments, setAssessments] = useState<Assessment[]>([]);
     const [attendance, setAttendance] = useState<Attendance[]>([]);
+    const [teacherAssignments, setTeacherAssignments] = useState<TeacherAssignment[]>([]);
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+
     useEffect(() => {
         if (id && institutionId) {
             loadData();
@@ -50,22 +62,22 @@ export default function EditTeacher() {
     const loadData = async () => {
         try {
             const doc = await userService.get(id as string);
-            setName(doc.name);
-            setEmail(doc.email);
-            setDepartment(doc.department || "");
-            setDesignation(doc.designation || "");
+            setTeacher(doc as User);
 
             // Fetch Deep Academic Data
-            const [schRes, assRes, attRes] = await Promise.all([
+            const [schRes, assRes, attRes, assignRes] = await Promise.all([
                 scheduleService.listByTeacher(id as string),
                 assessmentService.listByTeacher(institutionId!, id as string),
                 attendanceService.listByTeacher(institutionId!, id as string),
+                assignmentService.listByTeacher(institutionId!, id as string),
             ]);
             setSchedules(schRes.documents);
             setAssessments(assRes.documents);
             setAttendance(attRes.documents);
+            setTeacherAssignments(assignRes.documents);
 
         } catch (error) {
+            console.error(error);
             showAlert("Error", "Failed to load teacher");
             router.back();
         } finally {
@@ -73,63 +85,34 @@ export default function EditTeacher() {
         }
     }
 
-    const handleDelete = async () => {
-        showAlert("Delete", "Are you sure you want to delete this teacher? This will NOT delete their Auth account, only their profile.", [
-            { text: "Cancel", style: "cancel" },
-            {
-                text: "Delete",
-                style: "destructive",
-                onPress: async () => {
-                    try {
-                        await userService.delete(id as string);
-                        if (institutionId) await fetchTeachers(institutionId);
-                        router.back();
-                    } catch (error) {
-                        showAlert("Error", "Failed to delete");
-                    }
-                }
-            }
-        ])
-    }
-
-    const handleSubmit = async () => {
-        if (!name || !email) {
-            showAlert("Error", "Please fill in all required fields");
-            return;
-        }
-
+    const handleUpdate = async (data: any) => {
+        if (!teacher) return;
         setSaving(true);
         try {
-            await userService.update(id as string, {
-                name,
-                department,
-                designation
-            });
-
-            if (institutionId) await fetchTeachers(institutionId);
+            await userService.update(teacher.$id, data);
             showAlert("Success", "Teacher updated successfully");
-        } catch (error: any) {
-            showAlert("Error", error.message || "Failed to update teacher");
+            fetchTeachers(institutionId!); // Refresh list
+        } catch (error) {
+            console.error(error);
+            showAlert("Error", "Failed to update teacher");
         } finally {
             setSaving(false);
         }
     };
 
-    /* ---------------- DERIVED ANALYTICS ---------------- */
-
-    // B. Academic Assignments
+    // B. Academic Assignments (Derived from Direct Assignments now)
     const uniqueSubjects = Array.from(new Set(schedules.map(s => s.subject?.name).filter(Boolean)));
     const uniqueClasses = Array.from(new Set(schedules.map(s => s.class?.name).filter(Boolean)));
     const totalLectures = schedules.length;
 
-    // C. Schedule Overview
     const lecturesPerDay = schedules.reduce((acc, curr) => {
-        const day = curr.dayOfWeek?.substring(0, 3).toUpperCase() || "OTH";
-        acc[day] = (acc[day] || 0) + 1;
+        const day = curr.dayOfWeek?.substring(0, 3).toUpperCase();
+        if (day) {
+            acc[day] = (acc[day] || 0) + 1;
+        }
         return acc;
     }, {} as Record<string, number>);
 
-    // D. Assessments
     const assessmentStats = assessments.reduce((acc, curr) => {
         const type = curr.type || "Other";
         acc[type] = (acc[type] || 0) + 1;
@@ -137,20 +120,17 @@ export default function EditTeacher() {
         return acc;
     }, { Total: 0 } as Record<string, number>);
 
-    // E. Attendance
     const totalSessions = attendance.length;
     const uniqueAttendanceClasses = Array.from(new Set(attendance.map(a => a.class?.name).filter(Boolean)));
 
-
     if (loading) {
         return (
-            <View className={`flex-1 justify-center items-center ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+            <View className={`flex-1 items-center justify-center ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
                 <ActivityIndicator size="large" color="#2563EB" />
             </View>
-        )
+        );
     }
 
-    const isAdmin = user?.role === "ADMIN";
 
     const StatCard = ({ icon, title, value, color }: any) => (
         <View className={`flex-1 p-4 rounded-xl border mr-3 min-w-[140px] ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"}`}>
@@ -162,83 +142,20 @@ export default function EditTeacher() {
         </View>
     );
 
-    const SectionHeader = ({ title, icon }: any) => (
-        <View className="flex-row items-center mb-4 mt-6">
-            <MaterialCommunityIcons name={icon} size={20} color={isDark ? "#9CA3AF" : "#4B5563"} />
-            <Text className={`text-lg font-bold ml-2 ${isDark ? "text-white" : "text-gray-800"}`}>{title}</Text>
-        </View>
-    );
-
     return (
-        <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
-            <View className="px-6 pt-6 w-full">
-                <PageHeader
-                    title={isAdmin ? "Edit Teacher" : "Teacher Details"}
-                    rightAction={
-                        isAdmin ? (
-                            <TouchableOpacity onPress={handleDelete} className="bg-red-100 dark:bg-red-900 p-2 rounded-full">
-                                <Ionicons name="trash-outline" size={20} color="#EF4444" />
-                            </TouchableOpacity>
-                        ) : null
-                    }
-                />
-            </View>
+        <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"} p-4`}>
+            <PageHeader title="Teacher Details" />
+            <ScrollView className="flex-1 p-4">
 
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }} className="w-full px-6 pt-4 flex-1">
-                <View className={`p-6 rounded-2xl mb-6 ${isDark ? "bg-gray-800" : "bg-white"}`}>
-
-                    <FormInput
-                        label="Full Name"
-                        placeholder="John Doe"
-                        value={name}
-                        onChangeText={setName}
-                        editable={isAdmin}
+                {/* Reusable Profile Form */}
+                <View className={`mb-6 p-4 rounded-2xl ${isDark ? "bg-gray-900" : "bg-white"}`}>
+                    <UserProfileForm
+                        initialData={teacher}
+                        config={AdminTeacherProfileConfig}
+                        onSubmit={handleUpdate}
+                        loading={loading}
+                        saving={saving}
                     />
-
-                    <View className="opacity-50">
-                        <FormInput
-                            label="Email Address"
-                            value={email}
-                            editable={false}
-                        />
-                    </View>
-
-                    <FormInput
-                        label="Department"
-                        placeholder="Science"
-                        value={department}
-                        onChangeText={setDepartment}
-                        editable={isAdmin}
-                    />
-
-                    <FormInput
-                        label="Designation"
-                        placeholder="Senior Teacher"
-                        value={designation}
-                        onChangeText={setDesignation}
-                        editable={isAdmin}
-                    />
-                </View>
-
-                {isAdmin && (
-                    <TouchableOpacity
-                        onPress={handleSubmit}
-                        disabled={saving}
-                        className={`py-4 rounded-xl items-center mb-10 ${saving ? "bg-blue-400" : "bg-blue-600"
-                            }`}
-                    >
-                        {saving ? (
-                            <ActivityIndicator color="white" />
-                        ) : (
-                            <Text className="text-white font-bold text-lg">Save Changes</Text>
-                        )}
-                    </TouchableOpacity>
-                )}
-
-                {/* --- ACADEMIC FOOTPRINT --- */}
-                <View className="my-4 border-t border-gray-200 dark:border-gray-800 pt-4">
-                    <Text className={`text-xl font-bold mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>Academic Footprint</Text>
-                    <Text className={`text-sm mb-4 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Read-only view of academic activities</Text>
                 </View>
 
                 {/* Academic Snapshot */}
@@ -251,24 +168,30 @@ export default function EditTeacher() {
                 </ScrollView>
 
                 {/* Assignments List */}
-                <SectionHeader title="Assignments" icon="briefcase-outline" />
+                <SectionHeader title="Assigned Classes & Subjects" icon="briefcase-outline" />
                 <View className={`rounded-xl overflow-hidden mb-6 ${isDark ? "bg-gray-800 border border-gray-700" : "bg-white"}`}>
                     <View className="flex-row p-4 border-b border-gray-200 dark:border-gray-700">
                         <View className="flex-1"><Text className={`font-semibold ${isDark ? "text-gray-300" : "text-gray-500"}`}>Subject</Text></View>
                         <View className="flex-1"><Text className={`font-semibold ${isDark ? "text-gray-300" : "text-gray-500"}`}>Class</Text></View>
                     </View>
-                    {/* Unique combinations of Subject + Class from schedules */}
-                    {Array.from(new Set(schedules.map(s => `${s.subject?.name}|${s.class?.name}`))).map((combo, idx) => {
-                        const [subj, cls] = combo.split('|');
-                        return (
-                            <View key={idx} className="flex-row p-4 border-b border-gray-100 dark:border-gray-800 last:border-0">
-                                <View className="flex-1"><Text className={`font-medium ${isDark ? "text-white" : "text-gray-800"}`}>{subj}</Text></View>
-                                <View className="flex-1"><Text className={isDark ? "text-gray-400" : "text-gray-600"}>{cls}</Text></View>
+
+                    {teacherAssignments.map((assign, idx) => (
+                        <View key={assign.$id || idx} className="flex-row p-4 border-b border-gray-100 dark:border-gray-800 last:border-0">
+                            <View className="flex-1">
+                                <Text className={`font-medium ${isDark ? "text-white" : "text-gray-800"}`}>
+                                    {assign.subject?.name} <Text className="text-xs text-gray-400">({assign.subject?.code})</Text>
+                                </Text>
                             </View>
-                        )
-                    })}
-                    {schedules.length === 0 && (
-                        <View className="p-4"><Text className="text-gray-400 italic">No assigned schedules.</Text></View>
+                            <View className="flex-1">
+                                <Text className={isDark ? "text-gray-400" : "text-gray-600"}>
+                                    {assign.class?.name} <Text className="text-xs">(Sem {assign.class?.semester})</Text>
+                                </Text>
+                            </View>
+                        </View>
+                    ))}
+
+                    {teacherAssignments.length === 0 && (
+                        <View className="p-4"><Text className="text-gray-400 italic">No classes assigned yet.</Text></View>
                     )}
                 </View>
 
@@ -296,7 +219,7 @@ export default function EditTeacher() {
                     </Text>
                 </View>
 
-            </ScrollView>
-        </View>
+            </ScrollView >
+        </View >
     );
 }

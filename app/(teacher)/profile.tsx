@@ -1,13 +1,13 @@
+import { UserProfileForm } from "@/components/common/UserProfileForm";
+import { TeacherSelfProfileConfig } from "@/config/user-profile.config";
 import { showAlert } from "@/utils/alert";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
-    ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
     Text,
-    TextInput,
     TouchableOpacity,
     View
 } from "react-native";
@@ -19,25 +19,7 @@ export default function ProfileScreen() {
     const { isDark } = useTheme();
 
     const [isEditing, setIsEditing] = useState(false);
-    const [name, setName] = useState(user?.name || "");
-    const [department, setDepartment] = useState(user?.department || "");
-    const [designation, setDesignation] = useState(user?.designation || "");
-    const [phone, setPhone] = useState(user?.phone || "");
-    const [address, setAddress] = useState(user?.address || "");
-    const [bloodGroup, setBloodGroup] = useState(user?.bloodGroup || "");
     const [loading, setLoading] = useState(false);
-
-    // Update state when user data changes (e.g. after save)
-    React.useEffect(() => {
-        if (user) {
-            setName(user.name);
-            setDepartment(user.department || "");
-            setDesignation(user.designation || "");
-            setPhone(user.phone || "");
-            setAddress(user.address || "");
-            setBloodGroup(user.bloodGroup || "");
-        }
-    }, [user]);
 
     const handleLogout = async () => {
         showAlert("Logout", "Are you sure you want to logout?", [
@@ -52,18 +34,11 @@ export default function ProfileScreen() {
         ]);
     };
 
-    const handleSave = async () => {
+    const handleSave = async (data: any) => {
         if (!user?.$id) return;
         setLoading(true);
         try {
-            await updateProfile(user.$id, {
-                name,
-                department,
-                designation,
-                phone,
-                address,
-                bloodGroup
-            });
+            await updateProfile(user.$id, data);
             setIsEditing(false);
             showAlert("Success", "Profile updated successfully");
         } catch (error) {
@@ -92,33 +67,6 @@ export default function ProfileScreen() {
             </TouchableOpacity>
         );
     };
-
-    const InputField = ({ label, value, onChangeText, placeholder, editable }: any) => (
-        <View className="mb-4">
-            <Text className={`text-sm font-medium mb-1.5 ${isDark ? "text-gray-400" : "text-gray-600"}`}>
-                {label}
-            </Text>
-            {editable ? (
-                <TextInput
-                    value={value}
-                    onChangeText={onChangeText}
-                    placeholder={placeholder}
-                    placeholderTextColor={isDark ? "#6B7280" : "#9CA3AF"}
-                    className={`px-4 py-3.5 rounded-xl border text-base ${isDark
-                        ? "bg-gray-800 border-gray-700 text-white focus:border-blue-500"
-                        : "bg-white border-gray-200 text-gray-900 focus:border-blue-500"
-                        }`}
-                />
-            ) : (
-                <View className={`px-4 py-3.5 rounded-xl border ${isDark ? "bg-gray-800/50 border-gray-800" : "bg-gray-50 border-gray-100"
-                    }`}>
-                    <Text className={`text-base font-medium ${isDark ? "text-gray-200" : "text-gray-900"}`}>
-                        {value || "Not Set"}
-                    </Text>
-                </View>
-            )}
-        </View>
-    );
 
     return (
         <KeyboardAvoidingView
@@ -175,112 +123,23 @@ export default function ProfileScreen() {
                             </View>
                         </View>
 
-                        {/* Editable Fields */}
-                        <View className="space-y-4">
-                            {isEditing && (
-                                <InputField
-                                    label="Full Name"
-                                    value={name}
-                                    onChangeText={setName}
-                                    editable={true}
-                                    placeholder="Full Name"
-                                />
-                            )}
-
-                            <View className="flex-row gap-4">
-                                <View className="flex-1">
-                                    <InputField
-                                        label="Department"
-                                        value={department}
-                                        onChangeText={setDepartment}
-                                        editable={isEditing}
-                                        placeholder="Department"
-                                    />
-                                </View>
-                                <View className="flex-1">
-                                    <InputField
-                                        label="Designation"
-                                        value={designation}
-                                        onChangeText={setDesignation}
-                                        editable={isEditing}
-                                        placeholder="Designation"
-                                    />
-                                </View>
-                            </View>
-
-                            <View className="flex-row gap-4">
-                                <View className="flex-1">
-                                    <InputField
-                                        label="Phone"
-                                        value={phone}
-                                        onChangeText={setPhone}
-                                        editable={isEditing}
-                                        placeholder="+91..."
-                                        keyboardType="phone-pad"
-                                    />
-                                </View>
-                                <View className="w-1/3">
-                                    <InputField
-                                        label="Blood Group"
-                                        value={bloodGroup}
-                                        onChangeText={setBloodGroup}
-                                        editable={isEditing}
-                                        placeholder="O+"
-                                    />
-                                </View>
-                            </View>
-
-                            <InputField
-                                label="Address"
-                                value={address}
-                                onChangeText={setAddress}
-                                editable={isEditing}
-                                placeholder="Enter your address"
-                                multiline
+                        {/* User Profile Form replaces Editable Fields */}
+                        <View className="mt-4">
+                            <UserProfileForm
+                                initialData={user}
+                                config={TeacherSelfProfileConfig}
+                                onSubmit={handleSave}
+                                loading={loading}
+                                saving={loading}
+                                readOnly={!isEditing}
+                                showCancel={true}
+                                onCancel={() => setIsEditing(false)}
                             />
                         </View>
-
-                        {/* Action Buttons */}
-                        {isEditing && (
-                            <View className="flex-row gap-3 mt-6">
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        setIsEditing(false);
-                                        setName(user?.name || "");
-                                        setDepartment(user?.department || "");
-                                        setDesignation(user?.designation || "");
-                                    }}
-                                    className={`flex-1 py-3.5 rounded-xl items-center border ${isDark ? "border-gray-700" : "border-gray-300"
-                                        }`}
-                                >
-                                    <Text className={`font-semibold ${isDark ? "text-gray-300" : "text-gray-700"}`}>Cancel</Text>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity
-                                    onPress={handleSave}
-                                    disabled={loading}
-                                    className="flex-1 bg-blue-600 py-3.5 rounded-xl items-center shadow-lg shadow-blue-600/20"
-                                >
-                                    {loading ? (
-                                        <ActivityIndicator color="white" />
-                                    ) : (
-                                        <Text className="text-white font-bold">Save Changes</Text>
-                                    )}
-                                </TouchableOpacity>
-                            </View>
-                        )}
                     </View>
 
                     {/* Settings Section */}
                     <View className="px-2">
-                        {/* <Text className={`text-lg font-bold mb-4 ml-2 ${isDark ? "text-white" : "text-gray-900"}`}>
-                            Settings
-                        </Text>
-
-                        <SettingItem icon="notifications-outline" label="Notifications" onPress={() => { }} />
-                        <SettingItem icon="lock-closed-outline" label="Change Password" onPress={() => { }} />
-                        <SettingItem icon="help-circle-outline" label="Help & Support" onPress={() => { }} />
-                        <SettingItem icon="shield-checkmark-outline" label="Privacy Policy" onPress={() => { }} /> */}
                         <SettingItem
                             icon="log-out-outline"
                             label="Logout"

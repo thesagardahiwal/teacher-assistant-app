@@ -9,9 +9,10 @@ interface PageHeaderProps {
     subtitle?: string;
     rightAction?: React.ReactNode;
     showBack?: boolean;
+    onBack?: () => void;
 }
 
-export const PageHeader = ({ title, subtitle, rightAction, showBack = true }: PageHeaderProps) => {
+export const PageHeader = ({ title, subtitle, rightAction, showBack = true, onBack }: PageHeaderProps) => {
     const router = useRouter();
     const { isDark } = useTheme();
 
@@ -20,7 +21,7 @@ export const PageHeader = ({ title, subtitle, rightAction, showBack = true }: Pa
             <View className="flex-row items-center flex-1">
                 {showBack && (
                     <TouchableOpacity
-                        onPress={() => router.back()}
+                        onPress={onBack || (() => router.back())}
                         className={`mr-3 p-2 rounded-full ${isDark ? "bg-gray-800" : "bg-gray-100"}`}
                     >
                         <Ionicons name="arrow-back" size={20} color={isDark ? "#FFF" : "#000"} />

@@ -53,7 +53,9 @@ export default function EditSubject() {
             setName(doc.name);
             setCode(doc.code);
             setSemester(doc.semester.toString());
-            setCourse(doc.course?.$id || "");
+            // Handle course being either an object (if expanded) or a string ID
+            const courseId = typeof doc.course === 'object' ? doc.course?.$id : doc.course;
+            setCourse(courseId || "");
         } catch (error) {
             showAlert("Error", "Failed to load subject");
             router.back();

@@ -1,5 +1,6 @@
-import { FormInput } from "@/components/admin/ui/FormInput";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
+import { UserProfileForm } from "@/components/common/UserProfileForm";
+import { AdminTeacherProfileConfig } from "@/config/user-profile.config";
 import { assessmentService, scheduleService } from "@/services";
 import { attendanceService } from "@/services/attendance.service";
 import { userService } from "@/services/user.service";
@@ -7,6 +8,7 @@ import { useTheme } from "@/store/hooks/useTheme";
 import { Assessment } from "@/types/assessment.type";
 import { Attendance } from "@/types/attendance.type";
 import { ClassSchedule } from "@/types/schedule.type";
+import { User } from "@/types/user.type";
 import { showAlert } from "@/utils/alert";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -24,18 +26,15 @@ export default function TeacherDetail() {
     const { id } = useLocalSearchParams();
     const { isDark } = useTheme();
     const institutionId = useInstitutionId();
-    // No useTeachers needed for fetching specific user details via userService
 
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [department, setDepartment] = useState("");
-    const [designation, setDesignation] = useState("");
+    const [teacher, setTeacher] = useState<User | null>(null);
 
     const [schedules, setSchedules] = useState<ClassSchedule[]>([]);
     const [assessments, setAssessments] = useState<Assessment[]>([]);
     const [attendance, setAttendance] = useState<Attendance[]>([]);
 
     const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         if (id && institutionId) {
@@ -46,10 +45,7 @@ export default function TeacherDetail() {
     const loadData = async () => {
         try {
             const doc = await userService.get(id as string);
-            setName(doc.name);
-            setEmail(doc.email);
-            setDepartment(doc.department || "");
-            setDesignation(doc.designation || "");
+            setTeacher(doc as User);
 
             // Fetch Deep Academic Data
             const [schRes, assRes, attRes] = await Promise.all([
@@ -62,12 +58,28 @@ export default function TeacherDetail() {
             setAttendance(attRes.documents);
 
         } catch (error) {
+            console.error(error);
             showAlert("Error", "Failed to load teacher");
             router.back();
         } finally {
             setLoading(false);
         }
     }
+
+    const handleUpdate = async (data: any) => {
+        if (!teacher) return;
+        setSaving(true);
+        try {
+            await userService.update(teacher.$id, data);
+            showAlert("Success", "Teacher updated successfully");
+            loadData(); // Refresh to ensure data consistency
+        } catch (error) {
+            console.error(error);
+            showAlert("Error", "Failed to update teacher");
+        } finally {
+            setSaving(false);
+        }
+    };
 
     /* ---------------- DERIVED ANALYTICS ---------------- */
     const uniqueSubjects = Array.from(new Set(schedules.map(s => s.subject?.name).filter(Boolean)));
@@ -121,43 +133,19 @@ export default function TeacherDetail() {
             <View className="px-6 pt-6 w-full">
                 <PageHeader
                     title="Teacher Details"
-                // No Edit/Delete Action for Principal
                 />
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }} className="w-full px-6 pt-4 flex-1">
-                <View className={`p-6 rounded-2xl mb-6 ${isDark ? "bg-gray-800" : "bg-white"}`}>
 
-                    <FormInput
-                        label="Full Name"
-                        placeholder="John Doe"
-                        value={name}
-                        onChangeText={setName}
-                        editable={false} // READ ONLY
-                    />
-
-                    <View className="opacity-50">
-                        <FormInput
-                            label="Email Address"
-                            value={email}
-                            editable={false}
-                        />
-                    </View>
-
-                    <FormInput
-                        label="Department"
-                        placeholder="Science"
-                        value={department}
-                        onChangeText={setDepartment}
-                        editable={false} // READ ONLY
-                    />
-
-                    <FormInput
-                        label="Designation"
-                        placeholder="Senior Teacher"
-                        value={designation}
-                        onChangeText={setDesignation}
-                        editable={false} // READ ONLY
+                {/* Reusable Profile Form - Editable for Principal too */}
+                <View className={`mb-6 p-4 rounded-2xl ${isDark ? "bg-gray-800" : "bg-white"}`}>
+                    <UserProfileForm
+                        initialData={teacher}
+                        config={AdminTeacherProfileConfig} // Using same config as Admin
+                        onSubmit={handleUpdate}
+                        loading={loading}
+                        saving={saving}
                     />
                 </View>
 
