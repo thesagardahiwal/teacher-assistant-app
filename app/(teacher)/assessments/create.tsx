@@ -155,7 +155,7 @@ export default function CreateAssessmentScreen() {
                 </View>
 
                 {/* Subject & Class */}
-                <View className="flex-row gap-4 mb-4">
+                <View className="gap-4 mb-4">
                     <View className="flex-1">
                         <Text className={`text-sm font-medium mb-1 ${isDark ? "text-gray-300" : "text-gray-700"}`}>Subject *</Text>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="py-1">
@@ -168,7 +168,7 @@ export default function CreateAssessmentScreen() {
                                         : isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
                                         }`}
                                 >
-                                    <Text className={form.subject === sub.$id ? "text-white" : isDark ? "text-gray-300" : "text-gray-700"}>{sub.code || sub.name}</Text>
+                                    <Text className={form.subject === sub.$id ? "text-white" : isDark ? "text-gray-300" : "text-gray-700"}>{sub.name} ({sub.code})</Text>
                                 </TouchableOpacity>
                             )) : (
                                 <Text className={`text-sm ${isDark ? "text-gray-500" : "text-gray-400"}`}>No subjects assigned</Text>
