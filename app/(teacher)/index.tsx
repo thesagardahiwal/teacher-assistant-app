@@ -25,8 +25,6 @@ export default function TeacherDashboard() {
     const [refreshing, setRefreshing] = useState(false);
     const [nextClass, setNextClass] = useState<ClassScheduleWithStatus | null>(null);
 
-    // Filter assignments for Current Academic Year
-    const currentAssignments = assignments.filter(a => a.class?.academicYear?.isCurrent);
 
     const loadData = async () => {
         if (institutionId) {
@@ -74,7 +72,7 @@ export default function TeacherDashboard() {
     }, [institutionId, user]);
 
     const stats = [
-        { label: "My Classes", value: currentAssignments.length, icon: "book-open-variant", color: "text-blue-500", bg: "bg-blue-300 dark:bg-blue-900/30" },
+        { label: "My Classes", value: assignments.length, icon: "book-open-variant", color: "text-blue-500", bg: "bg-blue-300 dark:bg-blue-900/30" },
         { label: "Students", value: students.length, icon: "account-group", color: "text-indigo-500", bg: "bg-indigo-300 dark:bg-indigo-900/30" },
         { label: "Attendance", value: attendanceHistory.length, icon: "clipboard-check", color: "text-green-500", bg: "bg-green-300 dark:bg-green-900/30" },
     ];

@@ -6,8 +6,9 @@ import { StudyFile } from "@/types/study-file.type";
 import { showAlert } from "@/utils/alert";
 import { Ionicons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
+import * as ImagePicker from "expo-image-picker";
 import React, { useState } from "react";
-import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Image, KeyboardAvoidingView, Modal, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import uuid from 'react-native-uuid';
 
@@ -22,7 +23,14 @@ export const AddFileModal: React.FC<AddFileModalProps> = ({ visible, onClose, on
     const { user } = useAuth();
     const insets = useSafeAreaInsets();
 
-    const [selectedFile, setSelectedFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
+    // Use a unified type for the file asset
+    const [selectedFile, setSelectedFile] = useState<{
+        uri: string;
+        name: string;
+        size?: number;
+        mimeType?: string;
+    } | null>(null);
+
     const [fileName, setFileName] = useState("");
     const [fileExtension, setFileExtension] = useState("");
     const [tags, setTags] = useState("");
@@ -31,13 +39,18 @@ export const AddFileModal: React.FC<AddFileModalProps> = ({ visible, onClose, on
     const pickFile = async () => {
         try {
             const result = await DocumentPicker.getDocumentAsync({
-                type: "*/*", // allow all types for now
+                type: "*/*", // allow all types
                 copyToCacheDirectory: true
             });
 
             if (!result.canceled && result.assets && result.assets.length > 0) {
                 const asset = result.assets[0];
-                setSelectedFile(asset);
+                setSelectedFile({
+                    uri: asset.uri,
+                    name: asset.name,
+                    size: asset.size,
+                    mimeType: asset.mimeType,
+                });
 
                 // Extract name and extension
                 const lastDot = asset.name.lastIndexOf('.');
@@ -54,6 +67,49 @@ export const AddFileModal: React.FC<AddFileModalProps> = ({ visible, onClose, on
         }
     };
 
+    const handleCameraCapture = async () => {
+        try {
+            const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+            if (!permissionResult.granted) {
+                showAlert("Permission Required", "Camera access is needed to capture documents.");
+                return;
+            }
+
+            const result = await ImagePicker.launchCameraAsync({
+                mediaTypes: ["images"],
+                quality: 0.8,
+            });
+
+            if (!result.canceled && result.assets && result.assets.length > 0) {
+                const asset = result.assets[0];
+
+                // Generate default filename: IMG_YYYYMMDD_HHMM
+                const now = new Date();
+                const timestamp = now.getFullYear().toString() +
+                    (now.getMonth() + 1).toString().padStart(2, '0') +
+                    now.getDate().toString().padStart(2, '0') + "_" +
+                    now.getHours().toString().padStart(2, '0') +
+                    now.getMinutes().toString().padStart(2, '0');
+
+                const generatedName = `IMG_${timestamp}`;
+                const extension = ".jpg";
+
+                setSelectedFile({
+                    uri: asset.uri,
+                    name: generatedName + extension,
+                    size: asset.fileSize, // expo-image-picker uses fileSize
+                    mimeType: asset.mimeType || "image/jpeg",
+                });
+
+                setFileName(generatedName);
+                setFileExtension(extension);
+            }
+        } catch (err) {
+            showAlert("Error", "Failed to capture image");
+            console.error(err);
+        }
+    };
+
     const handleSave = async () => {
         if (!selectedFile || !user) return;
 
@@ -63,20 +119,10 @@ export const AddFileModal: React.FC<AddFileModalProps> = ({ visible, onClose, on
             // 1. Construct final filename
             const finalName = `${fileName.trim()}${fileExtension}`;
 
-            // 2. Save physical file (rename if collision handles in service, or unique by timestamp logic)
-            // Note: service.saveFile uses timestamp prefix currently. We should stick to that for "Add", 
-            // OR use the new rename logic if we want "exact" names. 
-            // User requirement: "Update physical file name". 
-            // If we use saveFile as is, it returns `timestamp_name.pdf`. This is safe.
-            // If user explicitly wants "Math.pdf" we might need to change saveFile logic.
-            // But let's stick to the existing robust saveFile for NEW files to avoid collisions easily.
-            // Wait, req says "Rename during upload... Update physical file name".
-            // The existing saveFile logic `Date.now() + fileName` ALREADY uses the passed fileName.
-            // So if I pass `finalName` instead of `selectedFile.name`, it works perfectly.
-
+            // 2. Save physical file
             const localPath = await localFileService.saveFile(selectedFile.uri, finalName);
 
-            // 2. Create metadata
+            // 3. Create metadata
             const newFile: StudyFile = {
                 id: uuid.v4() as string,
                 fileName: finalName,
@@ -86,10 +132,9 @@ export const AddFileModal: React.FC<AddFileModalProps> = ({ visible, onClose, on
                 addedByRole: user.role as "TEACHER" | "STUDENT" || "TEACHER",
                 addedAt: new Date().toISOString(),
                 tags: tags.split(',').map(t => t.trim()).filter(t => t.length > 0),
-                // Could be extended to capture Subject / Class selection
             };
 
-            // 3. Save metadata
+            // 4. Save metadata
             await metadataService.addFile(newFile);
 
             showAlert("Success", "File saved to Vault!");
@@ -115,6 +160,11 @@ export const AddFileModal: React.FC<AddFileModalProps> = ({ visible, onClose, on
         }
     }
 
+    const isImage = selectedFile?.mimeType?.startsWith('image/') ||
+        fileExtension.toLowerCase() === '.jpg' ||
+        fileExtension.toLowerCase() === '.png' ||
+        fileExtension.toLowerCase() === '.jpeg';
+
     return (
         <Modal
             animationType="slide"
@@ -136,31 +186,65 @@ export const AddFileModal: React.FC<AddFileModalProps> = ({ visible, onClose, on
                         </TouchableOpacity>
                     </View>
 
-                    {/* File Picker */}
-                    <TouchableOpacity
-                        onPress={pickFile}
-                        className={`border-2 border-dashed rounded-xl p-8 items-center mb-4 ${isDark ? "border-gray-700 bg-gray-800" : "border-gray-300 bg-gray-50"
-                            }`}
-                    >
-                        {selectedFile ? (
-                            <View className="items-center">
-                                <Ionicons name="document-text" size={40} color="#3B82F6" />
-                                <Text className={`mt-2 font-medium text-center ${isDark ? "text-white" : "text-gray-900"}`}>
-                                    {selectedFile.name}
+                    {/* Selection Area */}
+                    {!selectedFile ? (
+                        <View className="flex-row gap-4 mb-6">
+                            {/* File Picker Button */}
+                            <TouchableOpacity
+                                onPress={pickFile}
+                                className={`flex-1 items-center justify-center p-6 rounded-xl border-2 border-dashed ${isDark ? "border-gray-700 bg-gray-800" : "border-gray-300 bg-gray-50"}`}
+                            >
+                                <Ionicons name="document-text-outline" size={32} color={isDark ? "#60A5FA" : "#3B82F6"} />
+                                <Text className={`mt-2 font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                                    Select File
                                 </Text>
-                                <Text className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-                                    {(selectedFile.size! / 1024).toFixed(1)} KB
+                            </TouchableOpacity>
+
+                            {/* Camera Button */}
+                            <TouchableOpacity
+                                onPress={handleCameraCapture}
+                                className={`flex-1 items-center justify-center p-6 rounded-xl border-2 border-dashed ${isDark ? "border-gray-700 bg-gray-800" : "border-gray-300 bg-gray-50"}`}
+                            >
+                                <Ionicons name="camera-outline" size={32} color={isDark ? "#60A5FA" : "#3B82F6"} />
+                                <Text className={`mt-2 font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                                    Take Photo
                                 </Text>
+                            </TouchableOpacity>
+                        </View>
+                    ) : (
+                        // File Preview Area
+                        <View className="mb-6">
+                            <View className={`rounded-xl p-4 flex-row items-center border ${isDark ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200"}`}>
+                                {isImage ? (
+                                    <Image
+                                        source={{ uri: selectedFile.uri }}
+                                        style={{ width: 60, height: 60, borderRadius: 8 }}
+                                        resizeMode="cover"
+                                    />
+                                ) : (
+                                    <View className="w-16 h-16 rounded-lg bg-blue-100 items-center justify-center">
+                                        <Ionicons name="document-text" size={32} color="#3B82F6" />
+                                    </View>
+                                )}
+
+                                <View className="ml-4 flex-1">
+                                    <Text className={`font-bold ${isDark ? "text-white" : "text-gray-900"}`} numberOfLines={1}>
+                                        {selectedFile.name}
+                                    </Text>
+                                    <Text className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                                        {selectedFile.size ? (selectedFile.size / 1024).toFixed(1) : "0"} KB
+                                    </Text>
+                                    <TouchableOpacity
+                                        onPress={() => setSelectedFile(null)}
+                                        className="mt-2 flex-row items-center"
+                                    >
+                                        <Ionicons name="refresh" size={14} color="#EF4444" />
+                                        <Text className="text-red-500 text-xs ml-1 font-medium">Change File</Text>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
-                        ) : (
-                            <View className="items-center">
-                                <Ionicons name="cloud-upload-outline" size={40} color={isDark ? "#9CA3AF" : "#6B7280"} />
-                                <Text className={`mt-2 font-medium ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-                                    Tap to select a file
-                                </Text>
-                            </View>
-                        )}
-                    </TouchableOpacity>
+                        </View>
+                    )}
 
                     {/* File Name Editor */}
                     {selectedFile && (
