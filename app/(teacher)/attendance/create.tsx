@@ -1,10 +1,14 @@
+import { GeminiAttendanceResult } from "@/services/ai/gemini.service";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import AttendanceReviewModal from "../../../components/Attendance/AttendanceReviewModal";
 import AddScheduleModal from "../../../components/Schedule/AddScheduleModal";
 import StudentDetailsModal from "../../../components/Student/StudentDetailsModal";
 import { attendanceRecordService, attendanceService, scheduleService } from "../../../services";
+import { geminiService } from "../../../services/ai/gemini.service";
 import { useAssignments } from "../../../store/hooks/useAssignments";
 import { useAuth } from "../../../store/hooks/useAuth";
 import { useStudents } from "../../../store/hooks/useStudents";
@@ -35,24 +39,24 @@ export default function TakeAttendanceScreen() {
   // Modal State
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  // Schedule Creation Modal State
   const [scheduleModalVisible, setScheduleModalVisible] = useState(false);
 
+  // AI State
+  const [scanning, setScanning] = useState(false);
+  const [aiResult, setAiResult] = useState<GeminiAttendanceResult | null>(null);
+  const [reviewModalVisible, setReviewModalVisible] = useState(false);
+
+  // ... fetchActiveSchedules function (unchanged)
   const fetchActiveSchedules = async () => {
     if (!user?.$id) return;
     setLoadingSchedules(true);
     try {
-      // Get today's day (e.g., "MON")
       const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
       const today = days[new Date().getDay()];
-
-      // Get current time HH:mm
       const now = new Date();
       const currentTime = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
 
       const res = await scheduleService.listByTeacher(user.$id, today);
-
-      // Filter for active classes: startTime <= currentTime <= endTime
       const active = res.documents.filter(schedule => {
         return schedule.startTime <= currentTime && currentTime <= schedule.endTime;
       });
@@ -106,6 +110,57 @@ export default function TakeAttendanceScreen() {
     setModalVisible(true);
   }
 
+  // AI Scanning Logic
+  const handleScan = async () => {
+    if (!selectedClassId || filteredStudents.length === 0) {
+      showAlert("Notice", "Please select a class with students first.");
+      return;
+    }
+
+    try {
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.8,
+        base64: true,
+      });
+
+      if (result.canceled || !result.assets[0].base64) return;
+
+      setScanning(true);
+
+      const aiResponse = await geminiService.processAttendanceImage(
+        result.assets[0].base64,
+        filteredStudents,
+        new Date().toISOString().split('T')[0]
+      );
+
+      // Match roll numbers to student IDs for local mapping (internal use) if needed, 
+      // but the modal returns result by roll number which we then map back.
+      // Actually, Review Modal returns status by roll number. 
+      // We need to map that back to student IDs here onApply.
+
+      setAiResult(aiResponse);
+      setReviewModalVisible(true);
+
+    } catch (error: any) {
+      showAlert("AI Error", error.message || "Failed to process image.");
+    } finally {
+      setScanning(false);
+    }
+  };
+
+  const handleAiApply = (aiStatusByRoll: Record<string, boolean>) => {
+    setStudentStatus(prev => {
+      const next = { ...prev };
+      filteredStudents.forEach(student => {
+        if (aiStatusByRoll[student.rollNumber] !== undefined) {
+          next[student.$id] = aiStatusByRoll[student.rollNumber];
+        }
+      });
+      return next;
+    });
+  };
+
   const handleSubmit = async () => {
     if (submitting) return;
     if (!selectedClassId || !institutionId || !user) {
@@ -119,16 +174,14 @@ export default function TakeAttendanceScreen() {
     setSubmitting(true);
 
     try {
-      // 1. Create Attendance Session
       const attendance = await attendanceService.create({
         class: selectedClassId as any,
         subject: selectedAssignment.subject.$id as any,
         teacher: user.$id as any,
         institution: institutionId as any,
-        date: new Date().toISOString().split('T')[0], // YYYY-MM-DD
+        date: new Date().toISOString().split('T')[0],
       });
 
-      // 2. Create Records for each student
       const promises = filteredStudents.map(student =>
         attendanceRecordService.create({
           attendance: attendance.$id as any,
@@ -151,6 +204,8 @@ export default function TakeAttendanceScreen() {
       setSubmitting(false);
     }
   };
+
+  // ... (render functions renderStudentItem, getDayString etc remain same, just verify they are inside)
 
   const onScheduleAdded = () => {
     fetchActiveSchedules();
@@ -208,13 +263,30 @@ export default function TakeAttendanceScreen() {
         onClose={() => setModalVisible(false)}
       />
 
+      <AttendanceReviewModal
+        visible={reviewModalVisible}
+        onClose={() => setReviewModalVisible(false)}
+        onApply={handleAiApply}
+        aiResult={aiResult}
+      />
+
       {/* Header */}
       <View className="flex-row items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
         <TouchableOpacity onPress={() => router.back()} className="mr-3">
           <Ionicons name="arrow-back" size={24} color={isDark ? "white" : "black"} />
         </TouchableOpacity>
         <Text className={`text-xl font-bold flex-1 ${isDark ? "text-white" : "text-gray-900"}`}>Take Attendance</Text>
-        <Text className={`text-sm font-medium ${isDark ? "text-gray-400" : "text-gray-500"}`}>{getDayString()}</Text>
+        <TouchableOpacity
+          onPress={handleScan}
+          disabled={!selectedClassId || scanning}
+          className={`p-2 rounded-full ${isDark ? "bg-gray-800" : "bg-gray-100"}`}
+        >
+          {scanning ? (
+            <ActivityIndicator size="small" color="#2563EB" />
+          ) : (
+            <Ionicons name="camera-outline" size={24} color={isDark ? "white" : "black"} />
+          )}
+        </TouchableOpacity>
       </View>
 
       <View className="flex-1 px-4 py-4 mb-20">
