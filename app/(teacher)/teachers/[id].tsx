@@ -10,7 +10,7 @@ import { useInstitutionId } from "@/utils/useInstitutionId";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from "react-native";
 
 export default function TeacherDetailScreen() {
     const { id } = useLocalSearchParams();
@@ -22,34 +22,36 @@ export default function TeacherDetailScreen() {
     const [assessments, setAssessments] = useState<Assessment[]>([]);
     const [attendance, setAttendance] = useState<Attendance[]>([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
 
-    useEffect(() => {
+    const loadData = async () => {
         if (!id || !institutionId) return;
+        setLoading(true);
+        setRefreshing(true);
+        try {
+            // 1. Fetch Teacher Profile
+            const teacherRes = await teacherService.get(id as string);
+            setTeacher(teacherRes);
 
-        const loadData = async () => {
-            try {
-                // 1. Fetch Teacher Profile
-                const teacherRes = await teacherService.get(id as string);
-                setTeacher(teacherRes);
+            // 2. Fetch Deep Academic Data
+            const [schRes, assRes, attRes] = await Promise.all([
+                scheduleService.listByTeacher(id as string),
+                assessmentService.listByTeacher(institutionId, id as string),
+                attendanceService.listByTeacher(institutionId, id as string),
+            ]);
 
-                // 2. Fetch Deep Academic Data
-                const [schRes, assRes, attRes] = await Promise.all([
-                    scheduleService.listByTeacher(id as string),
-                    assessmentService.listByTeacher(institutionId, id as string),
-                    attendanceService.listByTeacher(institutionId, id as string),
-                ]);
+            setSchedules(schRes.documents);
+            setAssessments(assRes.documents);
+            setAttendance(attRes.documents);
 
-                setSchedules(schRes.documents);
-                setAssessments(assRes.documents);
-                setAttendance(attRes.documents);
-
-            } catch (error) {
-                console.error("Failed to load teacher details", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
+        } catch (error) {
+            console.error("Failed to load teacher details", error);
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    };
+    useEffect(() => {
         loadData();
     }, [id, institutionId]);
 
@@ -119,7 +121,7 @@ export default function TeacherDetailScreen() {
                 <PageHeader title="Teacher Details" showBack={true} />
             </View>
 
-            <ScrollView contentContainerStyle={{ paddingBottom: 40, paddingHorizontal: 24 }}>
+            <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={loadData} />} contentContainerStyle={{ paddingBottom: 40, paddingHorizontal: 24 }}>
 
                 {/* A. Profile Card */}
                 <View className={`p-6 rounded-2xl mb-6 items-center ${isDark ? "bg-gray-800" : "bg-white shadow-sm shadow-gray-200"}`}>
@@ -160,7 +162,6 @@ export default function TeacherDetailScreen() {
                     {/* Unique combinations of Subject + Class from schedules */}
                     {Array.from(new Set(schedules.map(s => `${s.subject?.name}|${s.class?.name}`))).map((combo, idx) => {
                         const [subj, cls] = combo.split('|');
-                        console.log(cls)
                         return (
                             <View key={idx} className="flex-row p-4 border-b border-gray-100 dark:border-gray-800 last:border-0">
                                 <View className="flex-1"><Text className={`font-medium ${isDark ? "text-white" : "text-gray-800"}`}>{subj}</Text></View>

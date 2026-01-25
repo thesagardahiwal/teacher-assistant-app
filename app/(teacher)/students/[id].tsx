@@ -29,12 +29,14 @@ export default function StudentDetailsScreen() {
         ? (results.reduce((acc, curr) => acc + (curr.obtainedMarks / curr.totalMarks * 100), 0) / results.length).toFixed(1)
         : "N/A";
 
-    const loadData = async () => {
+    const loadData = async (forceRefresh = false) => {
         if (!id || !institutionId) return;
+        setLoading(true);
+        setRefreshing(true);
         try {
             const studentData = await studentService.get(id);
             setStudent(studentData);
-            getResultsByStudent(institutionId, id);
+            getResultsByStudent(institutionId, studentData.$id, forceRefresh);
         } catch (error) {
             showAlert("Error", "Failed to load student data");
         } finally {
@@ -107,7 +109,7 @@ export default function StudentDetailsScreen() {
         </View>
     );
 
-    if (loading) {
+    if (loading || refreshing || loadingResults) {
         return (
             <View className={`flex-1 items-center justify-center ${isDark ? "bg-gray-900" : "bg-white"}`}>
                 <ActivityIndicator size="large" color="#2563EB" />
@@ -115,7 +117,10 @@ export default function StudentDetailsScreen() {
         );
     }
 
-    if (!student) return null;
+    const isValidStudent = student?.$id === id;
+    if (!isValidStudent) return null;
+
+    const filteredResults = results.filter((result) => result.student.$id === id);
 
     return (
         <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-white"}`}>
@@ -138,7 +143,7 @@ export default function StudentDetailsScreen() {
             </View>
 
             <ScrollView
-                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadData(); }} />}
+                refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadData(true); }} />}
                 contentContainerStyle={{ padding: 20 }}
             >
                 {/* Stats */}
@@ -162,10 +167,10 @@ export default function StudentDetailsScreen() {
                     <Text className={`text-lg font-bold ${isDark ? "text-white" : "text-gray-900"}`}>Assessment Results</Text>
                 </View>
 
-                {results.length === 0 ? (
+                {filteredResults.length === 0 ? (
                     <Text className={`text-center py-8 ${isDark ? "text-gray-500" : "text-gray-400"}`}>No results found</Text>
                 ) : (
-                    results.map(item => (
+                    filteredResults.map(item => (
                         <View key={item.$id}>{renderResultItem({ item })}</View>
                     ))
                 )}
