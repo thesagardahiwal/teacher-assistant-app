@@ -102,6 +102,13 @@ describe("Assignment Service", () => {
 
     it("creates an assignment", async () => {
         const payload = { teacher: "t1", subject: "s1", class: "c1", institution: "inst1" };
+
+        // Mock no existing assignments
+        (databases.listDocuments as jest.Mock).mockResolvedValue({
+            documents: [],
+            total: 0,
+        });
+
         (databases.createDocument as jest.Mock).mockResolvedValue({
             ...payload,
             $id: "new_id",
@@ -117,6 +124,31 @@ describe("Assignment Service", () => {
             undefined
         );
         expect(res.$id).toBe("new_id");
+    });
+
+    it("throws error when creating duplicate assignment", async () => {
+        const payload = { teacher: "t1", subject: "s1", class: "c1", institution: "inst1" };
+
+        // Mock existing assignment found
+        (databases.listDocuments as jest.Mock).mockResolvedValue({
+            documents: [{ $id: "existing_id" }],
+            total: 1,
+        });
+
+        await expect(assignmentService.create(payload as any))
+            .rejects
+            .toThrow("This subject is already assigned to a teacher for this class.");
+
+        expect(databases.listDocuments).toHaveBeenCalledWith(
+            expect.anything(),
+            COLLECTIONS.TEACHER_ASSIGNMENTS,
+            expect.arrayContaining([
+                expect.objectContaining({ method: "equal", attr: "institution", val: "inst1" }),
+                expect.objectContaining({ method: "equal", attr: "class", val: "c1" }),
+                expect.objectContaining({ method: "equal", attr: "subject", val: "s1" }),
+            ])
+        );
+        expect(databases.createDocument).not.toHaveBeenCalled();
     });
 
     it("updates an assignment", async () => {
