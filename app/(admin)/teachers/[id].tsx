@@ -25,6 +25,7 @@ import {
     ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
+    RefreshControl,
     ScrollView,
     Text,
     TouchableOpacity,
@@ -88,6 +89,7 @@ export default function EditTeacher() {
     const [teacherAssignments, setTeacherAssignments] = useState<TeacherAssignment[]>([]);
 
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const [saving, setSaving] = useState(false);
 
     // Form State
@@ -105,6 +107,8 @@ export default function EditTeacher() {
     }, [id, institutionId]);
 
     const loadData = async () => {
+        setLoading(true);
+        setRefreshing(true);
         try {
             const doc = await userService.get(id as string);
             setTeacher(doc as User);
@@ -147,6 +151,7 @@ export default function EditTeacher() {
             router.back();
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
     }
 
@@ -217,7 +222,7 @@ export default function EditTeacher() {
         >
             <View className="flex-1 p-4">
                 <PageHeader title="Teacher Details" />
-                <ScrollView className="flex-1 p-4" showsVerticalScrollIndicator={false}>
+                <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={loadData} />} className="flex-1 p-4" showsVerticalScrollIndicator={false}>
 
                     {invitation && !teacher?.isActive && (
                         <View className={`mb-6 p-4 rounded-xl border ${isDark ? "bg-blue-900/20 border-blue-800" : "bg-blue-50 border-blue-100"}`}>

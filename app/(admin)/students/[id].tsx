@@ -17,6 +17,7 @@ import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
     Platform,
+    RefreshControl,
     ScrollView,
     Text,
     TouchableOpacity,
@@ -44,6 +45,7 @@ export default function EditStudent() {
     const [saving, setSaving] = useState(false);
     const [invitationLink, setInvitationLink] = useState("");
     const [copying, setCopying] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
 
     useEffect(() => {
         if (institutionId) {
@@ -59,6 +61,8 @@ export default function EditStudent() {
     }, [id]);
 
     const loadData = async () => {
+        setLoading(true);
+        setRefreshing(true);
         try {
             const doc = await studentService.get(id as string);
             setRoll(doc.rollNumber);
@@ -113,6 +117,7 @@ export default function EditStudent() {
             router.back();
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
     }
 
@@ -198,7 +203,7 @@ export default function EditStudent() {
                 }
             />
 
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={loadData} />} showsVerticalScrollIndicator={false}>
 
                 {/* Personal Info Card */}
                 <View className={`p-6 rounded-2xl mb-4 ${isDark ? "bg-gray-800" : "bg-white"}`}>
