@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, RefreshControl, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { assessmentService } from "../../../services/assessment.service";
 import { useAssessmentResults } from "../../../store/hooks/useAssessmentResults";
 import { useAuth } from "../../../store/hooks/useAuth";
@@ -20,6 +20,7 @@ export default function AssessmentDetailsScreen() {
 
     const [assessment, setAssessment] = useState<Assessment | null>(null);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
 
     const { data: students, fetchStudents } = useStudents();
     const { results, getResultsByAssessment, saveResult, isLoading: submitting } = useAssessmentResults();
@@ -47,6 +48,18 @@ export default function AssessmentDetailsScreen() {
             showAlert("Error", "Failed to load assessment details");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        try {
+            await loadAssessment();
+            if (institutionId && id) {
+                getResultsByAssessment(institutionId, id, true);
+            }
+        } finally {
+            setRefreshing(false);
         }
     };
 
@@ -167,34 +180,44 @@ export default function AssessmentDetailsScreen() {
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             className={`flex-1 ${isDark ? "bg-gray-900" : "bg-white"}`}
         >
-            {/* Header */}
-            <View className={`px-5 py-4 border-b ${isDark ? "border-gray-800" : "border-gray-100"}`}>
-                <View className="flex-row items-center mb-3">
-                    <TouchableOpacity onPress={() => router.back()} className="mr-3">
-                        <Ionicons name="arrow-back" size={24} color={isDark ? "white" : "black"} />
-                    </TouchableOpacity>
-                    <Text className={`text-xl font-bold flex-1 ${isDark ? "text-white" : "text-gray-900"}`}>{assessment.title}</Text>
-                </View>
-                <View className="flex-row gap-4">
-                    <View className={`px-3 py-1 rounded bg-blue-100 self-start`}>
-                        <Text className="text-blue-700 font-medium text-xs">{assessment.type}</Text>
-                    </View>
-                    <Text className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>{assessment.subject?.name}</Text>
-                    <Text className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>{assessment.class?.name}</Text>
-                    <Text className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>Max: {assessment.maxMarks}</Text>
-                </View>
-            </View>
-
-            {/* Student List */}
+            {/* Student List with Header */}
             <FlatList
                 data={students}
                 keyExtractor={(item) => item.$id}
                 renderItem={renderStudentRow}
                 contentContainerStyle={{ padding: 20 }}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        colors={["#2563EB"]}
+                        tintColor={isDark ? "#ffffff" : "#2563EB"}
+                    />
+                }
                 ListHeaderComponent={
-                    <Text className={`text-lg font-bold mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>
-                        Grade Students ({students.length})
-                    </Text>
+                    <View className="mb-4">
+                        {/* Static Header Content */}
+                        <View className={`mb-6 pb-4 border-b ${isDark ? "border-gray-800" : "border-gray-100"}`}>
+                            <View className="flex-row items-center mb-3">
+                                <TouchableOpacity onPress={() => router.back()} className="mr-3">
+                                    <Ionicons name="arrow-back" size={24} color={isDark ? "white" : "black"} />
+                                </TouchableOpacity>
+                                <Text className={`text-xl font-bold flex-1 ${isDark ? "text-white" : "text-gray-900"}`}>{assessment.title}</Text>
+                            </View>
+                            <View className="flex-row gap-4">
+                                <View className={`px-3 py-1 rounded bg-blue-100 self-start`}>
+                                    <Text className="text-blue-700 font-medium text-xs">{assessment.type}</Text>
+                                </View>
+                                <Text className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>{assessment.subject?.name}</Text>
+                                <Text className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>{assessment.class?.name}</Text>
+                                <Text className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>Max: {assessment.maxMarks}</Text>
+                            </View>
+                        </View>
+
+                        <Text className={`text-lg font-bold mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>
+                            Grade Students ({students.length})
+                        </Text>
+                    </View>
                 }
             />
         </KeyboardAvoidingView>
