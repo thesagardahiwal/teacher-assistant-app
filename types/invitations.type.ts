@@ -3,7 +3,7 @@ import { UserRole } from "./role.type";
 
 
 export interface Invitation extends Models.Document {
-
+    userId: string,
     email: string,
     role: UserRole,
     institution: string,

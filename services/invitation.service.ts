@@ -11,10 +11,12 @@ export const invitationService = {
         course?: string;
         class?: string;
         createdBy: string;
+        userId: string;
     }) {
         return databaseService.create<Invitation>(COLLECTIONS.INVITATIONS, {
             email: data.email,
             role: data.role,
+            userId: data.userId,
             institution: data.institution,
             course: data.course || null,
             class: data.class || null,
@@ -46,5 +48,19 @@ export const invitationService = {
             used: false,
             usedAt: null,
         });
+    },
+
+    getByEmail(email: string) {
+        return databaseService.list<Invitation>(COLLECTIONS.INVITATIONS, [
+            Query.equal("email", email),
+            Query.equal("used", false),
+        ]);
+    },
+
+    getByUserId(userId: string) {
+        return databaseService.list<Invitation>(COLLECTIONS.INVITATIONS, [
+            Query.equal("userId", userId),
+            Query.equal("used", false),
+        ]);
     },
 };

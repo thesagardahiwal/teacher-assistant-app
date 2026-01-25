@@ -33,14 +33,16 @@ export const teacherService = {
   async create(data: Omit<UserPayload, 'userId' | "isActive">) {
     // 1. Create Invitation
     // Teacher invitations might need different fields or just use same structure
+    const userId = ID.unique();
+
     const invitation = await invitationService.createInvite({ // Reusing student invite structure for now, maybe rename method to createInvite later
       email: data.email,
       institution: data.institution,
       role: "TEACHER",
       createdBy: "ADMIN",
+      userId,
     });
 
-    const userId = ID.unique();
     // 2. Create User Document (Teacher Profile)
     const teacher = await databaseService.createUserDocument<User>(
       COLLECTIONS.USERS,

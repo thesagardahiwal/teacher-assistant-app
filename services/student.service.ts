@@ -1,4 +1,4 @@
-import { Query } from "react-native-appwrite";
+import { ID, Query } from "react-native-appwrite";
 import { Student, StudentPayload } from "../types";
 import { COLLECTIONS } from "./appwrite/collections";
 import { databaseService } from "./appwrite/database.service";
@@ -61,6 +61,7 @@ export const studentService = {
 
   async create(data: Omit<StudentPayload, 'userId' | 'isActive' | 'currentYear'> & { isActive?: boolean; currentYear?: number }) {
     // 1. Create Invitation
+    const userId = ID.unique();
     const invitation = await invitationService.createInvite({
       email: data.email,
       institution: data.institution,
@@ -68,15 +69,17 @@ export const studentService = {
       course: data.course,
       class: data.class,
       createdBy: "ADMIN",
+      userId,
     });
 
-    // 2. Create Student Document with temporary userId "invite:<token>"
+    // 2. Create Student Document
     // This allows us to link it later when user registers
-    const student = await databaseService.create<Student>(
+    const student = await databaseService.createUserDocument<Student>(
       COLLECTIONS.STUDENTS,
+      userId,
       {
         ...data,
-        userId: `invite:${invitation.token}`,
+        userId,
         isActive: data.isActive ?? false, // Inactive until accepted
         currentYear: data.currentYear ?? 1,
       },

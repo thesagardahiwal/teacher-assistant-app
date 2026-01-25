@@ -104,13 +104,17 @@ export const login = createAsyncThunk(
     try {
       // Prevent "Creation of a session is prohibited when a session is active"
       try {
-        await authService.logout();
+        await authService.cleanSession();
       } catch (e) {
         // Ignore if no session or failed
       }
 
       await authService.login(email, password);
+      // Add a small delay for web persistence
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       const account = await authService.getCurrentAccount();
+      console.log("Login account:", account);
       if (!account) throw new Error("No session");
 
       let user: User;

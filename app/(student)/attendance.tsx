@@ -1,3 +1,5 @@
+import { useTheme } from "@/store/hooks/useTheme";
+import { Ionicons } from "@expo/vector-icons";
 import { Link, Stack } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, RefreshControl, Text, TouchableOpacity, View } from "react-native";
@@ -11,7 +13,7 @@ const Attendance = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
-
+  const { isDark } = useTheme();
   const fetchAttendance = async () => {
     try {
       if (!user?.$id) return;
@@ -39,16 +41,15 @@ const Attendance = () => {
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* Header */}
-      <View className="px-6 pb-3 border-b border-border dark:border-dark-border flex-row items-center justify-between">
+      <View className="p-4 border-b border-border dark:border-dark-border flex-row items-center justify-left gap-4">
         <Link href=".." asChild>
           <TouchableOpacity>
-            <Text className="text-primary dark:text-dark-primary text-lg">← Back</Text>
+            <Ionicons name="arrow-back" size={24} color={isDark ? "#FFFFFF" : "#000000"} />
           </TouchableOpacity>
         </Link>
         <Text className="text-xl font-bold text-textPrimary dark:text-dark-textPrimary">
           Attendance History
         </Text>
-        <View style={{ width: 40 }} />
       </View>
 
       {/* List */}

@@ -35,7 +35,7 @@ export const databaseService = {
         DATABASE_ID,
         collectionId,
         userId,
-        data,
+        data
       );
     } catch (error) {
       return handleServiceError(error, `Creating user document in ${collectionId}`);

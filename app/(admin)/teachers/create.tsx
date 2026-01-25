@@ -1,5 +1,6 @@
 import { InviteSuccessModal } from "@/components/admin/modals/InviteSuccessModal";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
+import ModeSwitcher from "@/components/common/ModeSwitcher";
 import { UserProfileForm } from "@/components/common/UserProfileForm";
 import { AdminTeacherProfileConfig } from "@/config/user-profile.config";
 import { teacherService } from "@/services";
@@ -223,132 +224,109 @@ export default function CreateTeacher() {
 
   /* ---------- RENDER HELPERS ---------- */
 
-  const renderManualForm = () => (
-    <ScrollView showsVerticalScrollIndicator={false}>
-      <View className={`p-6 rounded-2xl mb-6 ${isDark ? "bg-gray-800" : "bg-white"}`}>
-        <Text className={`text-lg font-bold mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>
-          Teacher Details
-        </Text>
-
-        {/* Reusing UserProfileForm for consistent validation and UX */}
-        <UserProfileForm
-          initialData={{}} // Empty for create
-          config={AdminTeacherProfileConfig}
-          onSubmit={handleManualSubmit}
-          loading={loading}
-          saving={loading}
-        />
-      </View>
-    </ScrollView>
-  );
-
-  const renderBulkUpload = () => (
-    <View className="flex-1">
-      {/* Summary View */}
-      {bulkSummary && (
-        <View className={`p-4 mb-4 rounded-xl border ${bulkSummary.failed > 0 ? "bg-yellow-50 border-yellow-200" : "bg-green-50 border-green-200"}`}>
-          <Text className="text-lg font-bold text-gray-900">Processing Complete</Text>
-          <Text className="text-gray-700">Successfully created: {bulkSummary.created}</Text>
-          <Text className="text-gray-700">Failed: {bulkSummary.failed}</Text>
-          <TouchableOpacity onPress={() => { setParsedData([]); setBulkSummary(null); }} className="mt-2">
-            <Text className="text-blue-600 font-semibold">Upload Another File</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {parsedData.length === 0 ? (
-        <View className={`flex-1 justify-center items-center p-6 border-2 border-dashed rounded-xl ${isDark ? "border-gray-700 bg-gray-800" : "border-gray-300 bg-gray-50"}`}>
-          <Ionicons name="cloud-upload-outline" size={48} color={isDark ? "#9CA3AF" : "#6B7280"} />
-          <Text className={`text-lg font-semibold mt-4 mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>
-            Upload Teacher CSV
-          </Text>
-          <Text className={`text-center mb-6 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-            First row must be headers: fullName, email, department, designation, etc.
-          </Text>
-          <TouchableOpacity
-            onPress={pickDocument}
-            className="bg-blue-600 px-6 py-3 rounded-xl"
-          >
-            <Text className="text-white font-semibold">Select CSV File</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <View className="flex-1">
-          <View className="flex-row justify-between items-center mb-4">
-            <Text className={`font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
-              Preview ({parsedData.length} rows)
-            </Text>
-            <TouchableOpacity onPress={() => setParsedData([])}>
-              <Text className="text-red-500 font-medium">Clear</Text>
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView className={`flex-1 rounded-xl border ${isDark ? "border-gray-700" : "border-gray-200"}`}>
-            {parsedData.map((row, i) => (
-              <View key={i} className={`flex-row p-3 border-b ${isDark ? "border-gray-700" : "border-gray-100"} items-center`}>
-                <View className={`w-2 h-2 rounded-full mr-3 ${row.status === "VALID" ? "bg-green-500" : "bg-red-500"}`} />
-                <View className="flex-1">
-                  <Text className={`font-medium ${isDark ? "text-white" : "text-gray-900"}`}>
-                    {row.name || "Unknown"}
-                  </Text>
-                  <Text className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-                    {row.email || "No Email"}
-                  </Text>
-                  {row.error && (
-                    <Text className="text-xs text-red-500 mt-0.5">{row.error}</Text>
-                  )}
-                </View>
-                <Text className={`text-xs px-2 py-1 rounded ${isDark ? "bg-gray-800 text-gray-300" : "bg-gray-100 text-gray-600"}`}>
-                  {row.designation || "-"}
-                </Text>
-              </View>
-            ))}
-          </ScrollView>
-
-          <TouchableOpacity
-            onPress={processBulk}
-            disabled={bulkProcessing || bulkSummary !== null}
-            className={`mt-4 py-4 rounded-xl items-center ${bulkProcessing ? "bg-blue-400" : "bg-blue-600"}`}
-          >
-            {bulkProcessing ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text className="text-white font-bold text-lg">
-                Process {parsedData.filter(d => d.status === "VALID").length} Valid Rows
-              </Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
-  );
-
   return (
     <View className={`flex-1 px-6 pt-6 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
       <PageHeader title="Add Teacher" />
 
       {/* Mode Switcher */}
-      <View className="flex-row mb-6 bg-gray-200 dark:bg-gray-800 p-1 rounded-xl">
-        <TouchableOpacity
-          onPress={() => setMode("manual")}
-          className={`flex-1 py-2 items-center rounded-lg ${mode === "manual" ? "bg-white dark:bg-gray-700 shadow-sm" : ""}`}
-        >
-          <Text className={`font-semibold ${mode === "manual" ? (isDark ? "text-white" : "text-gray-900") : "text-gray-500"}`}>
-            Manual Entry
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => setMode("bulk")}
-          className={`flex-1 py-2 items-center rounded-lg ${mode === "bulk" ? "bg-white dark:bg-gray-700 shadow-sm" : ""}`}
-        >
-          <Text className={`font-semibold ${mode === "bulk" ? (isDark ? "text-white" : "text-gray-900") : "text-gray-500"}`}>
-            Bulk Upload
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <ModeSwitcher mode={mode} setMode={setMode} isDark={isDark} />
 
       {/* Content */}
-      {mode === "manual" ? renderManualForm() : renderBulkUpload()}
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        {mode === "manual" ? (
+          <View className={`p-6 rounded-2xl mb-6 ${isDark ? "bg-gray-800" : "bg-white"}`}>
+            <Text className={`text-lg font-bold mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>
+              Teacher Details
+            </Text>
+            <UserProfileForm
+              initialData={{}}
+              config={AdminTeacherProfileConfig}
+              onSubmit={handleManualSubmit}
+              loading={loading}
+              saving={loading}
+            />
+          </View>
+        ) : (
+          <View className="flex-1">
+            {/* Summary View */}
+            {bulkSummary && (
+              <View className={`p-4 mb-4 rounded-xl border ${bulkSummary.failed > 0 ? "bg-yellow-50 border-yellow-200" : "bg-green-50 border-green-200"}`}>
+                <Text className="text-lg font-bold text-gray-900">Processing Complete</Text>
+                <Text className="text-gray-700">Successfully created: {bulkSummary.created}</Text>
+                <Text className="text-gray-700">Failed: {bulkSummary.failed}</Text>
+                <TouchableOpacity onPress={() => { setParsedData([]); setBulkSummary(null); }} className="mt-2">
+                  <Text className="text-blue-600 font-semibold">Upload Another File</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {parsedData.length === 0 ? (
+              <View className={`flex-1 justify-center items-center p-6 border-2 border-dashed rounded-xl ${isDark ? "border-gray-700 bg-gray-800" : "border-gray-300 bg-gray-50"}`}>
+                <Ionicons name="cloud-upload-outline" size={48} color={isDark ? "#9CA3AF" : "#6B7280"} />
+                <Text className={`text-lg font-semibold mt-4 mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>
+                  Upload Teacher CSV
+                </Text>
+                <Text className={`text-center mb-6 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                  First row must be headers: fullName, email, department, designation, etc.
+                </Text>
+                <TouchableOpacity
+                  onPress={pickDocument}
+                  className="bg-blue-600 px-6 py-3 rounded-xl"
+                >
+                  <Text className="text-white font-semibold">Select CSV File</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View className="flex-1">
+                <View className="flex-row justify-between items-center mb-4">
+                  <Text className={`font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
+                    Preview ({parsedData.length} rows)
+                  </Text>
+                  <TouchableOpacity onPress={() => setParsedData([])}>
+                    <Text className="text-red-500 font-medium">Clear</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View className={`flex-1 rounded-xl border mb-4 overflow-hidden ${isDark ? "border-gray-700" : "border-gray-200"}`}>
+                  {parsedData.map((row, i) => (
+                    <View key={i} className={`flex-row p-3 border-b ${isDark ? "border-gray-700" : "border-gray-100"} items-center`}>
+                      <View className={`w-2 h-2 rounded-full mr-3 ${row.status === "VALID" ? "bg-green-500" : "bg-red-500"}`} />
+                      <View className="flex-1">
+                        <Text className={`font-medium ${isDark ? "text-white" : "text-gray-900"}`}>
+                          {row.name || "Unknown"}
+                        </Text>
+                        <Text className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                          {row.email || "No Email"}
+                        </Text>
+                        {row.error && (
+                          <Text className="text-xs text-red-500 mt-0.5">{row.error}</Text>
+                        )}
+                      </View>
+                      <Text className={`text-xs px-2 py-1 rounded ${isDark ? "bg-gray-800 text-gray-300" : "bg-gray-100 text-gray-600"}`}>
+                        {row.designation || "-"}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+
+                <TouchableOpacity
+                  onPress={processBulk}
+                  disabled={bulkProcessing || bulkSummary !== null}
+                  className={`py-4 rounded-xl items-center ${bulkProcessing ? "bg-blue-400" : "bg-blue-600"}`}
+                >
+                  {bulkProcessing ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <Text className="text-white font-bold text-lg">
+                      Process {parsedData.filter(d => d.status === "VALID").length} Valid Rows
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        )}
+      </ScrollView>
 
       <InviteSuccessModal
         visible={modalVisible}

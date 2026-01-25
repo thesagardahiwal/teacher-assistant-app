@@ -1,25 +1,47 @@
-import { UserProfileForm } from "@/components/common/UserProfileForm";
-import { TeacherSelfProfileConfig } from "@/config/user-profile.config";
+import { FormInput } from "@/components/admin/ui/FormInput";
+import { useAuth } from "@/store/hooks/useAuth";
+import { useTheme } from "@/store/hooks/useTheme";
 import { showAlert } from "@/utils/alert";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
+    ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
     Text,
     TouchableOpacity,
-    View
+    View,
 } from "react-native";
-import { useAuth } from "../../store/hooks/useAuth";
-import { useTheme } from "../../store/hooks/useTheme";
+
+const ReadOnlyField = ({ label, value }: { label: string; value: string | undefined }) => {
+    const { isDark } = useTheme();
+    return (
+        <View className="mb-4">
+            <Text className={`text-xs uppercase font-bold mb-1 ${isDark ? "text-gray-500" : "text-gray-400"}`}>
+                {label}
+            </Text>
+            <View className={`p-3.5 rounded-xl border ${isDark ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200"}`}>
+                <Text className={`font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                    {value || "Not Set"}
+                </Text>
+            </View>
+        </View>
+    );
+};
 
 export default function ProfileScreen() {
     const { user, logout, updateProfile } = useAuth();
     const { isDark } = useTheme();
 
-    const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
+
+    // Editable State
+    const [phone, setPhone] = useState(user?.phone || "");
+    const [address, setAddress] = useState(user?.address || "");
+    const [department, setDepartment] = useState(user?.department || "");
+    const [designation, setDesignation] = useState(user?.designation || "");
+    const [bloodGroup, setBloodGroup] = useState(user?.bloodGroup || "");
 
     const handleLogout = async () => {
         showAlert("Logout", "Are you sure you want to logout?", [
@@ -34,12 +56,17 @@ export default function ProfileScreen() {
         ]);
     };
 
-    const handleSave = async (data: any) => {
+    const handleSave = async () => {
         if (!user?.$id) return;
         setLoading(true);
         try {
-            await updateProfile(user.$id, data);
-            setIsEditing(false);
+            await updateProfile(user.$id, {
+                phone,
+                address,
+                department,
+                designation,
+                bloodGroup,
+            });
             showAlert("Success", "Profile updated successfully");
         } catch (error) {
             showAlert("Error", "Failed to update profile");
@@ -48,25 +75,12 @@ export default function ProfileScreen() {
         }
     };
 
-    const SettingItem = ({ icon, label, onPress, color, showChevron = true, isDestructive = false }: any) => {
-        const itemColor = isDestructive ? "#DC2626" : (isDark ? "#E5E7EB" : "#374151");
-        const iconColor = color || (isDestructive ? "#DC2626" : (isDark ? "#E5E7EB" : "#374151"));
-
-        return (
-            <TouchableOpacity onPress={onPress} className={`flex-row items-center py-3.5 px-4 mb-2 rounded-xl border ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"}`}>
-                <View className={`w-9 h-9 rounded-lg items-center justify-center mr-3 ${isDestructive
-                    ? (isDark ? "bg-red-900/20" : "bg-red-50")
-                    : (isDark ? "bg-gray-700" : "bg-gray-100")
-                    }`}>
-                    <Ionicons name={icon} size={18} color={iconColor} />
-                </View>
-                <Text className={`flex-1 text-base font-medium`} style={{ color: itemColor }}>
-                    {label}
-                </Text>
-                {showChevron && <Ionicons name="chevron-forward" size={18} color={isDark ? "#6B7280" : "#9CA3AF"} />}
-            </TouchableOpacity>
-        );
-    };
+    const hasChanges =
+        phone !== (user?.phone || "") ||
+        address !== (user?.address || "") ||
+        department !== (user?.department || "") ||
+        designation !== (user?.designation || "") ||
+        bloodGroup !== (user?.bloodGroup || "");
 
     return (
         <KeyboardAvoidingView
@@ -82,13 +96,11 @@ export default function ProfileScreen() {
                         <Text className="text-xl font-bold text-white">My Profile</Text>
                         <View />
                     </View>
-
-                    {/* Extended background content to overlap with card */}
                     <View className={`absolute bottom-0 left-0 right-0 h-10 rounded-t-3xl ${isDark ? "bg-gray-950" : "bg-gray-50"}`} />
                 </View>
 
-                {/* Profile Card */}
                 <View className="px-6 -mt-24">
+                    {/* Profile Card */}
                     <View className={`rounded-3xl p-6 shadow-sm mb-6 ${isDark ? "bg-gray-900 shadow-none border border-gray-800" : "bg-white shadow-gray-200"}`}>
                         <View className="items-center -mt-16 mb-4">
                             <View className="w-28 h-28 rounded-full bg-white dark:bg-gray-900 p-2 shadow-lg shadow-black/10">
@@ -98,15 +110,6 @@ export default function ProfileScreen() {
                                     </Text>
                                 </View>
                             </View>
-
-                            {!isEditing && (
-                                <TouchableOpacity
-                                    onPress={() => setIsEditing(true)}
-                                    className="absolute bottom-0 right-0 bg-blue-600 w-10 h-10 rounded-full items-center justify-center shadow-lg shadow-blue-600/30 border-2 border-white dark:border-gray-900"
-                                >
-                                    <Ionicons name="pencil" size={18} color="white" />
-                                </TouchableOpacity>
-                            )}
                         </View>
 
                         <View className="items-center mb-6">
@@ -123,30 +126,91 @@ export default function ProfileScreen() {
                             </View>
                         </View>
 
-                        {/* User Profile Form replaces Editable Fields */}
-                        <View className="mt-4">
-                            <UserProfileForm
-                                initialData={user}
-                                config={TeacherSelfProfileConfig}
-                                onSubmit={handleSave}
-                                loading={loading}
-                                saving={loading}
-                                readOnly={!isEditing}
-                                showCancel={true}
-                                onCancel={() => setIsEditing(false)}
+                        {/* Read-Only Info */}
+                        <View className="mb-6">
+                            <Text className={`text-lg font-bold mb-4 ${isDark ? "text-white" : "text-gray-800"}`}>
+                                Account Info
+                            </Text>
+                            <ReadOnlyField label="Institution" value={typeof user?.institution === 'object' ? user.institution.name : 'Current Institution'} />
+                            <ReadOnlyField label="Role" value={user?.role} />
+                        </View>
+
+                        {/* Editable Professional Info */}
+                        <View className="mb-6">
+                            <Text className={`text-lg font-bold mb-4 ${isDark ? "text-white" : "text-gray-800"}`}>
+                                Professional Details
+                            </Text>
+                            <FormInput
+                                label="Department"
+                                value={department}
+                                onChangeText={setDepartment}
+                                placeholder="Department Name"
+                            />
+                            <FormInput
+                                label="Designation"
+                                value={designation}
+                                onChangeText={setDesignation}
+                                placeholder="Job Title"
                             />
                         </View>
-                    </View>
 
-                    {/* Settings Section */}
-                    <View className="px-2">
-                        <SettingItem
-                            icon="log-out-outline"
-                            label="Logout"
+                        {/* Editable Contact Info */}
+                        <View className="mb-6">
+                            <Text className={`text-lg font-bold mb-4 ${isDark ? "text-white" : "text-gray-800"}`}>
+                                Contact Information
+                            </Text>
+                            <FormInput
+                                label="Phone Number"
+                                value={phone}
+                                onChangeText={setPhone}
+                                placeholder="Phone Number"
+                                keyboardType="phone-pad"
+                            />
+                            <FormInput
+                                label="Blood Group"
+                                value={bloodGroup}
+                                onChangeText={setBloodGroup}
+                                placeholder="Blood Group"
+                            />
+                            <FormInput
+                                label="Address"
+                                value={address}
+                                onChangeText={setAddress}
+                                placeholder="Full Address"
+                                multiline
+                                numberOfLines={3}
+                            />
+                        </View>
+
+                        {/* Save Button */}
+                        <TouchableOpacity
+                            onPress={handleSave}
+                            disabled={loading || !hasChanges}
+                            className={`py-4 rounded-xl items-center mb-4 ${hasChanges ? "bg-blue-600" : "bg-gray-300 dark:bg-gray-800"
+                                }`}
+                        >
+                            {loading ? (
+                                <ActivityIndicator color="white" />
+                            ) : (
+                                <Text className={`font-bold text-lg ${hasChanges ? "text-white" : "text-gray-500"}`}>
+                                    Save Changes
+                                </Text>
+                            )}
+                        </TouchableOpacity>
+
+                        {/* Logout Button */}
+                        <TouchableOpacity
                             onPress={handleLogout}
-                            isDestructive={true}
-                            showChevron={false}
-                        />
+                            className="bg-red-50 dark:bg-red-900/10 p-4 rounded-xl items-center border border-red-100 dark:border-red-900/30"
+                        >
+                            <View className="flex-row items-center">
+                                <Ionicons name="log-out-outline" size={20} color={isDark ? "#f87171" : "#dc2626"} />
+                                <Text className="ml-2 text-red-600 dark:text-red-400 font-bold text-lg">
+                                    Logout
+                                </Text>
+                            </View>
+                        </TouchableOpacity>
+
                     </View>
                 </View>
             </ScrollView>

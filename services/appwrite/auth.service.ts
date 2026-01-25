@@ -30,11 +30,15 @@ export const authService = {
         } catch (e) {
             console.error("Failed to clear AsyncStorage on logout:", e);
         }
+        await this.cleanSession();
+    },
+
+    async cleanSession() {
         try {
-            return await account.deleteSession("current");
+            return await account.deleteSessions();
         } catch (error) {
             // If session is already missing or valid, just ignore
-            console.log("Logout cleanup: session might be already inactive", error);
+            console.log("Session cleanup: session might be already inactive", error);
             return;
         }
     },
@@ -42,9 +46,8 @@ export const authService = {
     async getCurrentAccount() {
         try {
             return await account.get();
-        } catch {
-            // Optionally, log for debugging
-            // console.error("Failed to get current account:", error);
+        } catch (error) {
+            console.error("Failed to get current account:", error);
             return null;
         }
     },
@@ -53,7 +56,7 @@ export const authService = {
         const { email, password, name, role, institutionId } = payload;
         try {
             try {
-                await account.deleteSession("current");
+                await account.deleteSessions();
             } catch {
                 // In case there is no session, ignore error
             }

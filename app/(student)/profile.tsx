@@ -1,12 +1,27 @@
-import { UserProfileForm } from "@/components/common/UserProfileForm";
-import { StudentProfileConfig } from "@/config/user-profile.config";
+import { FormInput } from "@/components/admin/ui/FormInput";
 import { studentService } from "@/services/student.service";
-import { Link, Stack, useRouter } from "expo-router";
+import { useAuth } from "@/store/hooks/useAuth";
+import { useTheme } from "@/store/hooks/useTheme";
+import { Student } from "@/types";
+import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
-import { useAuth } from "../../store/hooks/useAuth";
-import { useTheme } from "../../store/hooks/useTheme";
-import { Student } from "../../types";
+import { ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View } from "react-native";
+
+const ReadOnlyField = ({ label, value }: { label: string; value: string | undefined }) => {
+    const { isDark } = useTheme();
+    return (
+        <View className="mb-4">
+            <Text className={`text-xs uppercase font-bold mb-1 ${isDark ? "text-gray-500" : "text-gray-400"}`}>
+                {label}
+            </Text>
+            <View className={`p-3.5 rounded-xl border ${isDark ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200"}`}>
+                <Text className={`font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                    {value || "N/A"}
+                </Text>
+            </View>
+        </View>
+    );
+};
 
 const Profile = () => {
     const { user, logout } = useAuth();
@@ -16,6 +31,11 @@ const Profile = () => {
     const [student, setStudent] = useState<Student | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+
+    // Editable State
+    const [phone, setPhone] = useState("");
+    const [address, setAddress] = useState("");
+    const [bloodGroup, setBloodGroup] = useState("");
 
     useEffect(() => {
         loadStudentData();
@@ -27,6 +47,10 @@ const Profile = () => {
                 const data = await studentService.getByUserId(user.$id);
                 if (data) {
                     setStudent(data);
+                    // Init form state
+                    setPhone(data.phone || "");
+                    setAddress(data.address || "");
+                    setBloodGroup(data.bloodGroup || "");
                 }
             }
         } catch (error) {
@@ -37,16 +61,15 @@ const Profile = () => {
         }
     };
 
-    const handleSave = async (data: any) => {
+    const handleSave = async () => {
         if (!student) return;
         setSaving(true);
         try {
-            // Filter data to only update allowed fields if necessary, 
-            // but the service should handle it or we assume sent data is correct.
-            // UserProfileForm sends all data in formData.
-            // We should pick only editable fields if the API is strict.
-            // For now assuming API handles it or ignores extra fields.
-            await studentService.update(student.$id, data);
+            await studentService.update(student.$id, {
+                phone,
+                address,
+                bloodGroup,
+            });
             Alert.alert("Success", "Profile updated successfully");
         } catch (error: any) {
             Alert.alert("Error", error.message || "Failed to update profile");
@@ -60,6 +83,12 @@ const Profile = () => {
         router.replace("/");
     };
 
+    const hasChanges =
+        student &&
+        (phone !== (student.phone || "") ||
+            address !== (student.address || "") ||
+            bloodGroup !== (student.bloodGroup || ""));
+
     if (loading) {
         return (
             <View className={`flex-1 items-center justify-center ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
@@ -69,23 +98,16 @@ const Profile = () => {
     }
 
     return (
-        <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}
+        >
             <Stack.Screen options={{ headerShown: false }} />
 
             {/* Header */}
-            <View className={`px-6 py-4 border-b flex-row items-center justify-between ${isDark ? "border-gray-800" : "border-gray-200"}`}>
-                <Link href=".." asChild>
-                    <TouchableOpacity>
-                        <Text className="text-blue-500 text-lg">← Back</Text>
-                    </TouchableOpacity>
-                </Link>
-                <Text className={`text-xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
-                    My Profile
-                </Text>
-                <View style={{ width: 40 }} />
-            </View>
 
-            <ScrollView className="px-6 py-4">
+
+            <ScrollView className="px-6 py-4" showsVerticalScrollIndicator={false}>
 
                 {/* Avatar Section */}
                 <View className="items-center mb-6">
@@ -98,23 +120,82 @@ const Profile = () => {
                         {student?.name || user?.name}
                     </Text>
                     <Text className={`text-base font-medium ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-                        Roll No: {student?.rollNumber || "N/A"}
+                        {student?.rollNumber ? `Roll No: ${student.rollNumber}` : "Student"}
                     </Text>
                 </View>
 
-                {/* User Profile Form */}
-                <UserProfileForm
-                    initialData={student}
-                    config={StudentProfileConfig.map(f => f.name === 'email' ? { ...f, editable: false } : f)}
-                    onSubmit={handleSave}
-                    loading={loading}
-                    saving={saving}
-                />
+                {/* Academic Information (Read-Only) */}
+                <View className="mb-6">
+                    <Text className={`text-lg font-bold mb-4 ${isDark ? "text-white" : "text-gray-800"}`}>
+                        Academic Information
+                    </Text>
+                    <View className={`p-4 rounded-2xl ${isDark ? "bg-gray-800" : "bg-white"}`}>
+                        <ReadOnlyField label="Institution" value={typeof student?.institution === 'object' ? student.institution.name : 'N/A'} />
+                        <ReadOnlyField label="Course" value={typeof student?.course === 'object' ? student.course.name : 'N/A'} />
+                        <ReadOnlyField label="Class" value={typeof student?.class === 'object' ? student.class.name : 'N/A'} />
+                        <View className="flex-row gap-4">
+                            <View className="flex-1">
+                                <ReadOnlyField label="Current Year" value={student?.currentYear?.toString()} />
+                            </View>
+                            <View className="flex-1">
+                                <ReadOnlyField label="Seat Number" value={student?.seatNumber} />
+                            </View>
+                        </View>
+                        <ReadOnlyField label="PRN" value={student?.PRN} />
+                        <ReadOnlyField label="Email" value={student?.email} />
+                    </View>
+                </View>
+
+                {/* Personal Information (Editable) */}
+                <View className="mb-6">
+                    <Text className={`text-lg font-bold mb-4 ${isDark ? "text-white" : "text-gray-800"}`}>
+                        Personal Details (Editable)
+                    </Text>
+                    <View className={`p-4 rounded-2xl ${isDark ? "bg-gray-800" : "bg-white"}`}>
+                        <FormInput
+                            label="Phone Number"
+                            value={phone}
+                            onChangeText={setPhone}
+                            placeholder="Enter phone number"
+                            keyboardType="phone-pad"
+                        />
+                        <FormInput
+                            label="Blood Group"
+                            value={bloodGroup}
+                            onChangeText={setBloodGroup}
+                            placeholder="e.g. O+"
+                        />
+                        <FormInput
+                            label="Address"
+                            value={address}
+                            onChangeText={setAddress}
+                            multiline
+                            numberOfLines={3}
+                            placeholder="Enter full address"
+                        />
+                    </View>
+                </View>
+
+                {/* Save Changes Button */}
+                <TouchableOpacity
+                    onPress={handleSave}
+                    disabled={saving || !hasChanges}
+                    className={`py-4 rounded-xl items-center mb-4 ${hasChanges ? "bg-blue-600" : "bg-gray-300 dark:bg-gray-800"
+                        }`}
+                >
+                    {saving ? (
+                        <ActivityIndicator color="white" />
+                    ) : (
+                        <Text className={`font-bold text-lg ${hasChanges ? "text-white" : "text-gray-500"}`}>
+                            Save Changes
+                        </Text>
+                    )}
+                </TouchableOpacity>
 
                 {/* Logout Button */}
                 <TouchableOpacity
                     onPress={handleLogout}
-                    className="bg-red-50 dark:bg-red-900/10 p-4 rounded-xl items-center border border-red-100 dark:border-red-900/30 mb-8 mt-6"
+                    className="bg-red-50 dark:bg-red-900/10 p-4 rounded-xl items-center border border-red-100 dark:border-red-900/30 mb-8"
                 >
                     <Text className="text-red-600 dark:text-red-400 font-bold text-lg">
                         Log Out
@@ -122,7 +203,7 @@ const Profile = () => {
                 </TouchableOpacity>
 
             </ScrollView>
-        </View>
+        </KeyboardAvoidingView>
     );
 };
 

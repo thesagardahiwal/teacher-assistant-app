@@ -37,6 +37,7 @@ interface ParsedStudent {
   error?: string;
 }
 
+import ModeSwitcher from "@/components/common/ModeSwitcher";
 import { useAcademicYears } from "@/store/hooks/useAcademicYears";
 
 export default function CreateStudent() {
@@ -50,7 +51,7 @@ export default function CreateStudent() {
   const { fetchStudents } = useStudents();
 
   // Mode Selection
-  const [mode, setMode] = useState<"manual" | "bulk">("manual");
+  const [mode, setMode] = useState<"manual" | "bulk">("bulk");
 
   /* ---------- SHARED STATE (Course/Class Selection) ---------- */
   // Course/Class selection is required for BOTH manual and bulk
@@ -258,7 +259,7 @@ export default function CreateStudent() {
           course,
           class: selectedClass,
           institution: institutionId,
-          isActive: true,
+          isActive: false,
           currentYear: 1, // Logic for year?
           seatNumber: row.seatNumber,
           PRN: row.PRN,
@@ -532,27 +533,10 @@ export default function CreateStudent() {
       <PageHeader title="New Student" />
 
       {/* Mode Switcher */}
-      <View className="flex-row mb-6 bg-gray-200 dark:bg-gray-800 p-1 rounded-xl">
-        <TouchableOpacity
-          onPress={() => setMode("manual")}
-          className={`flex-1 py-2 items-center rounded-lg ${mode === "manual" ? "bg-white dark:bg-gray-700 shadow-sm" : ""}`}
-        >
-          <Text className={`font-semibold ${mode === "manual" ? (isDark ? "text-white" : "text-gray-900") : "text-gray-500"}`}>
-            Manual Entry
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => setMode("bulk")}
-          className={`flex-1 py-2 items-center rounded-lg ${mode === "bulk" ? "bg-white dark:bg-gray-700 shadow-sm" : ""}`}
-        >
-          <Text className={`font-semibold ${mode === "bulk" ? (isDark ? "text-white" : "text-gray-900") : "text-gray-500"}`}>
-            Bulk Upload
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <ModeSwitcher mode={mode} setMode={setMode} isDark={isDark} />
 
       {/* Content */}
-      {mode === "manual" ? renderManualForm() : renderBulkUpload()}
+      {mode.includes("manual") ? renderManualForm() : renderBulkUpload()}
 
       <InviteSuccessModal
         visible={modalVisible}
