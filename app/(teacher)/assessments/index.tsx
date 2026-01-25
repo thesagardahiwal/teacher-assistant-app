@@ -1,7 +1,7 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, FlatList, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useAssessments } from "../../../store/hooks/useAssessments";
 import { useAuth } from "../../../store/hooks/useAuth";
 import { useSubjects } from "../../../store/hooks/useSubjects";
@@ -26,6 +26,13 @@ export default function AssessmentsListScreen() {
             fetchSubjects(institutionId);
         }
     }, [institutionId, user, getAssessmentsByTeacher, fetchSubjects]);
+
+    const onRefresh = () => {
+        if (institutionId && user?.$id) {
+            getAssessmentsByTeacher(institutionId, user.$id, true); // forceRefresh = true
+            fetchSubjects(institutionId);
+        }
+    };
 
     const filteredAssessments = assessments.filter((a) =>
         selectedSubjectId === "all" ? true : a.subject?.$id === selectedSubjectId
@@ -114,6 +121,14 @@ export default function AssessmentsListScreen() {
                     keyExtractor={(item) => item.$id}
                     renderItem={renderAssessmentItem}
                     contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={loadingAssessments}
+                            onRefresh={onRefresh}
+                            colors={["#2563EB"]} // Android
+                            tintColor={isDark ? "#ffffff" : "#2563EB"} // iOS
+                        />
+                    }
                     ListEmptyComponent={
                         <View className="items-center justify-center mt-20">
                             <MaterialCommunityIcons name="clipboard-text-outline" size={64} color={isDark ? "#374151" : "#D1D5DB"} />
