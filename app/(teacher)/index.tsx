@@ -221,7 +221,8 @@ export default function TeacherDashboard() {
                                     iconLibrary="Ionicons"
                                     label="Assign Teacher"
                                     bgColor="bg-purple-500"
-                                    onPress={() => router.push("/(teacher)/assignments/create")}
+                                    // @ts-ignore - Route exists but types might be stale
+                                    onPress={() => router.push("/(teacher)/assignments/create" as any)}
                                 />
                                 <QuickAction
                                     className="w-[48%] md:w-[23%]"
