@@ -12,13 +12,14 @@ export const useTeacherEligibility = () => {
 
     useEffect(() => {
         if (institutionId && user && user.role === "TEACHER") {
-            fetchAssignments(institutionId, user.$id).finally(() => {
+            const userId = user.$id;
+            fetchAssignments(institutionId, userId).finally(() => {
                 setIsReady(true);
             });
         } else {
             setIsReady(true);
         }
-    }, [institutionId, user]);
+    }, [institutionId, user?.$id, user?.role]);
 
     const eligibility = useMemo(() => {
         const assignedClasses = Array.from(new Set(assignments.map((a) => a.class?.$id).filter(Boolean)));

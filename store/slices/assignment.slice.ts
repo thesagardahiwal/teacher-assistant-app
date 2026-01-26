@@ -54,6 +54,10 @@ const assignmentSlice = createSlice({
         state.loading = false;
         state.data = action.payload;
       })
+      .addCase(fetchAssignments.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to fetch assignments";
+      })
       .addCase(createAssignment.fulfilled, (state, action) => {
         state.data.push(action.payload);
       })

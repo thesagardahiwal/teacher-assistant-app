@@ -15,16 +15,16 @@ export const TeacherEligibilityGuard = ({ children, fallback }: Props) => {
     const { isDark } = useTheme();
     const router = useRouter();
 
+    if (isEligible) {
+        return <>{children}</>;
+    }
+
     if (isLoading) {
         return (
             <View className={`flex-1 justify-center items-center ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
                 <ActivityIndicator size="large" color="#2563EB" />
             </View>
         );
-    }
-
-    if (isEligible) {
-        return <>{children}</>;
     }
 
     if (fallback) {

@@ -18,7 +18,7 @@ export default function TeacherScheduleScreen() {
     const institutionId = useInstitutionId();
 
     const [schedules, setSchedules] = useState<ClassSchedule[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [selectedDay, setSelectedDay] = useState<string>("MON");
     const [selectedSchedule, setSelectedSchedule] = useState<ClassSchedule | null>(null);
@@ -38,13 +38,23 @@ export default function TeacherScheduleScreen() {
     }, [institutionId, user, selectedDay]);
 
     const fetchSchedules = async (isRefresh = false) => {
-        if (!user?.$id) return;
-        if (!isRefresh) setLoading(true);
+        if (!user?.$id) {
+            console.warn("Fetch schedules aborted: No user ID");
+            setLoading(false);
+            return;
+        }
+
+        console.log("Fetching schedules for user:", user.$id, "Day:", selectedDay);
+
+        // if (!isRefresh) setLoading(true);
         try {
             const res = await scheduleService.listByTeacher(user.$id, selectedDay);
+            console.log("Schedules fetched:", res.documents.length);
             setSchedules(res.documents);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to fetch schedules", error);
+            // Optionally show an error alert to the user or set an error state
+            showAlert("Error", `Failed to fetch schedules: ${error.message || "Unknown error"}`);
         } finally {
             setLoading(false);
             setRefreshing(false);
