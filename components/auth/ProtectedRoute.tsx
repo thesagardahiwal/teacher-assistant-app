@@ -1,4 +1,4 @@
-import { Redirect, usePathname, useRouter } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { useAuth } from "../../store/hooks/useAuth";
@@ -12,7 +12,6 @@ interface ProtectedRouteProps {
 export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
     const { user, isLoading } = useAuth();
     const router = useRouter();
-    const pathname = usePathname();
 
     useEffect(() => {
         if (!isLoading && user) {
@@ -20,13 +19,11 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
                 // Redirect to appropriate dashboard based on role
                 if (user.role === "STUDENT") {
                     router.replace("/(student)/dashboard");
-                } else if (user.role === "TEACHER") {
+                } else if (["TEACHER", "PRINCIPAL", "VICE_PRINCIPAL"].includes(user.role)) {
                     router.replace("/(teacher)");
                 } else if (["ADMIN"].includes(user.role)) {
                     router.replace("/(admin)/dashboard");
-                } else if (["PRINCIPAL", "VICE_PRINCIPAL"].includes(user.role)) {
-                    router.replace("/(principal)/dashboard");
-                }
+                };
             }
         }
     }, [user, isLoading, allowedRoles, router]);
