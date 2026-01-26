@@ -1,5 +1,6 @@
 import { NextClassCard } from "@/components/teacher/NextClassCard";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { QuickAction } from "@/components/ui/QuickActions";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
 import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
@@ -106,38 +107,7 @@ export default function TeacherDashboard() {
         { label: "Attendance", value: attendanceHistory.length, icon: "clipboard-check", color: "text-green-500", bg: "bg-green-500 dark:bg-green-900" },
     ];
 
-    const QuickAction = ({
-        icon,
-        label,
-        onPress,
-        bgColor,
-        className,
-        iconLibrary = "MaterialCommunityIcons"
-    }: {
-        icon: any;
-        label: string;
-        onPress: () => void;
-        bgColor: string;
-        className?: string;
-        iconLibrary?: "MaterialCommunityIcons" | "Ionicons"
-    }) => (
-        <TouchableOpacity
-            onPress={onPress}
-            activeOpacity={0.8}
-            className={`p-4 rounded-2xl ${isDark ? "bg-gray-800" : "bg-white"} shadow-sm ${className || ''}`}
-        >
-            <View className={`w-12 h-12 rounded-full ${bgColor} items-center justify-center mb-3`}>
-                {iconLibrary === "Ionicons" ? (
-                    <Ionicons name={icon} size={22} color="white" />
-                ) : (
-                    <MaterialCommunityIcons name={icon} size={22} color="white" />
-                )}
-            </View>
-            <Text className={`font-semibold text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
-                {label}
-            </Text>
-        </TouchableOpacity>
-    );
+
 
     return (
         <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
@@ -161,9 +131,9 @@ export default function TeacherDashboard() {
                 </View>
 
                 {/* Stats Grid */}
-                <View className="flex-row flex-wrap px-3 gap-4 mb-6 justify-between">
+                <View className="flex-row flex-wrap px-3 gap-4 mb-6">
                     {stats.map((stat, index) => (
-                        <View key={index} className={`w-[48%] md:w-[32%]`}>
+                        <View key={index} className={`w-[48%] md:w-[23%]`}>
                             <View className={`p-3 rounded-xl items-center ${isDark ? "bg-gray-800" : "bg-white"} shadow-sm h-32 justify-center`}>
                                 <View className={`w-10 h-10 rounded-full ${stat.bg} items-center justify-center mb-2`}>
                                     <MaterialCommunityIcons name={stat.icon as any} size={20} color={'white'} className={stat.color} />
@@ -194,6 +164,7 @@ export default function TeacherDashboard() {
                                     icon="school-outline"
                                     iconLibrary="Ionicons"
                                     label="Teachers"
+                                    isDark={isDark}
                                     bgColor="bg-blue-500"
                                     onPress={() => router.push("/(teacher)/teachers")}
                                 />
@@ -202,6 +173,7 @@ export default function TeacherDashboard() {
                                     icon="people-outline"
                                     iconLibrary="Ionicons"
                                     label="Students"
+                                    isDark={isDark}
                                     bgColor="bg-indigo-500"
                                     onPress={() => router.push("/(teacher)/students")}
                                 />
@@ -210,6 +182,7 @@ export default function TeacherDashboard() {
                                     icon="calendar-outline"
                                     iconLibrary="Ionicons"
                                     label="Classes"
+                                    isDark={isDark}
                                     bgColor="bg-violet-500"
                                     onPress={() => router.push("/(teacher)/classes")}
                                 />
@@ -218,6 +191,7 @@ export default function TeacherDashboard() {
                                     icon="link-outline"
                                     iconLibrary="Ionicons"
                                     label="Assign Teacher"
+                                    isDark={isDark}
                                     bgColor="bg-purple-500"
                                     // @ts-ignore - Route exists but types might be stale
                                     onPress={() => router.push("/(teacher)/assignments/create" as any)}
@@ -227,6 +201,7 @@ export default function TeacherDashboard() {
                                     icon="book-open-page-variant-outline"
                                     iconLibrary="MaterialCommunityIcons"
                                     label="Courses"
+                                    isDark={isDark}
                                     bgColor="bg-teal-500"
                                     onPress={() => router.push("/(teacher)/courses")}
                                 />
@@ -237,6 +212,7 @@ export default function TeacherDashboard() {
                                 className="w-[48%] md:w-[23%]"
                                 icon="calendar-clock"
                                 label="My Schedule"
+                                isDark={isDark}
                                 bgColor="bg-purple-500"
                                 onPress={() => router.push("/(teacher)/schedule")}
                             />
@@ -244,12 +220,14 @@ export default function TeacherDashboard() {
                                 className="w-[48%] md:w-[23%]"
                                 icon="clipboard-text-outline"
                                 label="Assessments"
+                                isDark={isDark}
                                 bgColor="bg-red-500"
                                 onPress={() => router.push("/(teacher)/assessments")}
                             />
                             <QuickAction
                                 className="w-[48%] md:w-[23%]"
                                 icon="folder-open"
+                                isDark={isDark}
                                 label="Study Vault"
                                 bgColor="bg-amber-500"
                                 onPress={() => router.push("/(teacher)/study-vault")}

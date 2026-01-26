@@ -1,4 +1,4 @@
-import { Sidebar } from "@/components/ui/Sidebar";
+import { ResponsiveSidebar } from "@/components/ui/ResponsiveSidebar";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import React from "react";
@@ -21,14 +21,14 @@ export default function TeacherLayout() {
     if (isPrincipal) {
       items.push(
         { label: "Courses", icon: "book-open-variant", iconLibrary: "MaterialCommunityIcons", route: "/(teacher)/courses" },
-        { label: "All Classes", icon: "calendar-clock", iconLibrary: "Ionicons", route: "/(teacher)/classes" },
+        { label: "All Classes", icon: "calendar-clock", iconLibrary: "MaterialCommunityIcons", route: "/(teacher)/classes" },
         { label: "Teachers", icon: "school", iconLibrary: "Ionicons", route: "/(teacher)/teachers" },
         { label: "Students", icon: "people", iconLibrary: "Ionicons", route: "/(teacher)/students" },
       );
     } else {
       // Regular Teacher Items
       items.push(
-        { label: "My Classes", icon: "calendar-clock", iconLibrary: "Ionicons", route: "/(teacher)/classes" },
+        { label: "My Classes", icon: "calendar-clock", iconLibrary: "MaterialCommunityIcons", route: "/(teacher)/classes" },
         { label: "Students", icon: "people", iconLibrary: "Ionicons", route: "/(teacher)/students" },
       );
     }
@@ -44,9 +44,9 @@ export default function TeacherLayout() {
 
   return (
     <ProtectedRoute allowedRoles={["TEACHER", "PRINCIPAL", "VICE_PRINCIPAL"]}>
-      <View className="flex-1 flex-row">
+      <View className="flex-1 bg-background dark:bg-dark-background flex-row">
         {Platform.OS === "web" && (
-          <Sidebar
+          <ResponsiveSidebar
             items={sidebarItems as any}
             header={
               <View className="flex-row items-center gap-2 mb-2">

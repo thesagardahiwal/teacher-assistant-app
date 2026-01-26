@@ -140,10 +140,10 @@ export default function StudentDetailsScreen() {
                     <View className="w-16 h-16 rounded-full bg-indigo-500 items-center justify-center mr-4">
                         <Text className="text-white font-bold text-2xl">{student.name.charAt(0)}</Text>
                     </View>
-                    <View>
+                    <View className="gap-2">
                         <Text className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>{student.name}</Text>
                         <Text className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>Roll No: {student.rollNumber}</Text>
-                        <Text className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>{student.class?.name}</Text>
+                        <Text className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>Class:{student.class?.name}</Text>
                         <PhoneDisplay phone={student.phone} />
                     </View>
                 </View>
