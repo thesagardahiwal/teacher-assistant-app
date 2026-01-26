@@ -16,6 +16,16 @@ export const teacherService = {
     );
   },
 
+  getUsersByRole(institutionId: string, role: string) {
+    return databaseService.list<User>(
+      COLLECTIONS.USERS,
+      [
+        Query.equal("institution", institutionId),
+        Query.equal("role", role),
+      ]
+    );
+  },
+
   get(teacherId: string) {
     return databaseService.get<User>(
       COLLECTIONS.USERS,

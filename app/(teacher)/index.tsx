@@ -96,14 +96,14 @@ export default function TeacherDashboard() {
     }, [institutionId, user, isPrincipal]);
 
     const stats = isPrincipal ? [
-        { label: "Courses", value: courses.length, icon: "book-open-variant", color: "text-blue-500", bg: "bg-blue-300 dark:bg-blue-900/30" },
-        { label: "Classes", value: classes.length, icon: "calendar-clock", color: "text-violet-500", bg: "bg-violet-300 dark:bg-violet-900/30" },
-        { label: "Teachers", value: teachers.length, icon: "school", color: "text-teal-500", bg: "bg-teal-300 dark:bg-teal-900/30" },
-        { label: "Students", value: students.length, icon: "account-group", color: "text-indigo-500", bg: "bg-indigo-300 dark:bg-indigo-900/30" },
+        { label: "Courses", value: courses.length, icon: "book-open-variant", color: "text-blue-500", bg: "bg-blue-500 dark:bg-blue-900" },
+        { label: "Classes", value: classes.length, icon: "calendar-clock", color: "text-violet-500", bg: "bg-violet-500 dark:bg-violet-900" },
+        { label: "Teachers", value: teachers.length, icon: "school", color: "text-teal-500", bg: "bg-teal-500 dark:bg-teal-900" },
+        { label: "Students", value: students.length, icon: "account-group", color: "text-indigo-500", bg: "bg-indigo-500 dark:bg-indigo-900" },
     ] : [
-        { label: "My Classes", value: assignments.length, icon: "book-open-variant", color: "text-blue-500", bg: "bg-blue-300 dark:bg-blue-900/30" },
-        { label: "Students", value: students.length, icon: "account-group", color: "text-indigo-500", bg: "bg-indigo-300 dark:bg-indigo-900/30" },
-        { label: "Attendance", value: attendanceHistory.length, icon: "clipboard-check", color: "text-green-500", bg: "bg-green-300 dark:bg-green-900/30" },
+        { label: "My Classes", value: assignments.length, icon: "book-open-variant", color: "text-blue-500", bg: "bg-blue-500 dark:bg-blue-900" },
+        { label: "Students", value: students.length, icon: "account-group", color: "text-indigo-500", bg: "bg-indigo-500 dark:bg-indigo-900" },
+        { label: "Attendance", value: attendanceHistory.length, icon: "clipboard-check", color: "text-green-500", bg: "bg-green-500 dark:bg-green-900" },
     ];
 
     const QuickAction = ({
@@ -176,11 +176,9 @@ export default function TeacherDashboard() {
                 </View>
 
                 {/* Next Class Card (Hidden for Principals for now to save space, or can be kept) */}
-                {!isPrincipal && (
-                    <View className="px-5 mb-8">
-                        <NextClassCard nextClass={nextClass} isDark={isDark} />
-                    </View>
-                )}
+                <View className="px-5 mb-8">
+                    <NextClassCard nextClass={nextClass} isDark={isDark} />
+                </View>
 
                 {/* Quick Actions */}
                 <View className="px-5 mb-8">
@@ -189,7 +187,7 @@ export default function TeacherDashboard() {
                     </Text>
 
                     <View className="flex-row flex-wrap gap-3">
-                        {isPrincipal ? (
+                        {isPrincipal && (
                             <>
                                 <QuickAction
                                     className="w-[48%] md:w-[23%]"
@@ -233,52 +231,51 @@ export default function TeacherDashboard() {
                                     onPress={() => router.push("/(teacher)/courses")}
                                 />
                             </>
-                        ) : (
-                            <>
-                                <QuickAction
-                                    className="w-[48%] md:w-[23%]"
-                                    icon="check-circle-outline"
-                                    label="Attendance"
-                                    bgColor="bg-green-500"
-                                    onPress={() => router.push("/(teacher)/attendance")}
-                                />
-                                <QuickAction
-                                    className="w-[48%] md:w-[23%]"
-                                    icon="calendar-clock"
-                                    label="My Schedule"
-                                    bgColor="bg-purple-500"
-                                    onPress={() => router.push("/(teacher)/schedule")}
-                                />
-                                <QuickAction
-                                    className="w-[48%] md:w-[23%]"
-                                    icon="clipboard-text-outline"
-                                    label="Assessments"
-                                    bgColor="bg-red-500"
-                                    onPress={() => router.push("/(teacher)/assessments")}
-                                />
-                                <QuickAction
-                                    className="w-[48%] md:w-[23%]"
-                                    icon="format-list-bulleted"
-                                    label="My Classes"
-                                    bgColor="bg-indigo-500"
-                                    onPress={() => router.push("/(teacher)/classes")}
-                                />
-                                <QuickAction
-                                    className="w-[48%] md:w-[23%]"
-                                    icon="account-search"
-                                    label="Find Student"
-                                    bgColor="bg-orange-500"
-                                    onPress={() => router.push("/(teacher)/students")}
-                                />
-                                <QuickAction
-                                    className="w-[48%] md:w-[23%]"
-                                    icon="folder-open"
-                                    label="Study Vault"
-                                    bgColor="bg-amber-500"
-                                    onPress={() => router.push("/(teacher)/study-vault")}
-                                />
-                            </>
                         )}
+                        <>
+                            <QuickAction
+                                className="w-[48%] md:w-[23%]"
+                                icon="check-circle-outline"
+                                label="Attendance"
+                                bgColor="bg-green-500"
+                                onPress={() => router.push("/(teacher)/attendance")}
+                            />
+                            <QuickAction
+                                className="w-[48%] md:w-[23%]"
+                                icon="calendar-clock"
+                                label="My Schedule"
+                                bgColor="bg-purple-500"
+                                onPress={() => router.push("/(teacher)/schedule")}
+                            />
+                            <QuickAction
+                                className="w-[48%] md:w-[23%]"
+                                icon="clipboard-text-outline"
+                                label="Assessments"
+                                bgColor="bg-red-500"
+                                onPress={() => router.push("/(teacher)/assessments")}
+                            />
+                            <QuickAction
+                                className="w-[48%] md:w-[23%]"
+                                icon="format-list-bulleted"
+                                label="My Classes"
+                                bgColor="bg-indigo-500"
+                                onPress={() => router.push("/(teacher)/classes")}
+                            />
+                            <QuickAction
+                                className="w-[48%] md:w-[23%]"
+                                icon="account-search"
+                                label="Find Student"
+                                bgColor="bg-orange-500"
+                                onPress={() => router.push("/(teacher)/students")}
+                            />
+                            <QuickAction
+                                className="w-[48%] md:w-[23%]"
+                                icon="folder-open"
+                                label="Study Vault"
+                                bgColor="bg-amber-500"
+                                onPress={() => router.push("/(teacher)/study-vault")}
+                            />
+                        </>
 
                         {/* Shared Actions (if any) - keeping Calendar common */}
                         <QuickAction
@@ -292,25 +289,23 @@ export default function TeacherDashboard() {
                 </View>
 
                 {/* Recent Activity (Teachers Only for now, or unified later) */}
-                {!isPrincipal && (
-                    <View className="px-5">
-                        <Text className={`text-lg font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>Recent Activity</Text>
-                        {attendanceHistory.slice(0, 3).map((item) => (
-                            <View key={item.$id} className={`flex-row items-center p-3 mb-3 rounded-xl ${isDark ? "bg-gray-800" : "bg-white"} shadow-sm`}>
-                                <View className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 items-center justify-center mr-3">
-                                    <MaterialCommunityIcons name="check" size={20} className="text-green-600 dark:text-green-400" />
-                                </View>
-                                <View className="flex-1">
-                                    <Text className={`font-bold ${isDark ? "text-white" : "text-gray-900"}`}>Attendance Taken</Text>
-                                    <Text className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-                                        {item.class?.name ? `Class ${item.class.name}` : ""} • {item.subject?.name}
-                                    </Text>
-                                </View>
-                                <Text className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>{new Date(item.date).toLocaleDateString()}</Text>
+                <View className="px-5">
+                    <Text className={`text-lg font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>Recent Activity</Text>
+                    {attendanceHistory.slice(0, 3).map((item) => (
+                        <View key={item.$id} className={`flex-row items-center p-3 mb-3 rounded-xl ${isDark ? "bg-gray-800" : "bg-white"} shadow-sm`}>
+                            <View className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 items-center justify-center mr-3">
+                                <MaterialCommunityIcons name="check" size={20} className="text-green-600 dark:text-green-400" />
                             </View>
-                        ))}
-                    </View>
-                )}
+                            <View className="flex-1">
+                                <Text className={`font-bold ${isDark ? "text-white" : "text-gray-900"}`}>Attendance Taken</Text>
+                                <Text className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                                    {item.class?.name ? `Class ${item.class.name}` : ""} • {item.subject?.name}
+                                </Text>
+                            </View>
+                            <Text className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>{new Date(item.date).toLocaleDateString()}</Text>
+                        </View>
+                    ))}
+                </View>
             </ScrollView>
         </View>
     );

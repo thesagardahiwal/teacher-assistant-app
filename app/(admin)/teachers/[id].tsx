@@ -5,6 +5,7 @@ import { assessmentService, scheduleService } from "@/services";
 import { assignmentService } from "@/services/assignment.service";
 import { attendanceService } from "@/services/attendance.service";
 import { invitationService } from "@/services/invitation.service";
+import { teacherService } from "@/services/teacher.service";
 import { userService } from "@/services/user.service";
 import { useTeachers } from "@/store/hooks/useTeachers";
 import { useTheme } from "@/store/hooks/useTheme";
@@ -99,6 +100,7 @@ export default function EditTeacher() {
     const [phone, setPhone] = useState("");
     const [address, setAddress] = useState("");
     const [isActive, setIsActive] = useState(false);
+    const [role, setRole] = useState("");
 
     useEffect(() => {
         if (id && institutionId) {
@@ -120,6 +122,7 @@ export default function EditTeacher() {
             setPhone(doc.phone || "");
             setAddress(doc.address || "");
             setIsActive(doc.isActive);
+            setRole(doc.role || "TEACHER");
 
 
             if (!doc.isActive) {
@@ -159,6 +162,21 @@ export default function EditTeacher() {
         if (!teacher) return;
         setSaving(true);
         try {
+            // Check for existing Principal/Vice Principal if role is changing to one of those
+            if ((role === "PRINCIPAL" || role === "VICE_PRINCIPAL") && role !== teacher.role) {
+                const existingUsers = await teacherService.getUsersByRole(institutionId!, role);
+
+                // Filter out the current user if they happen to be in the list (though unlikely if role changed locally)
+                const otherUsers = existingUsers.documents.filter(u => u.$id !== teacher.$id);
+
+                if (otherUsers.length > 0) {
+                    const title = role === "PRINCIPAL" ? "Principal" : "Vice Principal";
+                    showAlert("Cannot Change Role", `There is already a ${title} assigned to this institution. Please remove or demote them first.`);
+                    setSaving(false);
+                    return;
+                }
+            }
+
             await userService.update(teacher.$id, {
                 name,
                 department,
@@ -166,6 +184,7 @@ export default function EditTeacher() {
                 phone,
                 address,
                 isActive,
+                role: role as any,
             });
             showAlert("Success", "Teacher updated successfully");
             fetchTeachers(institutionId!); // Refresh list
@@ -302,6 +321,18 @@ export default function EditTeacher() {
                             options={[{ label: "Active", value: "Active" }, { label: "Inactive", value: "Inactive" }]}
                             onChange={(val) => setIsActive(val === "Active")}
                             placeholder="Select Status"
+                        />
+
+                        <FormSelect
+                            label="Role"
+                            value={role}
+                            options={[
+                                { label: "Teacher", value: "TEACHER" },
+                                { label: "Principal", value: "PRINCIPAL" },
+                                { label: "Vice Principal", value: "VICE_PRINCIPAL" }
+                            ]}
+                            onChange={setRole}
+                            placeholder="Select Role"
                         />
 
                         <TouchableOpacity

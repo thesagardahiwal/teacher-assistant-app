@@ -150,6 +150,18 @@ export default function TeacherLayout() {
               }}
             />
             <Tabs.Screen
+              name="courses/index"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
+              name="assignments/create"
+              options={{
+                href: null,
+              }}
+            />
+            <Tabs.Screen
               name="students/[id]"
               options={{
                 href: null,
