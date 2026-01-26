@@ -161,9 +161,9 @@ export default function TeacherDashboard() {
                 </View>
 
                 {/* Stats Grid */}
-                <View className="flex-row flex-wrap px-3 mb-6 justify-between">
+                <View className="flex-row flex-wrap px-3 gap-4 mb-6 justify-between">
                     {stats.map((stat, index) => (
-                        <View key={index} className={`w-[${isPrincipal ? '48%' : '32%'}] md:w-[${isPrincipal ? '23%' : '32%'}] p-1`}>
+                        <View key={index} className={`w-[48%] md:w-[32%]`}>
                             <View className={`p-3 rounded-xl items-center ${isDark ? "bg-gray-800" : "bg-white"} shadow-sm h-32 justify-center`}>
                                 <View className={`w-10 h-10 rounded-full ${stat.bg} items-center justify-center mb-2`}>
                                     <MaterialCommunityIcons name={stat.icon as any} size={20} color={'white'} className={stat.color} />
