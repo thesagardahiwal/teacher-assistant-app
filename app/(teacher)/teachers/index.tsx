@@ -69,11 +69,14 @@ export default function TeacherDirectory() {
         return result;
     }, [data, searchQuery, sortConfig]);
 
+    const isPrincipal = user?.role === "PRINCIPAL" || user?.role === "VICE_PRINCIPAL";
+
     const renderItem = ({ item }: { item: any }) => (
         <TouchableOpacity
             onPress={() => router.push(`/(teacher)/teachers/${item.$id}`)}
-            className={`p-4 mb-3 rounded-xl border flex-row items-center justify-between ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"
-                }`}
+            disabled={!isPrincipal} // Only principal can view full details/edit for now? Or let teachers view colleagues? Let's allow view, but gating edit inside detail is better.
+            // Actually, the previous teacher directory WAS viewable. Let's keep it viewable.
+            className={`p-4 mb-3 rounded-xl border flex-row items-center justify-between ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"}`}
         >
             <View className="flex-row items-center flex-1">
                 {/* Avatar */}

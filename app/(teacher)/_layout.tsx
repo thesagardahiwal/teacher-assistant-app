@@ -4,21 +4,46 @@ import { Tabs } from "expo-router";
 import React from "react";
 import { Platform, Text, View } from "react-native";
 import ProtectedRoute from "../../components/auth/ProtectedRoute";
+import { useAuth } from "../../store/hooks/useAuth";
 import { useTheme } from "../../store/hooks/useTheme";
 
 export default function TeacherLayout() {
   const { isDark } = useTheme();
+  const { user } = useAuth();
 
-  const sidebarItems = [
-    { label: "Dashboard", icon: "view-dashboard", route: "/(teacher)" },
-    { label: "Classes", icon: "calendar-clock", route: "/(teacher)/classes" },
-    { label: "Calendar", icon: "calendar", iconLibrary: "Ionicons", route: "/(teacher)/calendar" },
-    { label: "Students", icon: "people", iconLibrary: "Ionicons", route: "/(teacher)/students" },
-    { label: "Attendance", icon: "clipboard-check", route: "/(teacher)/attendance" },
-  ];
+  const sidebarItems = React.useMemo(() => {
+    const items = [
+      { label: "Dashboard", icon: "view-dashboard", iconLibrary: "MaterialCommunityIcons", route: "/(teacher)" },
+    ];
+
+    const isPrincipal = user?.role === "PRINCIPAL" || user?.role === "VICE_PRINCIPAL";
+
+    if (isPrincipal) {
+      items.push(
+        { label: "Courses", icon: "book-open-variant", iconLibrary: "MaterialCommunityIcons", route: "/(teacher)/courses" },
+        { label: "All Classes", icon: "calendar-clock", iconLibrary: "Ionicons", route: "/(teacher)/classes" },
+        { label: "Teachers", icon: "school", iconLibrary: "Ionicons", route: "/(teacher)/teachers" },
+        { label: "Students", icon: "people", iconLibrary: "Ionicons", route: "/(teacher)/students" },
+      );
+    } else {
+      // Regular Teacher Items
+      items.push(
+        { label: "My Classes", icon: "calendar-clock", iconLibrary: "Ionicons", route: "/(teacher)/classes" },
+        { label: "Students", icon: "people", iconLibrary: "Ionicons", route: "/(teacher)/students" },
+      );
+    }
+
+    // Common Items
+    items.push(
+      { label: "Calendar", icon: "calendar", iconLibrary: "Ionicons", route: "/(teacher)/calendar" },
+      { label: "Attendance", icon: "clipboard-check", iconLibrary: "MaterialCommunityIcons", route: "/(teacher)/attendance" },
+    );
+
+    return items;
+  }, [user?.role]);
 
   return (
-    <ProtectedRoute allowedRoles={["TEACHER"]}>
+    <ProtectedRoute allowedRoles={["TEACHER", "PRINCIPAL", "VICE_PRINCIPAL"]}>
       <View className="flex-1 flex-row">
         {Platform.OS === "web" && (
           <Sidebar

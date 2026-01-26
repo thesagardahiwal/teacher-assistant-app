@@ -33,7 +33,6 @@ function RootLayoutInner() {
       <Stack.Screen name="index" />
       <Stack.Screen name="(teacher)" />
       <Stack.Screen name="(student)" />
-      <Stack.Screen name="(principal)" />
       <Stack.Screen name="(admin)" />
       <Stack.Screen name="(auth)" />
     </Stack>

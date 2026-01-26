@@ -9,15 +9,13 @@ export default function Index() {
 
   useEffect(() => {
     if (isAuthenticated && !isLoading && role) {
-      if (role === "PRINCIPAL" || role === "VICE_PRINCIPAL") {
-        router.replace("/(principal)/dashboard");
+      if (role === "PRINCIPAL" || role === "VICE_PRINCIPAL" || role === "TEACHER") {
+        router.replace("/(teacher)");
       } else if (role === "ADMIN") {
         router.replace("/(admin)/dashboard");
-      } else if (role === "TEACHER") {
-        router.replace("/(teacher)");
       } else if (role === "STUDENT") {
         router.replace("/(student)/dashboard");
-      }
+      };
     }
   }, [isAuthenticated, isLoading, role, router]);
 
