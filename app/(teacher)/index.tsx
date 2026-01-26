@@ -156,7 +156,7 @@ export default function TeacherDashboard() {
                         Quick Actions
                     </Text>
 
-                    <View className="flex-row flex-wrap gap-3">
+                    <View className="flex-row flex-wrap gap-2">
                         {isPrincipal && (
                             <>
                                 <QuickAction

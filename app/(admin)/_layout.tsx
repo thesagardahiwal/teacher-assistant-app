@@ -1,4 +1,4 @@
-import { Sidebar } from "@/components/ui/Sidebar";
+import { ResponsiveSidebar } from "@/components/ui/ResponsiveSidebar";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import React from "react";
@@ -24,7 +24,7 @@ export default function AdminLayout() {
     <ProtectedRoute allowedRoles={["ADMIN"]}>
       <View className="flex-1 flex-row">
         {Platform.OS === "web" && (
-          <Sidebar
+          <ResponsiveSidebar
             items={sidebarItems as any}
             header={
               <View className="flex-row items-center gap-2 mb-2">

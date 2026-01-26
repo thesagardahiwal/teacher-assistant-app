@@ -1,12 +1,12 @@
 import StatCard from "@/components/admin/StatCard";
 import StatusRow from "@/components/admin/StatusRow";
+import { QuickAction } from "@/components/ui/QuickActions";
 import { useClasses } from "@/store/hooks/useClasses";
 import { useCourses } from "@/store/hooks/useCourses";
 import { useStudents } from "@/store/hooks/useStudents";
 import { useTeachers } from "@/store/hooks/useTeachers";
 import { useTheme } from "@/store/hooks/useTheme";
 import { institutionStorage } from "@/utils/institutionStorage";
-import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
@@ -50,32 +50,6 @@ const AdminDashboard = () => {
     setRefreshing(false);
   }, [user]);
 
-  const QuickAction = ({
-    icon,
-    label,
-    onPress,
-    bgColor,
-    className,
-  }: {
-    icon: keyof typeof Ionicons.glyphMap;
-    label: string;
-    onPress: () => void;
-    bgColor: string;
-    className?: string; // Added optional className
-  }) => (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.8}
-      className={`p-4 rounded-2xl ${isDark ? "bg-gray-800" : "bg-white"} shadow-sm ${className || ''}`}
-    >
-      <View className={`w-12 h-12 rounded-full ${bgColor} items-center justify-center mb-3`}>
-        <Ionicons name={icon} size={22} color="white" />
-      </View>
-      <Text className={`font-semibold text-sm ${isDark ? "text-gray-200" : "text-gray-700"}`}>
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
 
   return (
     <View className="flex-1 bg-background dark:bg-dark-background">
@@ -118,11 +92,13 @@ const AdminDashboard = () => {
           Management
         </Text>
 
-        <View className="flex-row flex-wrap gap-3 mb-6">
+        <View className="flex-row flex-wrap gap-2 mb-6">
           <QuickAction
             className="w-[48%] md:w-[23%]"
             onPress={() => router.navigate('/(admin)/teachers/create')}
             icon="person-add-outline"
+            iconLibrary="Ionicons"
+            isDark={isDark}
             label="Add Teacher"
             bgColor="bg-blue-500"
           />
@@ -131,12 +107,15 @@ const AdminDashboard = () => {
             onPress={() => router.navigate('/(admin)/students/create')}
             icon="school-outline"
             label="Add Student"
+            isDark={isDark}
             bgColor="bg-indigo-500"
           />
           <QuickAction
             className="w-[48%] md:w-[23%]"
             onPress={() => router.navigate('/(admin)/classes/create')}
             icon="people-outline"
+            iconLibrary="Ionicons"
+            isDark={isDark}
             label="Create Class"
             bgColor="bg-violet-500"
           />
@@ -144,6 +123,8 @@ const AdminDashboard = () => {
             className="w-[48%] md:w-[23%]"
             onPress={() => router.navigate('/(admin)/assignments/create')}
             icon="person-circle-outline"
+            isDark={isDark}
+            iconLibrary="Ionicons"
             label="Assign Teacher"
             bgColor="bg-purple-500"
           />
@@ -154,12 +135,13 @@ const AdminDashboard = () => {
           Academics
         </Text>
 
-        <View className="flex-row flex-wrap gap-3 mb-6">
+        <View className="flex-row flex-wrap gap-2 mb-6">
           <QuickAction
             className="w-[48%] md:w-[23%]"
             onPress={() => router.navigate('/(admin)/courses/create')}
             icon="book-outline"
             label="Add Course"
+            isDark={isDark}
             bgColor="bg-amber-500"
           />
           <QuickAction
@@ -167,6 +149,7 @@ const AdminDashboard = () => {
             onPress={() => router.navigate('/(admin)/subjects/create')}
             icon="library-outline"
             label="Add Subject"
+            isDark={isDark}
             bgColor="bg-orange-500"
           />
           <QuickAction
@@ -174,6 +157,7 @@ const AdminDashboard = () => {
             onPress={() => router.navigate('/(admin)/academic-years')}
             icon="calendar-outline"
             label="Academic Years"
+            isDark={isDark}
             bgColor="bg-emerald-500"
           />
           <QuickAction
@@ -181,6 +165,8 @@ const AdminDashboard = () => {
             onPress={() => router.navigate('/(admin)/schedules')}
             icon="time-outline"
             label="Schedules"
+            isDark={isDark}
+            iconLibrary="Ionicons"
             bgColor="bg-teal-500"
           />
         </View>
