@@ -7,6 +7,7 @@ import { ActivityIndicator, FlatList, ScrollView, Text, TouchableOpacity, View }
 import AttendanceReviewModal from "../../../components/Attendance/AttendanceReviewModal";
 import AddScheduleModal from "../../../components/Schedule/AddScheduleModal";
 import StudentDetailsModal from "../../../components/Student/StudentDetailsModal";
+import { TeacherEligibilityGuard } from "../../../components/teacher/TeacherEligibilityGuard";
 import { attendanceRecordService, attendanceService, scheduleService } from "../../../services";
 import { geminiService } from "../../../services/ai/gemini.service";
 import { useAssignments } from "../../../store/hooks/useAssignments";
@@ -249,148 +250,150 @@ export default function TakeAttendanceScreen() {
   };
 
   return (
-    <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
-      <AddScheduleModal
-        visible={scheduleModalVisible}
-        onClose={() => setScheduleModalVisible(false)}
-        onSave={onScheduleAdded}
-        initialSchedule={null}
-      />
+    <TeacherEligibilityGuard>
+      <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+        <AddScheduleModal
+          visible={scheduleModalVisible}
+          onClose={() => setScheduleModalVisible(false)}
+          onSave={onScheduleAdded}
+          initialSchedule={null}
+        />
 
-      <StudentDetailsModal
-        visible={modalVisible}
-        student={selectedStudent}
-        onClose={() => setModalVisible(false)}
-      />
+        <StudentDetailsModal
+          visible={modalVisible}
+          student={selectedStudent}
+          onClose={() => setModalVisible(false)}
+        />
 
-      <AttendanceReviewModal
-        visible={reviewModalVisible}
-        onClose={() => setReviewModalVisible(false)}
-        onApply={handleAiApply}
-        aiResult={aiResult}
-      />
+        <AttendanceReviewModal
+          visible={reviewModalVisible}
+          onClose={() => setReviewModalVisible(false)}
+          onApply={handleAiApply}
+          aiResult={aiResult}
+        />
 
-      {/* Header */}
-      <View className="flex-row items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
-        <TouchableOpacity onPress={() => router.back()} className="mr-3">
-          <Ionicons name="arrow-back" size={24} color={isDark ? "white" : "black"} />
-        </TouchableOpacity>
-        <Text className={`text-xl font-bold flex-1 ${isDark ? "text-white" : "text-gray-900"}`}>Take Attendance</Text>
-        <TouchableOpacity
-          onPress={handleScan}
-          disabled={!selectedClassId || scanning}
-          className={`p-2 rounded-full ${isDark ? "bg-gray-800" : "bg-gray-100"}`}
-        >
-          {scanning ? (
-            <ActivityIndicator size="small" color="#2563EB" />
-          ) : (
-            <Ionicons name="camera-outline" size={24} color={isDark ? "white" : "black"} />
-          )}
-        </TouchableOpacity>
-      </View>
-
-      <View className="flex-1 px-4 py-4 mb-20">
-
-        {/* Class Selector */}
-        <Text className={`text-sm font-bold mb-2 ml-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>SELECT ACTIVE CLASS</Text>
-        <View className="h-24 mb-6">
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {loadingSchedules ? (
-              <ActivityIndicator size="small" color="#2563EB" className="ml-4" />
-            ) : activeSchedules.length > 0 ? (
-              activeSchedules.map((schedule) => (
-                <TouchableOpacity
-                  key={schedule.$id}
-                  onPress={() => {
-                    setSelectedClassId(schedule.class.$id);
-                    setSelectedSubjectId(schedule.subject.$id);
-                  }}
-                  className={`mr-3 p-4 rounded-xl border w-40 justify-center h-20 ${selectedClassId === schedule.class.$id
-                    ? (isDark ? "bg-blue-900 border-blue-500" : "bg-blue-600 border-blue-600")
-                    : (isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200")}`}
-                >
-                  <Text className={`font-bold text-lg mb-1 ${selectedClassId === schedule.class.$id ? "text-white" : (isDark ? "text-white" : "text-gray-900")}`}>
-                    {schedule.class.name ? `${schedule.class.name}` : "N/A"}
-                  </Text>
-                  <Text className={`${selectedClassId === schedule.class.$id ? "text-blue-200" : (isDark ? "text-gray-400" : "text-gray-500")}`} numberOfLines={1}>
-                    {schedule.subject.name}
-                  </Text>
-                  <View className="flex-row items-center mt-1">
-                    <Ionicons name="time-outline" size={10} color={selectedClassId === schedule.class.$id ? "white" : (isDark ? "#9CA3AF" : "#6B7280")} />
-                    <Text className={`text-[10px] ml-1 ${selectedClassId === schedule.class.$id ? "text-blue-100" : (isDark ? "text-gray-400" : "text-gray-500")}`}>
-                      {schedule.startTime} - {schedule.endTime}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              ))
+        {/* Header */}
+        <View className="flex-row items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+          <TouchableOpacity onPress={() => router.back()} className="mr-3">
+            <Ionicons name="arrow-back" size={24} color={isDark ? "white" : "black"} />
+          </TouchableOpacity>
+          <Text className={`text-xl font-bold flex-1 ${isDark ? "text-white" : "text-gray-900"}`}>Take Attendance</Text>
+          <TouchableOpacity
+            onPress={handleScan}
+            disabled={!selectedClassId || scanning}
+            className={`p-2 rounded-full ${isDark ? "bg-gray-800" : "bg-gray-100"}`}
+          >
+            {scanning ? (
+              <ActivityIndicator size="small" color="#2563EB" />
             ) : (
-              <View className="flex-row items-center ml-2">
-                <MaterialCommunityIcons name="clock-alert-outline" size={24} color={isDark ? "#9CA3AF" : "#6B7280"} />
-                <Text className={`ml-2 mr-4 ${isDark ? "text-gray-400" : "text-gray-500"}`}>No active classes.</Text>
-                <TouchableOpacity
-                  onPress={() => setScheduleModalVisible(true)}
-                  className={`px-4 py-2 rounded-lg ${isDark ? "bg-blue-900/50 border border-blue-700" : "bg-blue-100"}`}
-                >
-                  <Text className="text-blue-600 dark:text-blue-400 font-semibold">Create Schedule</Text>
-                </TouchableOpacity>
-              </View>
+              <Ionicons name="camera-outline" size={24} color={isDark ? "white" : "black"} />
             )}
-          </ScrollView>
+          </TouchableOpacity>
         </View>
 
-        {selectedClassId ? (
-          <>
-            <View className="flex-row justify-between items-center mb-4">
-              <Text className={`text-sm font-bold ml-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-                STUDENTS ({filteredStudents.length})
-              </Text>
-              <View className="flex-row items-center">
-                <View className="w-3 h-3 rounded-full bg-green-500 mr-1" />
-                <Text className={`text-xs mr-3 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Present</Text>
-                <View className="w-3 h-3 rounded-full bg-red-500 mr-1" />
-                <Text className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>Absent</Text>
-              </View>
-            </View>
+        <View className="flex-1 px-4 py-4 mb-20">
 
-            <FlatList
-              data={filteredStudents}
-              keyExtractor={(item) => item.$id}
-              renderItem={renderStudentItem}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 100 }}
-              initialNumToRender={20}
-              maxToRenderPerBatch={20}
-              windowSize={10}
-              ListEmptyComponent={
-                <Text className={`text-center mt-10 ${isDark ? "text-gray-500" : "text-gray-400"}`}>No students found in this class</Text>
-              }
-            />
-          </>
-        ) : (
-          <View className="items-center justify-center py-20">
-            <MaterialCommunityIcons name="gesture-tap" size={48} color={isDark ? "#4B5563" : "#D1D5DB"} />
-            <Text className={`mt-4 text-center ${isDark ? "text-gray-500" : "text-gray-400"}`}>
-              {activeSchedules.length > 0 ? "Select a class above to start taking attendance" : "No active classes or create one above"}
-            </Text>
+          {/* Class Selector */}
+          <Text className={`text-sm font-bold mb-2 ml-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>SELECT ACTIVE CLASS</Text>
+          <View className="h-24 mb-6">
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {loadingSchedules ? (
+                <ActivityIndicator size="small" color="#2563EB" className="ml-4" />
+              ) : activeSchedules.length > 0 ? (
+                activeSchedules.map((schedule) => (
+                  <TouchableOpacity
+                    key={schedule.$id}
+                    onPress={() => {
+                      setSelectedClassId(schedule.class.$id);
+                      setSelectedSubjectId(schedule.subject.$id);
+                    }}
+                    className={`mr-3 p-4 rounded-xl border w-40 justify-center h-20 ${selectedClassId === schedule.class.$id
+                      ? (isDark ? "bg-blue-900 border-blue-500" : "bg-blue-600 border-blue-600")
+                      : (isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200")}`}
+                  >
+                    <Text className={`font-bold text-lg mb-1 ${selectedClassId === schedule.class.$id ? "text-white" : (isDark ? "text-white" : "text-gray-900")}`}>
+                      {schedule.class.name ? `${schedule.class.name}` : "N/A"}
+                    </Text>
+                    <Text className={`${selectedClassId === schedule.class.$id ? "text-blue-200" : (isDark ? "text-gray-400" : "text-gray-500")}`} numberOfLines={1}>
+                      {schedule.subject.name}
+                    </Text>
+                    <View className="flex-row items-center mt-1">
+                      <Ionicons name="time-outline" size={10} color={selectedClassId === schedule.class.$id ? "white" : (isDark ? "#9CA3AF" : "#6B7280")} />
+                      <Text className={`text-[10px] ml-1 ${selectedClassId === schedule.class.$id ? "text-blue-100" : (isDark ? "text-gray-400" : "text-gray-500")}`}>
+                        {schedule.startTime} - {schedule.endTime}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <View className="flex-row items-center ml-2">
+                  <MaterialCommunityIcons name="clock-alert-outline" size={24} color={isDark ? "#9CA3AF" : "#6B7280"} />
+                  <Text className={`ml-2 mr-4 ${isDark ? "text-gray-400" : "text-gray-500"}`}>No active classes.</Text>
+                  <TouchableOpacity
+                    onPress={() => setScheduleModalVisible(true)}
+                    className={`px-4 py-2 rounded-lg ${isDark ? "bg-blue-900/50 border border-blue-700" : "bg-blue-100"}`}
+                  >
+                    <Text className="text-blue-600 dark:text-blue-400 font-semibold">Create Schedule</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </ScrollView>
+          </View>
+
+          {selectedClassId ? (
+            <>
+              <View className="flex-row justify-between items-center mb-4">
+                <Text className={`text-sm font-bold ml-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                  STUDENTS ({filteredStudents.length})
+                </Text>
+                <View className="flex-row items-center">
+                  <View className="w-3 h-3 rounded-full bg-green-500 mr-1" />
+                  <Text className={`text-xs mr-3 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Present</Text>
+                  <View className="w-3 h-3 rounded-full bg-red-500 mr-1" />
+                  <Text className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>Absent</Text>
+                </View>
+              </View>
+
+              <FlatList
+                data={filteredStudents}
+                keyExtractor={(item) => item.$id}
+                renderItem={renderStudentItem}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 100 }}
+                initialNumToRender={20}
+                maxToRenderPerBatch={20}
+                windowSize={10}
+                ListEmptyComponent={
+                  <Text className={`text-center mt-10 ${isDark ? "text-gray-500" : "text-gray-400"}`}>No students found in this class</Text>
+                }
+              />
+            </>
+          ) : (
+            <View className="items-center justify-center py-20">
+              <MaterialCommunityIcons name="gesture-tap" size={48} color={isDark ? "#4B5563" : "#D1D5DB"} />
+              <Text className={`mt-4 text-center ${isDark ? "text-gray-500" : "text-gray-400"}`}>
+                {activeSchedules.length > 0 ? "Select a class above to start taking attendance" : "No active classes or create one above"}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Submit Button */}
+        {selectedClassId && (
+          <View className={`absolute bottom-0 left-0 right-0 p-4 border-t ${isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"}`}>
+            <TouchableOpacity
+              onPress={handleSubmit}
+              disabled={submitting}
+              className={`w-full py-4 rounded-xl items-center flex-row justify-center ${submitting ? "bg-blue-400" : "bg-blue-600"}`}
+            >
+              {submitting && <ActivityIndicator size="small" color="white" className="mr-2" />}
+              <Text className="text-white font-bold text-lg">
+                {submitting ? "Submitting..." : `Submit Attendance`}
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
       </View>
-
-      {/* Submit Button */}
-      {selectedClassId && (
-        <View className={`absolute bottom-0 left-0 right-0 p-4 border-t ${isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"}`}>
-          <TouchableOpacity
-            onPress={handleSubmit}
-            disabled={submitting}
-            className={`w-full py-4 rounded-xl items-center flex-row justify-center ${submitting ? "bg-blue-400" : "bg-blue-600"}`}
-          >
-            {submitting && <ActivityIndicator size="small" color="white" className="mr-2" />}
-            <Text className="text-white font-bold text-lg">
-              {submitting ? "Submitting..." : `Submit Attendance`}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
+    </TeacherEligibilityGuard>
   );
 }

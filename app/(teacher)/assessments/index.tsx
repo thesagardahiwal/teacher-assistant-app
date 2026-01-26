@@ -5,8 +5,10 @@ import { ActivityIndicator, FlatList, RefreshControl, ScrollView, Text, Touchabl
 import { useAssessments } from "../../../store/hooks/useAssessments";
 import { useAuth } from "../../../store/hooks/useAuth";
 import { useSubjects } from "../../../store/hooks/useSubjects";
+import { useTeacherEligibility } from "../../../store/hooks/useTeacherEligibility";
 import { useTheme } from "../../../store/hooks/useTheme";
 import { Assessment } from "../../../types/assessment.type";
+import { showAlert } from "../../../utils/alert";
 import { useInstitutionId } from "../../../utils/useInstitutionId";
 
 export default function AssessmentsListScreen() {
@@ -17,6 +19,7 @@ export default function AssessmentsListScreen() {
 
     const { assessments, isLoading: loadingAssessments, getAssessmentsByTeacher } = useAssessments();
     const { data: subjects, fetchSubjects } = useSubjects();
+    const { isEligible } = useTeacherEligibility();
 
     const [selectedSubjectId, setSelectedSubjectId] = useState<string>("all");
 
@@ -143,8 +146,14 @@ export default function AssessmentsListScreen() {
 
             {/* FAB */}
             <TouchableOpacity
-                onPress={() => router.push("/(teacher)/assessments/create")}
-                className="absolute bottom-8 right-6 w-14 h-14 bg-blue-600 rounded-full items-center justify-center shadow-lg"
+                onPress={() => {
+                    if (isEligible) {
+                        router.push("/(teacher)/assessments/create");
+                    } else {
+                        showAlert("Access Restricted", "You need to be assigned to a class and subject to create assessments.");
+                    }
+                }}
+                className={`absolute bottom-8 right-6 w-14 h-14 rounded-full items-center justify-center shadow-lg ${isEligible ? "bg-blue-600" : "bg-gray-400"}`}
             >
                 <Ionicons name="add" size={30} color="white" />
             </TouchableOpacity>

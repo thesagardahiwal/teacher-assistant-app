@@ -9,6 +9,7 @@ import { useAssessments } from "../../../store/hooks/useAssessments";
 import { useAuth } from "../../../store/hooks/useAuth";
 import { useClasses } from "../../../store/hooks/useClasses";
 import { useSubjects } from "../../../store/hooks/useSubjects";
+import { useTeacherEligibility } from "../../../store/hooks/useTeacherEligibility";
 import { useTheme } from "../../../store/hooks/useTheme";
 import { showAlert } from "../../../utils/alert";
 import { useInstitutionId } from "../../../utils/useInstitutionId";
@@ -25,6 +26,15 @@ export default function CreateAssessmentScreen() {
     const { data: academicYears, fetchAcademicYears } = useAcademicYears();
     const { data: subjects, fetchSubjectsByTeacher } = useSubjects();
     const { data: classes, fetchClassesByTeacher } = useClasses();
+    const { isEligible, isLoading: loadingEligibility } = useTeacherEligibility();
+
+    useEffect(() => {
+        if (!loadingEligibility && !isEligible) {
+            showAlert("Access Restricted", "You need to be assigned to a class and subject to create assessments.", [
+                { text: "OK", onPress: () => router.back() }
+            ]);
+        }
+    }, [isEligible, loadingEligibility]);
 
     const [form, setForm] = useState<AssessmentPayload>({
         title: "",

@@ -235,13 +235,6 @@ export default function TeacherDashboard() {
                         <>
                             <QuickAction
                                 className="w-[48%] md:w-[23%]"
-                                icon="check-circle-outline"
-                                label="Attendance"
-                                bgColor="bg-green-500"
-                                onPress={() => router.push("/(teacher)/attendance")}
-                            />
-                            <QuickAction
-                                className="w-[48%] md:w-[23%]"
                                 icon="calendar-clock"
                                 label="My Schedule"
                                 bgColor="bg-purple-500"
@@ -256,56 +249,35 @@ export default function TeacherDashboard() {
                             />
                             <QuickAction
                                 className="w-[48%] md:w-[23%]"
-                                icon="format-list-bulleted"
-                                label="My Classes"
-                                bgColor="bg-indigo-500"
-                                onPress={() => router.push("/(teacher)/classes")}
-                            />
-                            <QuickAction
-                                className="w-[48%] md:w-[23%]"
-                                icon="account-search"
-                                label="Find Student"
-                                bgColor="bg-orange-500"
-                                onPress={() => router.push("/(teacher)/students")}
-                            />
-                            <QuickAction
-                                className="w-[48%] md:w-[23%]"
                                 icon="folder-open"
                                 label="Study Vault"
                                 bgColor="bg-amber-500"
                                 onPress={() => router.push("/(teacher)/study-vault")}
                             />
                         </>
-
-                        {/* Shared Actions (if any) - keeping Calendar common */}
-                        <QuickAction
-                            className="w-[48%] md:w-[23%]"
-                            icon="calendar-month"
-                            label="Calendar"
-                            bgColor="bg-cyan-500"
-                            onPress={() => router.push("/(teacher)/calendar")}
-                        />
                     </View>
                 </View>
 
                 {/* Recent Activity (Teachers Only for now, or unified later) */}
-                <View className="px-5">
-                    <Text className={`text-lg font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>Recent Activity</Text>
-                    {attendanceHistory.slice(0, 3).map((item) => (
-                        <View key={item.$id} className={`flex-row items-center p-3 mb-3 rounded-xl ${isDark ? "bg-gray-800" : "bg-white"} shadow-sm`}>
-                            <View className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 items-center justify-center mr-3">
-                                <MaterialCommunityIcons name="check" size={20} className="text-green-600 dark:text-green-400" />
+                {attendanceHistory.length > 0 && (
+                    <View className="px-5">
+                        <Text className={`text-lg font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>Recent Activity</Text>
+                        {attendanceHistory.slice(0, 3).map((item) => (
+                            <View key={item.$id} className={`flex-row items-center p-3 mb-3 rounded-xl ${isDark ? "bg-gray-800" : "bg-white"} shadow-sm`}>
+                                <View className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 items-center justify-center mr-3">
+                                    <MaterialCommunityIcons name="check" size={20} className="text-green-600 dark:text-green-400" />
+                                </View>
+                                <View className="flex-1">
+                                    <Text className={`font-bold ${isDark ? "text-white" : "text-gray-900"}`}>Attendance Taken</Text>
+                                    <Text className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                                        {item.class?.name ? `Class ${item.class.name}` : ""} • {item.subject?.name}
+                                    </Text>
+                                </View>
+                                <Text className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>{new Date(item.date).toLocaleDateString()}</Text>
                             </View>
-                            <View className="flex-1">
-                                <Text className={`font-bold ${isDark ? "text-white" : "text-gray-900"}`}>Attendance Taken</Text>
-                                <Text className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-                                    {item.class?.name ? `Class ${item.class.name}` : ""} • {item.subject?.name}
-                                </Text>
-                            </View>
-                            <Text className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>{new Date(item.date).toLocaleDateString()}</Text>
-                        </View>
-                    ))}
-                </View>
+                        ))}
+                    </View>
+                )}
             </ScrollView>
         </View>
     );

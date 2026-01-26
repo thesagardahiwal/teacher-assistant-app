@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import AddScheduleModal from "../../components/Schedule/AddScheduleModal";
+import { TeacherEligibilityGuard } from "../../components/teacher/TeacherEligibilityGuard";
 import { scheduleService } from "../../services";
 import { useAuth } from "../../store/hooks/useAuth";
 import { useTheme } from "../../store/hooks/useTheme";
@@ -122,72 +123,74 @@ export default function TeacherScheduleScreen() {
     };
 
     return (
-        <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
-            <AddScheduleModal
-                visible={modalVisible}
-                onClose={() => {
-                    setModalVisible(false);
-                    setSelectedSchedule(null);
-                }}
-                onSave={onScheduleAdded}
-                initialSchedule={selectedSchedule}
-            />
+        <TeacherEligibilityGuard>
+            <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+                <AddScheduleModal
+                    visible={modalVisible}
+                    onClose={() => {
+                        setModalVisible(false);
+                        setSelectedSchedule(null);
+                    }}
+                    onSave={onScheduleAdded}
+                    initialSchedule={selectedSchedule}
+                />
 
-            {/* Header */}
-            <View className="flex-row items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
-                <TouchableOpacity onPress={() => router.back()} className="mr-3">
-                    <Ionicons name="arrow-back" size={24} color={isDark ? "#FFFFFF" : "#000000"} />
-                </TouchableOpacity>
-                <Text className={`text-xl font-bold flex-1 ${isDark ? "text-white" : "text-gray-900"}`}>My Schedule</Text>
-                <TouchableOpacity onPress={() => setModalVisible(true)} className="p-2">
-                    <Ionicons name="add" size={28} color={isDark ? "#FFFFFF" : "#2563EB"} />
-                </TouchableOpacity>
-            </View>
+                {/* Header */}
+                <View className="flex-row items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+                    <TouchableOpacity onPress={() => router.back()} className="mr-3">
+                        <Ionicons name="arrow-back" size={24} color={isDark ? "#FFFFFF" : "#000000"} />
+                    </TouchableOpacity>
+                    <Text className={`text-xl font-bold flex-1 ${isDark ? "text-white" : "text-gray-900"}`}>My Schedule</Text>
+                    <TouchableOpacity onPress={() => setModalVisible(true)} className="p-2">
+                        <Ionicons name="add" size={28} color={isDark ? "#FFFFFF" : "#2563EB"} />
+                    </TouchableOpacity>
+                </View>
 
-            {/* Day Selector */}
-            <View className="py-4">
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16 }}>
-                    {days.map((day) => (
-                        <TouchableOpacity
-                            key={day.id}
-                            onPress={() => setSelectedDay(day.id)}
-                            className={`mr-3 px-4 py-2 rounded-full ${selectedDay === day.id
-                                ? "bg-blue-600"
-                                : (isDark ? "bg-gray-800" : "bg-white")}`}
-                        >
-                            <Text className={`font-medium ${selectedDay === day.id ? "text-white" : (isDark ? "text-gray-300" : "text-gray-700")}`}>
-                                {day.label}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-                </ScrollView>
-            </View>
-
-            {/* Schedule List */}
-            <View className="flex-1 px-4">
-                {loading ? (
-                    <ActivityIndicator testID="loading-schedules" size="large" color="#2563EB" className="mt-10" />
-                ) : (
-                    <FlatList
-                        data={schedules}
-                        renderItem={renderItem}
-                        keyExtractor={(item) => item.$id}
-                        showsVerticalScrollIndicator={false}
-                        contentContainerStyle={{ paddingBottom: 20 }}
-                        refreshControl={
-                            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-                        }
-                        ListEmptyComponent={
-                            <View className="items-center justify-center mt-20">
-                                <MaterialCommunityIcons name="calendar-clock" size={48} color={isDark ? "#9CA3AF" : "#D1D5DB"} />
-                                <Text className={`mt-4 text-center ${isDark ? "text-gray-500" : "text-gray-400"}`}>
-                                    No classes scheduled for {days.find(d => d.id === selectedDay)?.label}
+                {/* Day Selector */}
+                <View className="py-4">
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16 }}>
+                        {days.map((day) => (
+                            <TouchableOpacity
+                                key={day.id}
+                                onPress={() => setSelectedDay(day.id)}
+                                className={`mr-3 px-4 py-2 rounded-full ${selectedDay === day.id
+                                    ? "bg-blue-600"
+                                    : (isDark ? "bg-gray-800" : "bg-white")}`}
+                            >
+                                <Text className={`font-medium ${selectedDay === day.id ? "text-white" : (isDark ? "text-gray-300" : "text-gray-700")}`}>
+                                    {day.label}
                                 </Text>
-                            </View>
-                        }
-                    />
-                )}
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+                </View>
+
+                {/* Schedule List */}
+                <View className="flex-1 px-4">
+                    {loading ? (
+                        <ActivityIndicator testID="loading-schedules" size="large" color="#2563EB" className="mt-10" />
+                    ) : (
+                        <FlatList
+                            data={schedules}
+                            renderItem={renderItem}
+                            keyExtractor={(item) => item.$id}
+                            showsVerticalScrollIndicator={false}
+                            contentContainerStyle={{ paddingBottom: 20 }}
+                            refreshControl={
+                                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                            }
+                            ListEmptyComponent={
+                                <View className="items-center justify-center mt-20">
+                                    <MaterialCommunityIcons name="calendar-clock" size={48} color={isDark ? "#9CA3AF" : "#D1D5DB"} />
+                                    <Text className={`mt-4 text-center ${isDark ? "text-gray-500" : "text-gray-400"}`}>
+                                        No classes scheduled for {days.find(d => d.id === selectedDay)?.label}
+                                    </Text>
+                                </View>
+                            }
+                        />
+                    )}
+                </View>
             </View>
-        </View>
+        </TeacherEligibilityGuard>
     );
 }

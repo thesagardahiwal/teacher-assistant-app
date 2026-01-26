@@ -1,3 +1,5 @@
+import { useAuth } from "@/store/hooks/useAuth";
+import { AssessmentResult } from "@/types/assessmentResult.type";
 import { useSafeBack } from "@/utils/navigation";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -15,6 +17,7 @@ export default function StudentDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
     const { isDark } = useTheme();
+    const { user } = useAuth();
     const { goBack } = useSafeBack()
     const institutionId = useInstitutionId();
 
@@ -72,7 +75,7 @@ export default function StudentDetailsScreen() {
         );
     };
 
-    const renderResultItem = ({ item }: { item: any }) => (
+    const renderResultItem = ({ item }: { item: AssessmentResult }) => (
         <View className={`mb-3 p-4 rounded-xl border ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"}`}>
             <View className="flex-row justify-between items-start mb-2">
                 <View className="flex-1">
@@ -92,20 +95,22 @@ export default function StudentDetailsScreen() {
                 <Text className={`text-sm italic mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}>"{item.remarks}"</Text>
             ) : null}
 
-            <View className="flex-row justify-end gap-3 mt-2">
-                {/* 
-                    Teacher can edit by navigating to assessment details 
-                    Or we could implement inline edit here later
-                 */}
-                <TouchableOpacity
-                    onPress={() => router.push(`/(teacher)/assessments/${item.assessment.$id}`)}
-                >
-                    <Text className="text-blue-500 font-medium">Edit</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleDeleteResult(item.$id)}>
-                    <Text className="text-red-500 font-medium">Delete</Text>
-                </TouchableOpacity>
-            </View>
+            {item.evaluatedBy.$id === user?.$id && (
+                <View className="flex-row justify-end gap-3 mt-2">
+                    {/* 
+                        Teacher can edit by navigating to assessment details 
+                        Or we could implement inline edit here later
+                     */}
+                    <TouchableOpacity
+                        onPress={() => router.push(`/(teacher)/assessments/${item.assessment.$id}`)}
+                    >
+                        <Text className="text-blue-500 font-medium">Edit</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => handleDeleteResult(item.$id)}>
+                        <Text className="text-red-500 font-medium">Delete</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
         </View>
     );
 
