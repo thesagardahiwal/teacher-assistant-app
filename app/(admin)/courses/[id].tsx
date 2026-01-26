@@ -5,6 +5,7 @@ import { useAuth } from "@/store/hooks/useAuth";
 import { useCourses } from "@/store/hooks/useCourses";
 import { useTheme } from "@/store/hooks/useTheme";
 import { showAlert } from "@/utils/alert";
+import { useSafeBack } from "@/utils/navigation";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -19,6 +20,7 @@ import {
 
 export default function EditCourse() {
     const router = useRouter();
+    const { goBack } = useSafeBack();
     const { id } = useLocalSearchParams();
     const { isDark } = useTheme();
     const institutionId = useInstitutionId();
@@ -46,7 +48,7 @@ export default function EditCourse() {
             setDurationYears(doc.durationYears.toString());
         } catch (error) {
             showAlert("Error", "Failed to load course");
-            router.back();
+            goBack();
         } finally {
             setLoading(false);
         }
@@ -62,7 +64,7 @@ export default function EditCourse() {
                     try {
                         await courseService.delete(id as string);
                         if (institutionId) await fetchCourses(institutionId);
-                        router.back();
+                        goBack();
                     } catch (error) {
                         showAlert("Error", "Failed to delete");
                     }

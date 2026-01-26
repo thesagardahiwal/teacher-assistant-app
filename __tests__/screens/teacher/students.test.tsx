@@ -1,4 +1,4 @@
-import StudentsScreen from "@/app/(teacher)/students";
+import StudentsScreen from "@/app/(teacher)/students/students";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import React from "react";
 

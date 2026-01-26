@@ -106,7 +106,7 @@ export default function TeacherLayout() {
             />
 
             <Tabs.Screen
-              name="students"
+              name="students/index"
               options={{
                 title: "Students",
                 tabBarIcon: ({ color, size }) => (

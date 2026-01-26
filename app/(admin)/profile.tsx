@@ -1,4 +1,5 @@
 import { showAlert } from "@/utils/alert";
+import { useSafeBack } from "@/utils/navigation";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -17,6 +18,7 @@ import { useTheme } from "../../store/hooks/useTheme";
 
 const AdminProfile = () => {
   const router = useRouter();
+  const { goBack } = useSafeBack();
   const { user, isLoading, logout, updateProfile } = useAuth();
   const { isDark } = useTheme();
 
@@ -120,7 +122,7 @@ const AdminProfile = () => {
           <View className="absolute inset-0 bg-black/10" />
           <View className="flex-row items-center justify-between px-6 pt-14">
             <TouchableOpacity
-              onPress={() => router.back()}
+              onPress={() => goBack()}
               className="w-10 h-10 bg-white/20 rounded-full items-center justify-center backdrop-blur-sm"
             >
               <Ionicons name="arrow-back" size={24} color="#FFFFFF" />

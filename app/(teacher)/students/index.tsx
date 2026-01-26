@@ -2,12 +2,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { useAssignments } from "../../store/hooks/useAssignments";
-import { useAuth } from "../../store/hooks/useAuth";
-import { useStudents } from "../../store/hooks/useStudents";
-import { useTheme } from "../../store/hooks/useTheme";
-import { Student } from "../../types";
-import { useInstitutionId } from "../../utils/useInstitutionId";
+import { useAssignments } from "../../../store/hooks/useAssignments";
+import { useAuth } from "../../../store/hooks/useAuth";
+import { useStudents } from "../../../store/hooks/useStudents";
+import { useTheme } from "../../../store/hooks/useTheme";
+import { Student } from "../../../types";
+import { useInstitutionId } from "../../../utils/useInstitutionId";
 
 export default function StudentsScreen() {
     const router = useRouter();

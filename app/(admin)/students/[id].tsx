@@ -9,6 +9,7 @@ import { useCourses } from "@/store/hooks/useCourses";
 import { useStudents } from "@/store/hooks/useStudents";
 import { useTheme } from "@/store/hooks/useTheme";
 import { showAlert } from "@/utils/alert";
+import { useSafeBack } from "@/utils/navigation";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from 'expo-clipboard';
@@ -26,6 +27,7 @@ import {
 
 export default function EditStudent() {
     const router = useRouter();
+    const { goBack } = useSafeBack();
     const { id } = useLocalSearchParams();
     const { isDark } = useTheme();
     const institutionId = useInstitutionId();
@@ -114,7 +116,7 @@ export default function EditStudent() {
             }
         } catch (error) {
             showAlert("Error", "Failed to load student");
-            router.back();
+            goBack();
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -131,7 +133,7 @@ export default function EditStudent() {
                     try {
                         await studentService.delete(id as string);
                         if (institutionId) await fetchStudents(institutionId);
-                        router.back();
+                        goBack();
                     } catch (error) {
                         showAlert("Error", "Failed to delete");
                     }

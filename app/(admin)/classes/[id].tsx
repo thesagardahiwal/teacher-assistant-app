@@ -8,6 +8,7 @@ import { useClasses } from "@/store/hooks/useClasses";
 import { useCourses } from "@/store/hooks/useCourses";
 import { useTheme } from "@/store/hooks/useTheme";
 import { showAlert } from "@/utils/alert";
+import { useSafeBack } from "@/utils/navigation";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -22,6 +23,7 @@ import {
 
 export default function EditClass() {
     const router = useRouter();
+    const { goBack } = useSafeBack();
     const { id } = useLocalSearchParams();
     const { isDark } = useTheme();
     const institutionId = useInstitutionId();
@@ -62,7 +64,7 @@ export default function EditClass() {
         } catch (error) {
             console.error("loadData Error:", error);
             showAlert("Error", "Failed to load class");
-            router.back();
+            goBack();
         } finally {
             setLoading(false);
         }
@@ -78,7 +80,7 @@ export default function EditClass() {
                     try {
                         await classService.delete(id as string);
                         if (institutionId) await fetchClasses(institutionId);
-                        router.back();
+                        goBack();
                     } catch (error) {
                         showAlert("Error", "Failed to delete");
                     }

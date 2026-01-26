@@ -1,3 +1,4 @@
+import { useSafeBack } from "@/utils/navigation";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -5,7 +6,6 @@ import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, 
 import { assessmentResultService } from "../../../services/assessmentResult.service";
 import { studentService } from "../../../services/student.service";
 import { useAssessmentResults } from "../../../store/hooks/useAssessmentResults";
-import { useAuth } from "../../../store/hooks/useAuth";
 import { useTheme } from "../../../store/hooks/useTheme";
 import { Student } from "../../../types";
 import { showAlert } from "../../../utils/alert";
@@ -15,7 +15,7 @@ export default function StudentDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
     const { isDark } = useTheme();
-    const { user } = useAuth();
+    const { goBack } = useSafeBack()
     const institutionId = useInstitutionId();
 
     const [student, setStudent] = useState<Student | null>(null);
@@ -126,7 +126,7 @@ export default function StudentDetailsScreen() {
         <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-white"}`}>
             {/* Header */}
             <View className={`px-5 py-4 border-b ${isDark ? "border-gray-800" : "border-gray-100"}`}>
-                <TouchableOpacity onPress={() => router.back()} className="mb-4">
+                <TouchableOpacity onPress={() => goBack()} className="mb-4">
                     <Ionicons name="arrow-back" size={24} color={isDark ? "white" : "black"} />
                 </TouchableOpacity>
 

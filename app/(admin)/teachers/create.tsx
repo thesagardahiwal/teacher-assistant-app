@@ -8,6 +8,7 @@ import { useTeachers } from "@/store/hooks/useTeachers";
 import { useTheme } from "@/store/hooks/useTheme";
 import { showAlert } from "@/utils/alert";
 import { getInviteLink } from "@/utils/linking";
+import { useSafeBack } from "@/utils/navigation";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { validators } from "@/utils/validators";
 import { Ionicons } from "@expo/vector-icons";
@@ -38,6 +39,7 @@ interface ParsedTeacher {
 
 export default function CreateTeacher() {
   const router = useRouter();
+  const { goBack } = useSafeBack();
   const { isDark } = useTheme();
   const institutionId = useInstitutionId();
   const { fetchTeachers } = useTeachers();
@@ -332,7 +334,7 @@ export default function CreateTeacher() {
         visible={modalVisible}
         onClose={() => {
           setModalVisible(false);
-          router.back();
+          goBack();
         }}
         inviteLink={inviteLink}
         email={createdEmail}

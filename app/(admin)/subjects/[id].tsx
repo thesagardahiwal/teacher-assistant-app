@@ -6,6 +6,7 @@ import { useCourses } from "@/store/hooks/useCourses";
 import { useSubjects } from "@/store/hooks/useSubjects";
 import { useTheme } from "@/store/hooks/useTheme";
 import { showAlert } from "@/utils/alert";
+import { useSafeBack } from "@/utils/navigation";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -20,6 +21,7 @@ import {
 
 export default function EditSubject() {
     const router = useRouter();
+    const { goBack } = useSafeBack();
     const { id } = useLocalSearchParams();
     const { isDark } = useTheme();
     const institutionId = useInstitutionId();
@@ -58,7 +60,7 @@ export default function EditSubject() {
             setCourse(courseId || "");
         } catch (error) {
             showAlert("Error", "Failed to load subject");
-            router.back();
+            goBack();
         } finally {
             setLoading(false);
         }
@@ -74,7 +76,7 @@ export default function EditSubject() {
                     try {
                         await subjectService.delete(id as string);
                         if (institutionId) await fetchSubjects(institutionId);
-                        router.back();
+                        goBack();
                     } catch (error) {
                         showAlert("Error", "Failed to delete");
                     }

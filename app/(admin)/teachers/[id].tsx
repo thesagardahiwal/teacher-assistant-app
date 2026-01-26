@@ -17,6 +17,7 @@ import { TeacherAssignment } from "@/types/teacher-assignment.type";
 import { User } from "@/types/user.type";
 import { showAlert } from "@/utils/alert";
 import { getInviteLink } from "@/utils/linking";
+import { useSafeBack } from "@/utils/navigation";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Clipboard from 'expo-clipboard';
@@ -76,6 +77,7 @@ const StatCard = ({ icon, title, value, color }: any) => {
 
 export default function EditTeacher() {
     const router = useRouter();
+    const { goBack } = useSafeBack();
     const { id } = useLocalSearchParams();
     const { isDark } = useTheme();
     const institutionId = useInstitutionId();
@@ -151,7 +153,7 @@ export default function EditTeacher() {
         } catch (error) {
             console.error(error);
             showAlert("Error", "Failed to load teacher");
-            router.back();
+            goBack();
         } finally {
             setLoading(false);
             setRefreshing(false);

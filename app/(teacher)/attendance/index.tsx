@@ -66,9 +66,6 @@ export default function AttendanceDashboard() {
             {/* Header */}
             <View className={`px-5 py-4 border-b ${isDark ? "border-gray-800" : "border-gray-100"} bg-white dark:bg-gray-900`}>
                 <View className="flex-row items-center mb-4">
-                    <TouchableOpacity onPress={() => router.back()} className="mr-3">
-                        <Ionicons name="arrow-back" size={24} color={isDark ? "white" : "black"} />
-                    </TouchableOpacity>
                     <Text className={`text-xl font-bold flex-1 ${isDark ? "text-white" : "text-gray-900"}`}>Attendance</Text>
                 </View>
 

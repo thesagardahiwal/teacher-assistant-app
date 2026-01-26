@@ -3,6 +3,7 @@ import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { useCourses } from "@/store/hooks/useCourses";
 import { useTheme } from "@/store/hooks/useTheme";
 import { showAlert } from "@/utils/alert";
+import { useSafeBack } from "@/utils/navigation";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -16,6 +17,7 @@ import {
 
 export default function CreateCourse() {
   const router = useRouter();
+  const { goBack } = useSafeBack();
   const { isDark } = useTheme();
   const institutionId = useInstitutionId();
   const { createCourse } = useCourses();
@@ -43,7 +45,7 @@ export default function CreateCourse() {
       });
 
       showAlert("Success", "Course created successfully", [
-        { text: "OK", onPress: () => router.back() }
+        { text: "OK", onPress: () => goBack() }
       ]);
     } catch (error: any) {
       showAlert("Error", error.message || "Failed to create course");

@@ -6,6 +6,7 @@ import { useAcademicYears } from "@/store/hooks/useAcademicYears";
 import { useCourses } from "@/store/hooks/useCourses";
 import { useTheme } from "@/store/hooks/useTheme";
 import { showAlert } from "@/utils/alert";
+import { useSafeBack } from "@/utils/navigation";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -19,6 +20,7 @@ import {
 
 export default function CreateClass() {
   const router = useRouter();
+  const { goBack } = useSafeBack();
   const { isDark } = useTheme();
   const institutionId = useInstitutionId();
 
@@ -80,7 +82,7 @@ export default function CreateClass() {
       });
 
       showAlert("Success", "Class created successfully", [
-        { text: "OK", onPress: () => router.back() }
+        { text: "OK", onPress: () => goBack() }
       ]);
     } catch (error: any) {
       showAlert("Error", error.message || "Failed to create class");
