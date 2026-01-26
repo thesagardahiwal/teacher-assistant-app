@@ -1,6 +1,7 @@
 import { FormInput } from "@/components/admin/ui/FormInput";
 import { FormSelect } from "@/components/admin/ui/FormSelect";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
+import { PhoneDisplay } from "@/components/common/PhoneDisplay";
 import { assessmentService, scheduleService } from "@/services";
 import { assignmentService } from "@/services/assignment.service";
 import { attendanceService } from "@/services/attendance.service";
@@ -307,6 +308,7 @@ export default function EditTeacher() {
                             placeholder="Phone Number"
                             keyboardType="phone-pad"
                         />
+                        <PhoneDisplay phone={phone} />
 
                         <FormInput
                             label="Address"

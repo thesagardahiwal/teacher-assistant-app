@@ -1,3 +1,4 @@
+import { PhoneDisplay } from "@/components/common/PhoneDisplay";
 import { useAuth } from "@/store/hooks/useAuth";
 import { AssessmentResult } from "@/types/assessmentResult.type";
 import { useSafeBack } from "@/utils/navigation";
@@ -143,6 +144,7 @@ export default function StudentDetailsScreen() {
                         <Text className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>{student.name}</Text>
                         <Text className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>Roll No: {student.rollNumber}</Text>
                         <Text className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>{student.class?.name}</Text>
+                        <PhoneDisplay phone={student.phone} />
                     </View>
                 </View>
             </View>

@@ -1,6 +1,7 @@
 import { FormInput } from "@/components/admin/ui/FormInput";
 import { FormSelect } from "@/components/admin/ui/FormSelect";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
+import { PhoneDisplay } from "@/components/common/PhoneDisplay";
 import { studentService } from "@/services";
 import { invitationService } from "@/services/invitation.service";
 import { useAuth } from "@/store/hooks/useAuth";
@@ -42,6 +43,7 @@ export default function EditStudent() {
     const [course, setCourse] = useState("");
     const [selectedClass, setSelectedClass] = useState<string>("");
     const [userId, setUserId] = useState("");
+    const [phone, setPhone] = useState("");
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -78,6 +80,7 @@ export default function EditStudent() {
                     const userDoc = await studentService.get(doc.$id);
                     setName(userDoc.name);
                     setEmail(userDoc.email || '');
+                    setPhone(userDoc.phone || '');
                 } catch {
                     setName(doc.name);
                     setEmail(doc.email || '');
@@ -227,6 +230,7 @@ export default function EditStudent() {
                             value={email}
                             editable={false}
                         />
+                        <PhoneDisplay phone={phone} />
                     </View>
                 </View>
 

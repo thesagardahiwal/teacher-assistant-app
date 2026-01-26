@@ -1,4 +1,5 @@
 import { PageHeader } from "@/components/admin/ui/PageHeader";
+import { PhoneDisplay } from "@/components/common/PhoneDisplay";
 import { assessmentService, scheduleService, teacherService } from "@/services";
 import { attendanceService } from "@/services/attendance.service";
 import { useTheme } from "@/store/hooks/useTheme";
@@ -141,6 +142,9 @@ export default function TeacherDetailScreen() {
                             </View>
                         )}
                     </View>
+                    {teacher.phone && (
+                        <PhoneDisplay phone={teacher.phone} className="mt-4" />
+                    )}
                 </View>
 
                 {/* B. Academic Overview (Stats) */}
