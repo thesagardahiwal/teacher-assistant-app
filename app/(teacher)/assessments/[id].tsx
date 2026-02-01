@@ -11,33 +11,31 @@ import { Assessment } from "../../../types/assessment.type";
 import { showAlert } from "../../../utils/alert";
 import { useInstitutionId } from "../../../utils/useInstitutionId";
 
+import { useAppDispatch } from "../../../store/hooks";
+import { clearResults } from "../../../store/slices/assessmentResult.slice";
+
 export default function AssessmentDetailsScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
     const { isDark } = useTheme();
     const { user } = useAuth();
     const institutionId = useInstitutionId();
+    const dispatch = useAppDispatch();
 
     const [assessment, setAssessment] = useState<Assessment | null>(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
 
     const { data: students, fetchStudents } = useStudents();
-    const { results, getResultsByAssessment, saveResult, isLoading: submitting } = useAssessmentResults();
+    const { results, getResultsByAssessment, saveResult, isLoading } = useAssessmentResults();
 
     // Map student ID to marks/remarks
     const [marks, setMarks] = useState<Record<string, string>>({});
     const [remarks, setRemarks] = useState<Record<string, string>>({});
 
-    useEffect(() => {
-        if (id && institutionId) {
-            loadAssessment();
-            getResultsByAssessment(institutionId, id);
-        }
-    }, [id, institutionId]);
-
     const loadAssessment = async () => {
         try {
+            setLoading(true);
             const res = await assessmentService.get(id);
             setAssessment(res);
             // Fetch students for this class
@@ -50,6 +48,20 @@ export default function AssessmentDetailsScreen() {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (id && institutionId) {
+            // Clear previous results and local state
+            dispatch(clearResults());
+            setMarks({});
+            setRemarks({});
+
+            loadAssessment();
+            getResultsByAssessment(institutionId, id);
+        }
+    }, [id, institutionId, getResultsByAssessment, dispatch]);
+
+
 
     const onRefresh = async () => {
         setRefreshing(true);
@@ -74,8 +86,8 @@ export default function AssessmentDetailsScreen() {
                     newRemarks[r.student.$id] = r.remarks || "";
                 }
             });
-            setMarks(prev => ({ ...prev, ...newMarks }));
-            setRemarks(prev => ({ ...prev, ...newRemarks }));
+            setMarks({ ...newMarks });
+            setRemarks({ ...newRemarks });
         }
     }, [results]);
 
@@ -167,7 +179,7 @@ export default function AssessmentDetailsScreen() {
         );
     };
 
-    if (loading || !assessment) {
+    if (isLoading || loading || !assessment) {
         return (
             <View className={`flex-1 items-center justify-center ${isDark ? "bg-gray-900" : "bg-white"}`}>
                 <ActivityIndicator size="large" color="#2563EB" />

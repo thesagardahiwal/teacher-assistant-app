@@ -146,17 +146,17 @@ export default function TeacherDashboard() {
                 </View>
 
                 {/* Next Class Card (Hidden for Principals for now to save space, or can be kept) */}
-                <View className="px-5 mb-8">
+                <View className="px-3 mb-8">
                     <NextClassCard nextClass={nextClass} isDark={isDark} />
                 </View>
 
                 {/* Quick Actions */}
-                <View className="px-5 mb-8">
+                <View className="px-3 mb-8">
                     <Text className={`text-lg font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>
                         Quick Actions
                     </Text>
 
-                    <View className="flex-row flex-wrap gap-2">
+                    <View className="flex-row flex-wrap justify-center gap-2">
                         {isPrincipal && (
                             <>
                                 <QuickAction

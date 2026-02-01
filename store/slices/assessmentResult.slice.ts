@@ -1,4 +1,3 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { assessmentResultService } from "../../services/assessmentResult.service";
 import { AssessmentResult, AssessmentResultPayload } from "../../types/assessmentResult.type";
@@ -32,25 +31,10 @@ export const fetchResultsByAssessment = createAsyncThunk(
         { rejectWithValue }
     ) => {
         try {
-            const cacheKey = `${CACHE_KEY_PREFIX}assessment_${assessmentId}`;
-
-            if (!forceRefresh) {
-                const cached = await AsyncStorage.getItem(cacheKey);
-                if (cached) {
-                    const { data } = JSON.parse(cached);
-                    return { data, fromCache: true };
-                }
-            }
-
             const response = await assessmentResultService.listByAssessment(institutionId, assessmentId);
             const data = response.documents;
 
-            await AsyncStorage.setItem(
-                cacheKey,
-                JSON.stringify({ data, timestamp: Date.now() })
-            );
-
-            return { data, fromCache: false };
+            return { data };
         } catch (err) {
             return rejectWithValue((err as Error).message || "Failed to fetch results");
         }
@@ -72,23 +56,8 @@ export const fetchResultsByStudent = createAsyncThunk(
         { rejectWithValue }
     ) => {
         try {
-            const cacheKey = `${CACHE_KEY_PREFIX}student_${studentId}`;
-
-            if (!forceRefresh) {
-                const cached = await AsyncStorage.getItem(cacheKey);
-                if (cached) {
-                    const { data } = JSON.parse(cached);
-                    return { data, fromCache: true };
-                }
-            }
-
             const response = await assessmentResultService.listByStudent(institutionId, studentId);
             const data = response.documents;
-
-            await AsyncStorage.setItem(
-                cacheKey,
-                JSON.stringify({ data, timestamp: Date.now() })
-            );
 
             return { data, fromCache: false };
         } catch (err) {

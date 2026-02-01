@@ -18,7 +18,7 @@ export default function AssessmentsListScreen() {
     const institutionId = useInstitutionId();
 
     const { assessments, isLoading: loadingAssessments, getAssessmentsByTeacher } = useAssessments();
-    const { data: subjects, fetchSubjects } = useSubjects();
+    const { data: subjects, fetchSubjectsByTeacher } = useSubjects();
     const { isEligible } = useTeacherEligibility();
 
     const [selectedSubjectId, setSelectedSubjectId] = useState<string>("all");
@@ -26,14 +26,14 @@ export default function AssessmentsListScreen() {
     useEffect(() => {
         if (institutionId && user?.$id) {
             getAssessmentsByTeacher(institutionId, user.$id);
-            fetchSubjects(institutionId);
+            fetchSubjectsByTeacher(institutionId, user.$id);
         }
-    }, [institutionId, user, getAssessmentsByTeacher, fetchSubjects]);
+    }, [institutionId, user, getAssessmentsByTeacher, fetchSubjectsByTeacher]);
 
     const onRefresh = () => {
         if (institutionId && user?.$id) {
             getAssessmentsByTeacher(institutionId, user.$id, true); // forceRefresh = true
-            fetchSubjects(institutionId);
+            fetchSubjectsByTeacher(institutionId, user.$id);
         }
     };
 
