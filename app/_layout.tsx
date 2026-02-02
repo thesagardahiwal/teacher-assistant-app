@@ -1,7 +1,7 @@
 import SafeAreaProtector from "@/components/SafeAreaProtector";
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { Stack } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { ActivityIndicator, useColorScheme, View } from "react-native";
 import { Provider } from "react-redux";
 import "../global.css";
@@ -9,18 +9,13 @@ import { store } from "../store";
 import { useAuth } from "../store/hooks/useAuth";
 
 function RootLayoutInner() {
-  const { restoreSession, isLoading } = useAuth();
-  const [ready, setReady] = useState(false);
+  const { restoreSession, isInitialized } = useAuth();
 
   useEffect(() => {
-    const init = async () => {
-      await restoreSession();
-      setReady(true);
-    };
-    init();
+    restoreSession();
   }, [restoreSession]);
 
-  if (!ready || isLoading) {
+  if (!isInitialized) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />

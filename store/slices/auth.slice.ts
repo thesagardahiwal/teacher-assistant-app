@@ -12,6 +12,7 @@ import { User, UserPayload } from "../../types/user.type";
 interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
+  isInitialized: boolean;
   user: User | null;
   role: User["role"] | null;
   error: string | null;
@@ -19,7 +20,8 @@ interface AuthState {
 
 const initialState: AuthState = {
   isAuthenticated: false,
-  isLoading: true,
+  isLoading: false,
+  isInitialized: false,
   user: null,
   role: null,
   error: null,
@@ -190,6 +192,7 @@ const authSlice = createSlice({
       })
       .addCase(restoreSession.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.isInitialized = true;
         console.log("Restored user:", action.payload);
         if (action.payload) {
           state.isAuthenticated = true;
@@ -201,6 +204,7 @@ const authSlice = createSlice({
       })
       .addCase(restoreSession.rejected, (state) => {
         state.isLoading = false;
+        state.isInitialized = true;
         state.isAuthenticated = false;
       })
 

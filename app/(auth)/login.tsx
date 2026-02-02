@@ -10,14 +10,16 @@ import {
   TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  View
+  View,
+  useColorScheme
 } from "react-native";
+import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import { useAuth } from "../../store/hooks/useAuth";
-import { useTheme } from "../../store/hooks/useTheme";
 
 const Login = () => {
   const { login, isLoading, error } = useAuth();
-  const { isDark } = useTheme();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === "dark";
   const { type } = useLocalSearchParams<{ type: string }>();
   const router = useRouter();
 
@@ -58,90 +60,114 @@ const Login = () => {
 
   const displayError = localError || getErrorMessage(error);
 
-
   const content = (
-    <View className="flex-1 justify-center px-6 w-full max-w-sm md:max-w-md self-center">
-      {/* App Name */}
-      <Text className="text-3xl font-bold text-center text-primary dark:text-dark-primary mb-2">
-        Teachora
-      </Text>
-
-      <Text className="text-base text-center text-textSecondary dark:text-dark-textSecondary mb-8">
-        Secure login to continue
-      </Text>
-
-      {/* Email */}
-      <TextInput
-        className="bg-card dark:bg-dark-card border border-border dark:border-dark-border rounded-xl px-4 py-4 mb-4 text-textPrimary dark:text-dark-textPrimary"
-        placeholder="Email"
-        placeholderTextColor={isDark ? "#9CA3AF" : "#94A3B8"}
-        autoCapitalize="none"
-        keyboardType="email-address"
-        value={email}
-        onChangeText={(text) => { setEmail(text); setLocalError(""); }}
-      />
-
-      {/* Password */}
-      <View className="relative mb-3">
-        <TextInput
-          className="bg-card dark:bg-dark-card border border-border dark:border-dark-border rounded-xl px-4 py-4 text-textPrimary dark:text-dark-textPrimary pr-12"
-          placeholder="Password"
-          placeholderTextColor={isDark ? "#9CA3AF" : "#94A3B8"}
-          secureTextEntry={!showPassword}
-          value={password}
-          onChangeText={(text) => { setPassword(text); setLocalError(""); }}
-        />
-        <TouchableOpacity
-          onPress={() => setShowPassword(!showPassword)}
-          className="absolute right-4 top-4"
-          testID="toggle-password"
-        >
-          <Ionicons
-            name={showPassword ? "eye-off" : "eye"}
-            size={24}
-            color={isDark ? "#9CA3AF" : "#94A3B8"}
-          />
-        </TouchableOpacity>
-      </View>
-
-      {/* Error */}
-      {displayError ? (
-        <Text className="text-error text-center mb-3">
-          {displayError}
-        </Text>
-      ) : null}
-
-      {/* Login Button */}
-      <TouchableOpacity
-        onPress={handleLogin}
-        disabled={isLoading}
-        className="bg-primary dark:bg-dark-primary rounded-xl py-4 items-center mt-2"
+    <View className="flex-1 justify-center px-6">
+      <Animated.View
+        entering={FadeInDown.delay(100).springify()}
+        className="w-full max-w-sm md:max-w-md self-center"
       >
-        {isLoading ? (
-          <ActivityIndicator color="#FFFFFF" />
-        ) : (
-          <Text className="text-white font-semibold text-base">
-            Login
+        {/* Header */}
+        <View className="items-center mb-8">
+          <View className="w-16 h-16 rounded-2xl bg-primary/10 dark:bg-dark-primary/10 items-center justify-center mb-4">
+            <Ionicons name={type === 'teacher' ? "easel" : "school"} size={32} color={isDark ? "#4C8DFF" : "#1A73E8"} />
+          </View>
+          <Text className="text-3xl font-bold text-center text-textPrimary dark:text-dark-textPrimary">
+            Welcome Back!
           </Text>
-        )}
-      </TouchableOpacity>
+          <Text className="text-base text-center text-textSecondary dark:text-dark-textSecondary mt-2">
+            Login to your {type === 'teacher' ? "Teacher" : "Student"} account
+          </Text>
+        </View>
 
-      {/* Sign Up Link */}
-      <View className="flex-row justify-center mt-6">
-        <Text className="text-textSecondary dark:text-dark-textSecondary">
-          Don't have an account?{" "}
-        </Text>
-        <TouchableOpacity onPress={() => router.push("/(auth)/signup")}>
-          <Text className="text-primary dark:text-dark-primary font-semibold">
-            Sign up
-          </Text>
+        {/* Form */}
+        <View className="gap-4">
+          {/* Email */}
+          <View>
+            <Text className="text-sm font-medium text-textSecondary dark:text-dark-textSecondary mb-1.5 ml-1">Email</Text>
+            <TextInput
+              className="bg-white dark:bg-dark-card border border-border dark:border-dark-border rounded-xl px-4 py-3.5 text-textPrimary dark:text-dark-textPrimary text-base"
+              placeholder="Enter your email"
+              placeholderTextColor={isDark ? "#9CA3AF" : "#94A3B8"}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={email}
+              onChangeText={(text) => { setEmail(text); setLocalError(""); }}
+            />
+          </View>
+
+          {/* Password */}
+          <View>
+            <Text className="text-sm font-medium text-textSecondary dark:text-dark-textSecondary mb-1.5 ml-1">Password</Text>
+            <View className="relative">
+              <TextInput
+                className="bg-white dark:bg-dark-card border border-border dark:border-dark-border rounded-xl px-4 py-3.5 text-textPrimary dark:text-dark-textPrimary pr-12 text-base"
+                placeholder="Enter your password"
+                placeholderTextColor={isDark ? "#9CA3AF" : "#94A3B8"}
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={(text) => { setPassword(text); setLocalError(""); }}
+              />
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-3.5"
+                testID="toggle-password"
+              >
+                <Ionicons
+                  name={showPassword ? "eye-off" : "eye"}
+                  size={24}
+                  color={isDark ? "#9CA3AF" : "#94A3B8"}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <TouchableOpacity
+            onPress={() => router.push("/(auth)/forgot-password")}
+            className="self-end"
+          >
+            <Text className="text-sm font-medium text-primary dark:text-dark-primary">
+              Forgot Password?
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Error */}
+        {displayError ? (
+          <Animated.View entering={FadeInUp} className="bg-error/10 border border-error/20 p-3 rounded-lg mt-4">
+            <Text className="text-error text-center text-sm font-medium">
+              {displayError}
+            </Text>
+          </Animated.View>
+        ) : null}
+
+        {/* Login Button */}
+        <TouchableOpacity
+          onPress={handleLogin}
+          disabled={isLoading}
+          activeOpacity={0.9}
+          className="bg-primary dark:bg-dark-primary rounded-xl py-4 items-center mt-6 shadow-sm shadow-primary/20"
+        >
+          {isLoading ? (
+            <ActivityIndicator color="#FFFFFF" />
+          ) : (
+            <Text className="text-white font-bold text-lg">
+              Login
+            </Text>
+          )}
         </TouchableOpacity>
-      </View>
 
-      {/* Footer */}
-      <Text className="text-sm text-center text-muted dark:text-dark-muted mt-6">
-        © Teachora · Secure Academic Platform
-      </Text>
+        {/* Sign Up Link */}
+        <View className="flex-row justify-center mt-8 items-center gap-1">
+          <Text className="text-textSecondary dark:text-dark-textSecondary text-base">
+            Don't have an account?
+          </Text>
+          <TouchableOpacity onPress={() => router.push("/(auth)/signup")}>
+            <Text className="text-primary dark:text-dark-primary font-bold text-base">
+              Sign up
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
     </View>
   );
 
@@ -157,7 +183,6 @@ const Login = () => {
       )}
     </KeyboardAvoidingView>
   );
-
 };
 
 export default Login;
