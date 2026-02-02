@@ -9,9 +9,10 @@ interface TeacherAssignmentCardProps {
     assignment: TeacherAssignment;
     index: number;
     onPress?: () => void;
+    showTeacherName?: boolean;
 }
 
-export function TeacherAssignmentCard({ assignment, index, onPress }: TeacherAssignmentCardProps) {
+export function TeacherAssignmentCard({ assignment, index, onPress, showTeacherName = false }: TeacherAssignmentCardProps) {
     const { isDark } = useTheme();
 
     return (
