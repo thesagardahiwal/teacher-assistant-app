@@ -1,5 +1,6 @@
 import { FormInput } from "@/components/admin/ui/FormInput";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
+import { AppUpdater } from "@/components/common/AppUpdater";
 import { studentService } from "@/services/student.service";
 import { useAuth } from "@/store/hooks/useAuth";
 import { useTheme } from "@/store/hooks/useTheme";
@@ -234,6 +235,7 @@ const Profile = () => {
                             </Text>
                         )}
                     </TouchableOpacity>
+                    <AppUpdater />
                 </Animated.View>
 
             </ScrollView>

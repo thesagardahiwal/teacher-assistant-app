@@ -1,7 +1,8 @@
+import { Env } from "@/constants/env";
 import { Student } from "@/types";
 import { GoogleGenAI } from "@google/genai";
 
-const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+const GEMINI_API_KEY = Env.GEMINI.API_KEY;
 
 export interface GeminiAttendanceResult {
     mode: "ROLL_NUMBER_LIST" | "ATTENDANCE_CHART";

@@ -1,6 +1,6 @@
-import { APPWRITE_DATABASE_ID } from "@/config/env";
+import { Env } from "@/constants/env";
 
-export const DATABASE_ID = APPWRITE_DATABASE_ID;
+export const DATABASE_ID = Env.APPWRITE.DATABASE_ID;
 
 export const COLLECTIONS = {
   USERS: "users",
