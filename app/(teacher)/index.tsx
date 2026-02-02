@@ -1,9 +1,11 @@
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { QuickActionCard } from "@/components/dashboard/QuickActionCard";
+import { StatsGrid } from "@/components/dashboard/StatsGrid";
 import { NextClassCard } from "@/components/teacher/NextClassCard";
-import { QuickAction } from "@/components/ui/QuickActions";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
-import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { RefreshControl, ScrollView, Text, View } from "react-native";
 import { scheduleService } from "../../services";
 import { useAssignments } from "../../store/hooks/useAssignments";
 import { useAttendance } from "../../store/hooks/useAttendance";
@@ -97,161 +99,132 @@ export default function TeacherDashboard() {
     }, [institutionId, user, isPrincipal]);
 
     const stats = isPrincipal ? [
-        { label: "Courses", value: courses.length, icon: "book-open-variant", color: "text-blue-500", bg: "bg-blue-500 dark:bg-blue-900" },
-        { label: "Classes", value: classes.length, icon: "calendar-clock", color: "text-violet-500", bg: "bg-violet-500 dark:bg-violet-900" },
-        { label: "Teachers", value: teachers.length, icon: "school", color: "text-teal-500", bg: "bg-teal-500 dark:bg-teal-900" },
-        { label: "Students", value: students.length, icon: "account-group", color: "text-indigo-500", bg: "bg-indigo-500 dark:bg-indigo-900" },
+        { label: "Courses", value: courses.length, icon: "book-open-variant" },
+        { label: "Classes", value: classes.length, icon: "calendar-clock" },
+        { label: "Teachers", value: teachers.length, icon: "school" },
+        { label: "Students", value: students.length, icon: "account-group" },
     ] : [
-        { label: "My Classes", value: assignments.length, icon: "book-open-variant", color: "text-blue-500", bg: "bg-blue-500 dark:bg-blue-900" },
-        { label: "Students", value: students.length, icon: "account-group", color: "text-indigo-500", bg: "bg-indigo-500 dark:bg-indigo-900" },
-        { label: "Attendance", value: attendanceHistory.length, icon: "clipboard-check", color: "text-green-500", bg: "bg-green-500 dark:bg-green-900" },
+        { label: "My Classes", value: assignments.length, icon: "book-open-variant" },
+        { label: "Students", value: students.length, icon: "account-group" },
+        { label: "Attendance", value: attendanceHistory.length, icon: "clipboard-check" },
     ];
 
-
-
     return (
-        <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+        <View className="flex-1 bg-background dark:bg-dark-background">
             <ScrollView
                 className="w-full flex-1"
                 contentContainerStyle={{ paddingBottom: 100 }}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
             >
-                {/* Header */}
-                <View className="flex-row justify-between items-center px-5 py-4">
-                    <View>
-                        <Text className={`text-lg font-medium ${isDark ? "text-gray-400" : "text-gray-500"}`}>Welcome back,</Text>
-                        <Text className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>{user?.name}</Text>
-                        {isPrincipal && <Text className="text-xs text-blue-600 dark:text-blue-400 font-medium mt-1">Principal Access</Text>}
+                <DashboardHeader
+                    user={user}
+                    isDark={isDark}
+                    subtitle={isPrincipal ? "Principal Access" : "Welcome back,"}
+                />
+
+                <StatsGrid stats={stats as any} isDark={isDark} />
+
+                {/* Next Class Card */}
+                {!isPrincipal && (
+                    <View className="px-5 mb-8">
+                        <NextClassCard nextClass={nextClass} isDark={isDark} />
                     </View>
-                    <TouchableOpacity onPress={() => router.push("/(teacher)/profile")}>
-                        <View className="w-10 h-10 rounded-full bg-blue-600 items-center justify-center">
-                            <Text className="text-white font-bold text-lg">{user?.name?.charAt(0)}</Text>
-                        </View>
-                    </TouchableOpacity>
-                </View>
-
-                {/* Stats Grid */}
-                <View className="flex-row flex-wrap px-3 gap-4 mb-6">
-                    {stats.map((stat, index) => (
-                        <View key={index} className={`w-[48%] md:w-[23%]`}>
-                            <View className={`p-3 rounded-xl items-center ${isDark ? "bg-gray-800" : "bg-white"} shadow-sm h-32 justify-center`}>
-                                <View className={`w-10 h-10 rounded-full ${stat.bg} items-center justify-center mb-2`}>
-                                    <MaterialCommunityIcons name={stat.icon as any} size={20} color={'white'} className={stat.color} />
-                                </View>
-                                <Text className={`text-xl md:text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>{stat.value}</Text>
-                                <Text className={`text-[10px] md:text-xs text-center ${isDark ? "text-gray-400" : "text-gray-500"}`}>{stat.label}</Text>
-                            </View>
-                        </View>
-                    ))}
-                </View>
-
-                {/* Next Class Card (Hidden for Principals for now to save space, or can be kept) */}
-                <View className="px-3 mb-8">
-                    <NextClassCard nextClass={nextClass} isDark={isDark} />
-                </View>
+                )}
 
                 {/* Quick Actions */}
-                <View className="px-3 mb-8">
-                    <Text className={`text-lg font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>
+                <View className="px-5 mb-8">
+                    <Text className="text-lg font-bold mb-4 text-textPrimary dark:text-dark-textPrimary">
                         Quick Actions
                     </Text>
 
-                    <View className="flex-row flex-wrap justify-center gap-2">
+                    <View className="flex-row flex-wrap gap-3">
                         {isPrincipal && (
                             <>
-                                <QuickAction
+                                <QuickActionCard
                                     className="w-[48%] md:w-[23%]"
                                     icon="school-outline"
                                     iconLibrary="Ionicons"
                                     label="Teachers"
                                     isDark={isDark}
-                                    bgColor="bg-blue-500"
                                     onPress={() => router.push("/(teacher)/teachers")}
                                 />
-                                <QuickAction
+                                <QuickActionCard
                                     className="w-[48%] md:w-[23%]"
                                     icon="people-outline"
                                     iconLibrary="Ionicons"
                                     label="Students"
                                     isDark={isDark}
-                                    bgColor="bg-indigo-500"
                                     onPress={() => router.push("/(teacher)/students")}
                                 />
-                                <QuickAction
+                                <QuickActionCard
                                     className="w-[48%] md:w-[23%]"
                                     icon="calendar-outline"
                                     iconLibrary="Ionicons"
                                     label="Classes"
                                     isDark={isDark}
-                                    bgColor="bg-violet-500"
                                     onPress={() => router.push("/(teacher)/classes")}
                                 />
-                                <QuickAction
+                                <QuickActionCard
                                     className="w-[48%] md:w-[23%]"
                                     icon="link-outline"
                                     iconLibrary="Ionicons"
                                     label="Assign Teacher"
                                     isDark={isDark}
-                                    bgColor="bg-purple-500"
-                                    // @ts-ignore - Route exists but types might be stale
+                                    // @ts-ignore
                                     onPress={() => router.push("/(teacher)/assignments/create" as any)}
                                 />
-                                <QuickAction
+                                <QuickActionCard
                                     className="w-[48%] md:w-[23%]"
                                     icon="book-open-page-variant-outline"
                                     iconLibrary="MaterialCommunityIcons"
                                     label="Courses"
                                     isDark={isDark}
-                                    bgColor="bg-teal-500"
                                     onPress={() => router.push("/(teacher)/courses")}
                                 />
                             </>
                         )}
                         <>
-                            <QuickAction
+                            <QuickActionCard
                                 className="w-[48%] md:w-[23%]"
                                 icon="calendar-clock"
                                 label="My Schedule"
                                 isDark={isDark}
-                                bgColor="bg-purple-500"
                                 onPress={() => router.push("/(teacher)/schedule")}
                             />
-                            <QuickAction
+                            <QuickActionCard
                                 className="w-[48%] md:w-[23%]"
                                 icon="clipboard-text-outline"
                                 label="Assessments"
                                 isDark={isDark}
-                                bgColor="bg-red-500"
                                 onPress={() => router.push("/(teacher)/assessments")}
                             />
-                            <QuickAction
+                            <QuickActionCard
                                 className="w-[48%] md:w-[23%]"
                                 icon="folder-open"
                                 isDark={isDark}
                                 label="Study Vault"
-                                bgColor="bg-amber-500"
                                 onPress={() => router.push("/(teacher)/study-vault")}
                             />
                         </>
                     </View>
                 </View>
 
-                {/* Recent Activity (Teachers Only for now, or unified later) */}
+                {/* Recent Activity */}
                 {attendanceHistory.length > 0 && (
                     <View className="px-5">
-                        <Text className={`text-lg font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>Recent Activity</Text>
+                        <Text className="text-lg font-bold mb-3 text-textPrimary dark:text-dark-textPrimary">Recent Activity</Text>
                         {attendanceHistory.slice(0, 3).map((item) => (
-                            <View key={item.$id} className={`flex-row items-center p-3 mb-3 rounded-xl ${isDark ? "bg-gray-800" : "bg-white"} shadow-sm`}>
+                            <View key={item.$id} className="flex-row items-center p-4 mb-3 rounded-2xl bg-white dark:bg-dark-card shadow-sm border border-border/50 dark:border-dark-border">
                                 <View className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 items-center justify-center mr-3">
                                     <MaterialCommunityIcons name="check" size={20} className="text-green-600 dark:text-green-400" />
                                 </View>
                                 <View className="flex-1">
-                                    <Text className={`font-bold ${isDark ? "text-white" : "text-gray-900"}`}>Attendance Taken</Text>
-                                    <Text className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                                    <Text className="font-bold text-textPrimary dark:text-dark-textPrimary">Attendance Taken</Text>
+                                    <Text className="text-xs text-textSecondary dark:text-dark-textSecondary mt-0.5">
                                         {item.class?.name ? `Class ${item.class.name}` : ""} • {item.subject?.name}
                                     </Text>
                                 </View>
-                                <Text className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>{new Date(item.date).toLocaleDateString()}</Text>
+                                <Text className="text-xs text-muted dark:text-dark-muted font-medium">{new Date(item.date).toLocaleDateString()}</Text>
                             </View>
                         ))}
                     </View>

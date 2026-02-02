@@ -1,6 +1,7 @@
-import StatCard from "@/components/admin/StatCard";
 import StatusRow from "@/components/admin/StatusRow";
-import { QuickAction } from "@/components/ui/QuickActions";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { QuickActionCard } from "@/components/dashboard/QuickActionCard";
+import { StatsGrid } from "@/components/dashboard/StatsGrid";
 import { useClasses } from "@/store/hooks/useClasses";
 import { useCourses } from "@/store/hooks/useCourses";
 import { useStudents } from "@/store/hooks/useStudents";
@@ -9,7 +10,7 @@ import { useTheme } from "@/store/hooks/useTheme";
 import { institutionStorage } from "@/utils/institutionStorage";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
-import { RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { RefreshControl, ScrollView, Text, View } from "react-native";
 import { useAuth } from "../../store/hooks/useAuth";
 
 const AdminDashboard = () => {
@@ -50,141 +51,124 @@ const AdminDashboard = () => {
     setRefreshing(false);
   }, [user]);
 
+  const stats = [
+    { label: "Courses", value: courses?.length || 0, icon: "book-open-variant" },
+    { label: "Classes", value: classes?.length || 0, icon: "google-classroom" }, // Using google-classroom as closest match or calendar-clock
+    { label: "Teachers", value: teachers?.length || 0, icon: "account-tie" },
+    { label: "Students", value: students?.length || 0, icon: "school" },
+  ];
 
   return (
     <View className="flex-1 bg-background dark:bg-dark-background">
       <ScrollView
         className="flex-1 w-full"
-        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 100 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
+        <DashboardHeader user={user} isDark={isDark} />
 
-        {/* HEADER */}
-        <View className="mb-6 flex-row items-center justify-between">
-          <View>
-            <Text className="text-sm text-textSecondary dark:text-dark-textSecondary">
-              Welcome back,
-            </Text>
-            <Text className="text-2xl font-bold text-textPrimary dark:text-dark-textPrimary">
-              {user?.name}
-            </Text>
-          </View>
-          <TouchableOpacity onPress={() => router.push("/(admin)/profile")} className="bg-card dark:bg-dark-card p-2 rounded-full border border-border dark:border-dark-border">
-            <View className="w-8 h-8 rounded-full bg-primary dark:bg-dark-primary items-center justify-center">
-              <Text className="text-white font-bold text-lg">{user?.name?.charAt(0)}</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        {/* STATS GRID */}
-        <View className="flex-row flex-wrap justify-between mb-8">
-          <StatCard className="w-[48%] md:w-[23%]" onClick={() => router.navigate('/(admin)/courses')} title="Courses" value={`${courses?.length || 0}`} />
-          <StatCard className="w-[48%] md:w-[23%]" onClick={() => router.navigate('/(admin)/classes')} title="Classes" value={`${classes?.length || 0}`} />
-          <StatCard className="w-[48%] md:w-[23%]" onClick={() => router.navigate('/(admin)/teachers')} title="Teachers" value={`${teachers?.length || 0}`} />
-          <StatCard className="w-[48%] md:w-[23%]" onClick={() => router.navigate('/(admin)/students')} title="Students" value={`${students?.length || 0}`} />
-        </View>
+        <StatsGrid stats={stats as any} isDark={isDark} />
 
         {/* MANAGEMENT ACTIONS */}
-        <Text className="text-lg font-bold text-textPrimary dark:text-dark-textPrimary mb-4">
-          Management
-        </Text>
+        <View className="px-5 mb-8">
+          <Text className="text-lg font-bold text-textPrimary dark:text-dark-textPrimary mb-4">
+            Management
+          </Text>
 
-        <View className="flex-row flex-wrap gap-2 mb-6">
-          <QuickAction
-            className="w-[48%] md:w-[23%]"
-            onPress={() => router.navigate('/(admin)/teachers/create')}
-            icon="person-add-outline"
-            iconLibrary="Ionicons"
-            isDark={isDark}
-            label="Add Teacher"
-            bgColor="bg-blue-500"
-          />
-          <QuickAction
-            className="w-[48%] md:w-[23%]"
-            onPress={() => router.navigate('/(admin)/students/create')}
-            icon="school-outline"
-            label="Add Student"
-            isDark={isDark}
-            bgColor="bg-indigo-500"
-          />
-          <QuickAction
-            className="w-[48%] md:w-[23%]"
-            onPress={() => router.navigate('/(admin)/classes/create')}
-            icon="people-outline"
-            iconLibrary="Ionicons"
-            isDark={isDark}
-            label="Create Class"
-            bgColor="bg-violet-500"
-          />
-          <QuickAction
-            className="w-[48%] md:w-[23%]"
-            onPress={() => router.navigate('/(admin)/assignments/create')}
-            icon="person-circle-outline"
-            isDark={isDark}
-            iconLibrary="Ionicons"
-            label="Assign Teacher"
-            bgColor="bg-purple-500"
-          />
+          <View className="flex-row flex-wrap gap-3">
+            <QuickActionCard
+              className="w-[48%] md:w-[23%]"
+              onPress={() => router.navigate('/(admin)/teachers/create')}
+              icon="account-plus-outline"
+              isDark={isDark}
+              label="Add Teacher"
+            />
+            <QuickActionCard
+              className="w-[48%] md:w-[23%]"
+              onPress={() => router.navigate('/(admin)/students/create')}
+              icon="school-outline"
+              iconLibrary="Ionicons"
+              label="Add Student"
+              isDark={isDark}
+            />
+            <QuickActionCard
+              className="w-[48%] md:w-[23%]"
+              onPress={() => router.navigate('/(admin)/classes/create')}
+              icon="people-outline"
+              iconLibrary="Ionicons"
+              isDark={isDark}
+              label="Create Class"
+            />
+            <QuickActionCard
+              className="w-[48%] md:w-[23%]"
+              onPress={() => router.navigate('/(admin)/assignments/create')}
+              icon="link-variant"
+              isDark={isDark}
+              label="Assign Teacher"
+            />
+          </View>
         </View>
 
         {/* ACADEMIC ACTIONS */}
-        <Text className="text-lg font-bold text-textPrimary dark:text-dark-textPrimary mb-4">
-          Academics
-        </Text>
+        <View className="px-5 mb-8">
+          <Text className="text-lg font-bold text-textPrimary dark:text-dark-textPrimary mb-4">
+            Academics
+          </Text>
 
-        <View className="flex-row flex-wrap gap-2 mb-6">
-          <QuickAction
-            className="w-[48%] md:w-[23%]"
-            onPress={() => router.navigate('/(admin)/courses/create')}
-            icon="book-outline"
-            label="Add Course"
-            isDark={isDark}
-            bgColor="bg-amber-500"
-          />
-          <QuickAction
-            className="w-[48%] md:w-[23%]"
-            onPress={() => router.navigate('/(admin)/subjects/create')}
-            icon="library-outline"
-            label="Add Subject"
-            isDark={isDark}
-            bgColor="bg-orange-500"
-          />
-          <QuickAction
-            className="w-[48%] md:w-[23%]"
-            onPress={() => router.navigate('/(admin)/academic-years')}
-            icon="calendar-outline"
-            label="Academic Years"
-            isDark={isDark}
-            bgColor="bg-emerald-500"
-          />
-          <QuickAction
-            className="w-[48%] md:w-[23%]"
-            onPress={() => router.navigate('/(admin)/schedules')}
-            icon="time-outline"
-            label="Schedules"
-            isDark={isDark}
-            iconLibrary="Ionicons"
-            bgColor="bg-teal-500"
-          />
+          <View className="flex-row flex-wrap gap-3">
+            <QuickActionCard
+              className="w-[48%] md:w-[23%]"
+              onPress={() => router.navigate('/(admin)/courses/create')}
+              icon="book-outline"
+              iconLibrary="Ionicons"
+              label="Add Course"
+              isDark={isDark}
+            />
+            <QuickActionCard
+              className="w-[48%] md:w-[23%]"
+              onPress={() => router.navigate('/(admin)/subjects/create')}
+              icon="library-outline"
+              iconLibrary="Ionicons"
+              label="Add Subject"
+              isDark={isDark}
+            />
+            <QuickActionCard
+              className="w-[48%] md:w-[23%]"
+              onPress={() => router.navigate('/(admin)/academic-years')}
+              icon="calendar-outline"
+              iconLibrary="Ionicons"
+              label="Academic Years"
+              isDark={isDark}
+            />
+            <QuickActionCard
+              className="w-[48%] md:w-[23%]"
+              onPress={() => router.navigate('/(admin)/schedules')}
+              icon="time-outline"
+              label="Schedules"
+              isDark={isDark}
+              iconLibrary="Ionicons"
+            />
+          </View>
         </View>
 
-
         {/* SYSTEM STATUS */}
-        <Text className="text-lg font-semibold text-textPrimary dark:text-dark-textPrimary mb-3">
-          System Status
-        </Text>
+        <View className="px-5 mb-6">
+          <Text className="text-lg font-bold text-textPrimary dark:text-dark-textPrimary mb-3">
+            System Status
+          </Text>
 
-        <View className="bg-card dark:bg-dark-card rounded-2xl p-4 border border-border dark:border-dark-border">
-          <StatusRow label="Institution Setup" status="Completed" />
-          <StatusRow label="Academic Year" status="Active" />
-          <StatusRow label="Data Sync" status="Healthy" />
+          <View className="bg-white dark:bg-dark-card rounded-2xl p-4 border border-border/50 dark:border-dark-border shadow-sm">
+            <StatusRow label="Institution Setup" status="Completed" />
+            <StatusRow label="Academic Year" status="Active" />
+            <StatusRow label="Data Sync" status="Healthy" />
+          </View>
         </View>
 
         {/* FOOTER */}
-        <Text className="text-xs text-muted dark:text-dark-muted text-center mt-8">
+        <Text className="text-xs text-muted dark:text-dark-muted text-center mt-4 mb-2">
           Teachora · Secure Academic Management Platform
         </Text>
       </ScrollView>

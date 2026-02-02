@@ -10,6 +10,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, TouchableWithoutFeedback, View } from "react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { ID } from "react-native-appwrite";
 
@@ -124,98 +125,117 @@ export default function InviteScreen() {
 
     if (loading) {
         return (
-            <View className="flex-1 justify-center items-center bg-white">
-                <ActivityIndicator size="large" color="#2563EB" />
+            <View className="flex-1 justify-center items-center bg-background dark:bg-dark-background">
+                <ActivityIndicator size="large" color={isDark ? "#4C8DFF" : "#2563EB"} />
             </View>
         );
     }
 
     if (error) {
         return (
-            <View className="flex-1 justify-center items-center px-6">
-                <Text className="text-red-500 text-lg text-center mb-4">{error}</Text>
-                <TouchableOpacity onPress={() => router.replace("/(auth)/login")} className="bg-blue-600 px-6 py-3 rounded-xl">
-                    <Text className="text-white font-bold">Go to Login</Text>
+            <View className="flex-1 justify-center items-center px-6 bg-background dark:bg-dark-background">
+                <View className="bg-error/10 p-4 rounded-full mb-4">
+                    <Ionicons name="alert-circle" size={48} color="#DC2626" />
+                </View>
+                <Text className="text-error text-lg text-center mb-6 font-medium">{error}</Text>
+                <TouchableOpacity onPress={() => router.replace("/(auth)/login")} className="bg-primary dark:bg-dark-primary px-8 py-3 rounded-xl shadow-lg shadow-primary/30">
+                    <Text className="text-white font-bold text-lg">Go to Login</Text>
                 </TouchableOpacity>
             </View>
         );
     }
 
     const content = (
-        <View className="w-full max-w-sm mx-auto">
-            <Text className="text-2xl font-bold text-textPrimary dark:text-dark-textPrimary mb-2">Welcome!</Text>
-            <Text className="text-gray-500 text-textPrimary dark:text-dark-textPrimary mb-8">
-                Set your password to accept the invitation for {inviteData?.email}
-            </Text>
-
-            <View className="space-y-4">
-                <View>
-                    <Text className="text-sm font-medium text-textPrimary dark:text-dark-textPrimary mb-1">New Password</Text>
-                    <View className="relative mb-3">
-                        <TextInput
-                            className="bg-card dark:bg-dark-card border border-border dark:border-dark-border rounded-xl px-4 py-4 text-textPrimary dark:text-dark-textPrimary pr-12"
-                            secureTextEntry={!showPassword}
-                            placeholder="Min 8 characters"
-                            value={password}
-                            onChangeText={setPassword}
-                        />
-                        <TouchableOpacity
-                            onPress={() => setShowPassword(!showPassword)}
-                            className="absolute right-4 top-4"
-                            testID="toggle-password"
-                        >
-                            <Ionicons
-                                name={showPassword ? "eye-off" : "eye"}
-                                size={24}
-                                color={isDark ? "#9CA3AF" : "#94A3B8"}
-                            />
-                        </TouchableOpacity>
+        <View className="flex-1 justify-center px-6">
+            <Animated.View
+                entering={FadeInDown.delay(100).springify()}
+                className="w-full max-w-sm md:max-w-md self-center"
+            >
+                {/* Header */}
+                <View className="items-center mb-8">
+                    <View className="w-16 h-16 rounded-2xl bg-success/10 items-center justify-center mb-4">
+                        <Ionicons name="mail-open" size={32} color="#16A34A" />
                     </View>
+                    <Text className="text-3xl font-bold text-center text-textPrimary dark:text-dark-textPrimary">
+                        Welcome!
+                    </Text>
+                    <Text className="text-base text-center text-textSecondary dark:text-dark-textSecondary mt-2">
+                        Set your password to accept the invitation for <Text className="font-semibold text-textPrimary dark:text-dark-textPrimary">{inviteData?.email}</Text>
+                    </Text>
                 </View>
 
-                <View>
-                    <Text className="text-sm font-medium text-textPrimary dark:text-dark-textPrimary mb-1">Confirm Password</Text>
-                    <View className="relative">
-                        <TextInput
-                            className="bg-card dark:bg-dark-card border border-border dark:border-dark-border rounded-xl px-4 py-4 text-textPrimary dark:text-dark-textPrimary pr-12"
-                            secureTextEntry={!showConfirmPassword}
-                            placeholder="Re-enter password"
-                            value={confirmPassword}
-                            onChangeText={setConfirmPassword}
-                        />
-                        <TouchableOpacity
-                            onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                            className="absolute right-4 top-4"
-                            testID="toggle-password"
-                        >
-                            <Ionicons
-                                name={showConfirmPassword ? "eye-off" : "eye"}
-                                size={24}
-                                color={isDark ? "#9CA3AF" : "#94A3B8"}
+                <View className="gap-4">
+                    <View>
+                        <Text className="text-sm font-medium text-textSecondary dark:text-dark-textSecondary mb-1.5 ml-1">New Password</Text>
+                        <View className="relative">
+                            <TextInput
+                                className="bg-white dark:bg-dark-card border border-border dark:border-dark-border rounded-xl px-4 py-3.5 text-textPrimary dark:text-dark-textPrimary pr-12 text-base"
+                                secureTextEntry={!showPassword}
+                                placeholder="Min 8 characters"
+                                placeholderTextColor={isDark ? "#9CA3AF" : "#94A3B8"}
+                                value={password}
+                                onChangeText={setPassword}
                             />
-                        </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => setShowPassword(!showPassword)}
+                                className="absolute right-4 top-3.5"
+                                testID="toggle-password"
+                            >
+                                <Ionicons
+                                    name={showPassword ? "eye-off" : "eye"}
+                                    size={24}
+                                    color={isDark ? "#9CA3AF" : "#94A3B8"}
+                                />
+                            </TouchableOpacity>
+                        </View>
                     </View>
-                </View>
 
-                <TouchableOpacity
-                    onPress={handleAccept}
-                    disabled={submitting}
-                    className={`w-full py-4 rounded-xl items-center mt-6 ${submitting ? "bg-blue-400" : "bg-blue-600"}`}
-                >
-                    {submitting ? (
-                        <ActivityIndicator color="white" />
-                    ) : (
-                        <Text className="text-white font-bold text-lg">Activate Account</Text>
-                    )}
-                </TouchableOpacity>
-            </View>
+                    <View>
+                        <Text className="text-sm font-medium text-textSecondary dark:text-dark-textSecondary mb-1.5 ml-1">Confirm Password</Text>
+                        <View className="relative">
+                            <TextInput
+                                className="bg-white dark:bg-dark-card border border-border dark:border-dark-border rounded-xl px-4 py-3.5 text-textPrimary dark:text-dark-textPrimary pr-12 text-base"
+                                secureTextEntry={!showConfirmPassword}
+                                placeholder="Re-enter password"
+                                placeholderTextColor={isDark ? "#9CA3AF" : "#94A3B8"}
+                                value={confirmPassword}
+                                onChangeText={setConfirmPassword}
+                            />
+                            <TouchableOpacity
+                                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                                className="absolute right-4 top-3.5"
+                                testID="toggle-password"
+                            >
+                                <Ionicons
+                                    name={showConfirmPassword ? "eye-off" : "eye"}
+                                    size={24}
+                                    color={isDark ? "#9CA3AF" : "#94A3B8"}
+                                />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                    <TouchableOpacity
+                        onPress={handleAccept}
+                        disabled={submitting}
+                        activeOpacity={0.9}
+                        className={`w-full py-4 rounded-xl items-center mt-6 shadow-md shadow-primary/20 ${submitting ? "bg-primary/70 dark:bg-dark-primary/70" : "bg-primary dark:bg-dark-primary"}`}
+                    >
+                        {submitting ? (
+                            <ActivityIndicator color="white" />
+                        ) : (
+                            <Text className="text-white font-bold text-lg">Activate Account</Text>
+                        )}
+                    </TouchableOpacity>
+                </View>
+            </Animated.View>
         </View>
     );
 
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
-            className="flex-1 px-6 justify-center"
+            className="flex-1 bg-background dark:bg-dark-background"
         >
             {Platform.OS === "web" ? content : (
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss}>

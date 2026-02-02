@@ -1,3 +1,4 @@
+import { ModernTabBar } from "@/components/ui/ModernTabBar";
 import { ResponsiveSidebar } from "@/components/ui/ResponsiveSidebar";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
@@ -64,17 +65,10 @@ export default function TeacherLayout() {
         )}
         <View className="flex-1">
           <Tabs
+            tabBar={Platform.OS === "web" ? undefined : (props) => <ModernTabBar {...props} />}
             screenOptions={{
               headerShown: false,
-              tabBarStyle: {
-                backgroundColor: isDark ? "#111827" : "#FFFFFF",
-                borderTopColor: isDark ? "#1F2937" : "#E5E7EB",
-                height: 60,
-                paddingTop: 5,
-                display: Platform.OS === "web" ? "none" : "flex",
-              },
-              tabBarActiveTintColor: isDark ? "#60A5FA" : "#2563EB",
-              tabBarInactiveTintColor: isDark ? "#9CA3AF" : "#6B7280",
+              tabBarStyle: Platform.OS === "web" ? { display: "none" } : undefined,
             }}
           >
             <Tabs.Screen
