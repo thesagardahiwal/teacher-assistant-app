@@ -65,7 +65,7 @@ export default function CreateSubject() {
   const courseOptions = courses.map(c => ({ label: `${c.name} (${c.code})`, value: c.$id }));
 
   return (
-    <View className={`flex-1 px-6 pt-6 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+    <View className={`flex-1 px-6 pt-6 ${isDark ? "bg-dark-background" : "bg-background"}`}>
       <PageHeader title="New Subject" />
 
       <ScrollView showsVerticalScrollIndicator={false}>

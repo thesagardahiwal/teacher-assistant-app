@@ -82,7 +82,7 @@ export default function StudentTeacherDetailScreen() {
 
     if (loading) {
         return (
-            <View className={`flex-1 justify-center items-center ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+            <View className={`flex-1 justify-center items-center ${isDark ? "bg-dark-background" : "bg-background"}`}>
                 <ActivityIndicator size="large" color="#2563EB" />
             </View>
         );
@@ -90,7 +90,7 @@ export default function StudentTeacherDetailScreen() {
 
     if (!teacher) {
         return (
-            <View className={`flex-1 justify-center items-center ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+            <View className={`flex-1 justify-center items-center ${isDark ? "bg-dark-background" : "bg-background"}`}>
                 <Text className={isDark ? "text-white" : "text-gray-900"}>Teacher not found</Text>
             </View>
         );
@@ -114,7 +114,7 @@ export default function StudentTeacherDetailScreen() {
     );
 
     return (
-        <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+        <View className={`flex-1 ${isDark ? "bg-dark-background" : "bg-background"}`}>
             <View className="px-6 pt-6 mb-4 w-full">
                 <PageHeader title="Teacher Profile" showBack={true} />
             </View>

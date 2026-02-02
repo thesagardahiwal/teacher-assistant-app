@@ -43,7 +43,7 @@ export default function SubjectsIndex() {
   );
 
   return (
-    <View className={`flex-1 px-6 pt-6 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+    <View className={`flex-1 px-6 pt-6 ${isDark ? "bg-dark-background" : "bg-background"}`}>
       <PageHeader
         title="Subjects"
         rightAction={

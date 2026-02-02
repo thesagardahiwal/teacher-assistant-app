@@ -233,7 +233,7 @@ export default function TakeAttendanceScreen() {
 
   return (
     <TeacherEligibilityGuard>
-      <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+      <View className={`flex-1 ${isDark ? "bg-dark-background" : "bg-background"}`}>
         <AddScheduleModal
           visible={scheduleModalVisible}
           onClose={() => setScheduleModalVisible(false)}

@@ -92,14 +92,14 @@ export default function EditAcademicYear() {
 
     if (loading) {
         return (
-            <View className={`flex-1 justify-center items-center ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+            <View className={`flex-1 justify-center items-center ${isDark ? "bg-dark-background" : "bg-background"}`}>
                 <ActivityIndicator size="large" color="#2563EB" />
             </View>
         )
     }
 
     return (
-        <View className={`flex-1 px-6 pt-6 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+        <View className={`flex-1 px-6 pt-6 ${isDark ? "bg-dark-background" : "bg-background"}`}>
             <PageHeader
                 title="Edit Academic Year"
                 rightAction={

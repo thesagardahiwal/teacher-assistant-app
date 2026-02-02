@@ -84,11 +84,11 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+    <View className={`flex-1 ${isDark ? "bg-dark-background" : "bg-background"}`}>
       <ScrollView
         contentContainerStyle={{ paddingBottom: 100 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#2563EB" />}
-        className="w-full px-6 pt-12"
+        className="w-full px-6 pt-4"
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}

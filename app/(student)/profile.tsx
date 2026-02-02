@@ -91,7 +91,7 @@ const Profile = () => {
 
     if (loading) {
         return (
-            <View className={`flex-1 items-center justify-center ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+            <View className={`flex-1 items-center justify-center ${isDark ? "bg-dark-background" : "bg-background"}`}>
                 <ActivityIndicator size="large" color="#2563EB" />
             </View>
         );
@@ -100,7 +100,7 @@ const Profile = () => {
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
-            className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}
+            className={`flex-1 ${isDark ? "bg-dark-background" : "bg-background"}`}
         >
             <Stack.Screen options={{ headerShown: false }} />
 

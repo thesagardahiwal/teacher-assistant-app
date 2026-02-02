@@ -21,7 +21,7 @@ export const TeacherEligibilityGuard = ({ children, fallback }: Props) => {
 
     if (isLoading) {
         return (
-            <View className={`flex-1 justify-center items-center ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+            <View className={`flex-1 justify-center items-center ${isDark ? "bg-dark-background" : "bg-background"}`}>
                 <ActivityIndicator size="large" color="#2563EB" />
             </View>
         );
@@ -32,7 +32,7 @@ export const TeacherEligibilityGuard = ({ children, fallback }: Props) => {
     }
 
     return (
-        <View className={`flex-1 p-6 justify-center ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+        <View className={`flex-1 p-6 justify-center ${isDark ? "bg-dark-background" : "bg-background"}`}>
             <EmptyStateCard
                 title="Access Restricted"
                 description="You are not assigned to any classes or subjects yet. Please contact your administrator to get assigned."

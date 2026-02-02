@@ -61,14 +61,14 @@ export default function TeacherCalendar() {
 
     if (loading && !refreshing) {
         return (
-            <View className={`flex-1 justify-center items-center ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+            <View className={`flex-1 justify-center items-center ${isDark ? "bg-dark-background" : "bg-background"}`}>
                 <ActivityIndicator size="large" color="#2563EB" />
             </View>
         );
     }
 
     return (
-        <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+        <View className={`flex-1 ${isDark ? "bg-dark-background" : "bg-background"}`}>
             <View className="px-6 pt-6 pb-2">
                 <PageHeader
                     title="Calendar"

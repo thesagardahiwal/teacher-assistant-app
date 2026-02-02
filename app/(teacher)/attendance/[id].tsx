@@ -114,7 +114,7 @@ export default function AttendanceDetailScreen() {
 
     if (loading) {
         return (
-            <View className={`flex-1 justify-center items-center ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+            <View className={`flex-1 justify-center items-center ${isDark ? "bg-dark-background" : "bg-background"}`}>
                 <ActivityIndicator size="large" color="#2563EB" />
             </View>
         );
@@ -122,7 +122,7 @@ export default function AttendanceDetailScreen() {
 
     if (!attendance) {
         return (
-            <View className={`flex-1 justify-center items-center ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+            <View className={`flex-1 justify-center items-center ${isDark ? "bg-dark-background" : "bg-background"}`}>
                 <Text className={isDark ? "text-gray-400" : "text-gray-500"}>Attendance not found</Text>
             </View>
         );
@@ -135,7 +135,7 @@ export default function AttendanceDetailScreen() {
     const totalCount = records.length;
 
     return (
-        <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+        <View className={`flex-1 ${isDark ? "bg-dark-background" : "bg-background"}`}>
             <View className={`px-5 pt-4 ${isDark ? "bg-gray-900" : "bg-white"} border-b ${isDark ? "border-gray-800" : "border-gray-200"}`}>
                 <PageHeader title="Attendance Details" showBack={true} />
 
