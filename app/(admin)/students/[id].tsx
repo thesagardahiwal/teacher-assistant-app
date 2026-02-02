@@ -1,14 +1,16 @@
 import { FormInput } from "@/components/admin/ui/FormInput";
 import { FormSelect } from "@/components/admin/ui/FormSelect";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
-import { PhoneDisplay } from "@/components/common/PhoneDisplay";
+import { StudentProfileView } from "@/components/directory/StudentProfileView";
 import { studentService } from "@/services";
+import { assessmentResultService } from "@/services/assessmentResult.service";
 import { invitationService } from "@/services/invitation.service";
 import { useAuth } from "@/store/hooks/useAuth";
 import { useClasses } from "@/store/hooks/useClasses";
 import { useCourses } from "@/store/hooks/useCourses";
 import { useStudents } from "@/store/hooks/useStudents";
 import { useTheme } from "@/store/hooks/useTheme";
+import { AssessmentResult } from "@/types/assessmentResult.type";
 import { showAlert } from "@/utils/alert";
 import { useSafeBack } from "@/utils/navigation";
 import { useInstitutionId } from "@/utils/useInstitutionId";
@@ -18,13 +20,14 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
+    KeyboardAvoidingView,
     Platform,
-    RefreshControl,
     ScrollView,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from "react-native";
+import Animated, { SlideInUp, SlideOutUp } from "react-native-reanimated";
 
 export default function EditStudent() {
     const router = useRouter();
@@ -37,6 +40,12 @@ export default function EditStudent() {
     const { fetchStudents } = useStudents();
     const { data: courses, fetchCourses } = useCourses();
     const { data: classes, fetchClasses } = useClasses();
+
+    // Data State
+    const [student, setStudent] = useState<any>(null);
+    const [results, setResults] = useState<AssessmentResult[]>([]);
+
+    // Form State
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [roll, setRoll] = useState("");
@@ -50,6 +59,7 @@ export default function EditStudent() {
     const [invitationLink, setInvitationLink] = useState("");
     const [copying, setCopying] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
 
     useEffect(() => {
         if (institutionId) {
@@ -69,9 +79,21 @@ export default function EditStudent() {
         setRefreshing(true);
         try {
             const doc = await studentService.get(id as string);
+            setStudent(doc as any);
             setRoll(doc.rollNumber);
             setCourse(doc.course?.$id || "");
             setSelectedClass(doc.class.$id);
+
+            // Fetch Results
+            try {
+                // We use checkResults or list results. The Service might not have a direct "listByStudent" 
+                // in the snippet provided previously, but let's assume valid service usage or default to empty.
+                // Reusing logic from student details:
+                const res = await assessmentResultService.listByStudent(institutionId!, doc.$id);
+                setResults(res.documents);
+            } catch (e) {
+                console.log("Results fetch error", e);
+            }
 
             // Load User Details
             if (doc) {
@@ -86,30 +108,22 @@ export default function EditStudent() {
                     setEmail(doc.email || '');
                 }
 
-                // If student is inactive, try to find unused invitation
+                // If student is inactive
                 if (!doc.isActive) {
                     try {
                         const invites = await invitationService.getByUserId(doc.$id);
                         if (invites.documents.length > 0) {
                             const token = invites.documents[0].token;
-                            // Construct link efficiently
-                            // In dev: localhost:8081/invite?token=...
-                            // In prod: domain/invite?token=...
-                            // We can use window.location.origin if web, or hardcode/env for native if needed.
-                            // For flexibility, let's try to grab origin if on web.
                             let origin = "";
                             if (Platform.OS === 'web' && typeof window !== 'undefined') {
                                 origin = window.location.origin;
                             } else {
-                                // Fallback for native or if simpler
-                                origin = "exp://192.168.1.5:8081"; // Or dynamic from Constants
+                                origin = "exp://192.168.1.5:8081";
                             }
-                            // Using a relative path for router is fine for internal nav, but for copying we need full URL.
-                            // Assuming web usage mainly for copying links.
                             if (Platform.OS === 'web') {
                                 setInvitationLink(`${origin}/(auth)/invite?token=${token}`);
                             } else {
-                                setInvitationLink(`(auth)/invite?token=${token}`); // Partial for now
+                                setInvitationLink(`(auth)/invite?token=${token}`);
                             }
                         }
                     } catch (e) {
@@ -153,20 +167,20 @@ export default function EditStudent() {
 
         setSaving(true);
         try {
-            // Update Student Document
             await studentService.update(id as string, {
                 rollNumber: roll,
                 course: course,
                 class: selectedClass,
             });
 
-            // Update User Document (Name)
             if (userId) {
                 await studentService.update(userId, { name });
             }
 
             if (institutionId) await fetchStudents(institutionId);
+            setIsEditing(false);
             showAlert("Success", "Student updated successfully");
+            loadData(); // Reload basic data
         } catch (error: any) {
             showAlert("Error", error.message || "Failed to update student");
         } finally {
@@ -175,8 +189,6 @@ export default function EditStudent() {
     };
 
     const courseOptions = courses.map(c => ({ label: `${c.name} (${c.code})`, value: c.$id }));
-
-    // Improved Filtering: Check for object or string ID safely
     const classOptions = classes
         .filter(c => {
             const courseId = typeof c.course === 'object' ? c.course?.$id : c.course;
@@ -184,139 +196,142 @@ export default function EditStudent() {
         })
         .map(c => ({ label: c.name, value: c.$id }));
 
+    // Stats
+    const averageScore = results.length > 0
+        ? (results.reduce((acc, curr) => acc + (curr.obtainedMarks / curr.totalMarks * 100), 0) / results.length).toFixed(1)
+        : "0";
+
+
     if (loading) {
         return (
-            <View className={`flex-1 justify-center items-center ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+            <View className={`flex-1 justify-center items-center ${isDark ? "bg-dark-background" : "bg-background"}`}>
                 <ActivityIndicator size="large" color="#2563EB" />
             </View>
         )
     }
 
-
     const isAdmin = user?.role === "ADMIN";
 
     return (
-        <View className={`flex-1 px-6 pt-6 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
-            <PageHeader
-                title={isAdmin ? "Edit Student" : "Student Details"}
-                rightAction={
-                    isAdmin ? (
-                        <TouchableOpacity onPress={handleDelete} className="bg-red-100 dark:bg-red-900 p-2 rounded-full">
-                            <Ionicons name="trash-outline" size={20} color="#EF4444" />
-                        </TouchableOpacity>
-                    ) : null
-                }
-            />
-
-            <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={loadData} />} showsVerticalScrollIndicator={false}>
-
-                {/* Personal Info Card */}
-                <View className={`p-6 rounded-2xl mb-4 ${isDark ? "bg-gray-800" : "bg-white"}`}>
-                    <Text className={`text-lg font-bold mb-4 ${isDark ? "text-gray-200" : "text-gray-800"}`}>
-                        Personal Information
-                    </Text>
-
-                    <FormInput
-                        label="Full Name"
-                        placeholder="Student Name"
-                        value={name}
-                        onChangeText={setName}
-                        editable={isAdmin}
-                    />
-
-                    <View className="opacity-60">
-                        <FormInput
-                            label="Email Address"
-                            value={email}
-                            editable={false}
-                        />
-                        <PhoneDisplay phone={phone} />
-                    </View>
-                </View>
-
-                {/* Academic Info Card */}
-                <View className={`p-6 rounded-2xl mb-6 ${isDark ? "bg-gray-800" : "bg-white"}`}>
-                    <Text className={`text-lg font-bold mb-4 ${isDark ? "text-gray-200" : "text-gray-800"}`}>
-                        Academic Details
-                    </Text>
-
-                    <FormInput
-                        label="Roll Number"
-                        placeholder="101"
-                        value={roll}
-                        onChangeText={setRoll}
-                        editable={isAdmin}
-                    />
-
-                    <FormSelect
-                        label="Course"
-                        value={course}
-                        onChange={(val) => {
-                            setCourse(val);
-                            setSelectedClass(""); // Reset class when course changes
-                        }}
-                        options={courseOptions}
-                        placeholder="Select Course"
-                        editable={isAdmin}
-                    />
-
-                    <FormSelect
-                        label="Class"
-                        value={selectedClass}
-                        onChange={setSelectedClass}
-                        options={classOptions}
-                        placeholder={course ? "Select Class" : "Select Course first"}
-                        error={course && classOptions.length === 0 ? "No classes found for this course" : undefined}
-                        editable={isAdmin}
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            className={`flex-1 ${isDark ? "bg-dark-background" : "bg-background"}`}
+        >
+            <View className="flex-1">
+                <View className="px-6 pt-6">
+                    <PageHeader
+                        title="Student Details"
+                        showBack={true}
+                        rightAction={
+                            isAdmin ? (
+                                <View className="flex-row gap-2">
+                                    <TouchableOpacity
+                                        onPress={() => setIsEditing(!isEditing)}
+                                        className={`p-2 rounded-full ${isEditing ? "bg-red-100 dark:bg-red-900" : "bg-blue-100 dark:bg-blue-900"}`}
+                                    >
+                                        <Ionicons
+                                            name={isEditing ? "close" : "create-outline"}
+                                            size={20}
+                                            color={isEditing ? "#EF4444" : "#2563EB"}
+                                        />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity onPress={handleDelete} className="bg-red-100 dark:bg-red-900 p-2 rounded-full">
+                                        <Ionicons name="trash-outline" size={20} color="#EF4444" />
+                                    </TouchableOpacity>
+                                </View>
+                            ) : null
+                        }
                     />
                 </View>
 
-                {/* Invitation Link Card (Only if inactive and link exists) */}
-                {invitationLink ? (
-                    <View className={`p-6 rounded-2xl mb-6 ${isDark ? "bg-gray-800" : "bg-white"}`}>
-                        <Text className={`text-lg font-bold mb-4 ${isDark ? "text-gray-200" : "text-gray-800"}`}>
-                            Invitation Link
-                        </Text>
-                        <Text className={`text-sm mb-4 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-                            Share this link with the student to activate their account.
-                        </Text>
-
-                        <View className={`flex-row items-center p-3 rounded-xl border ${isDark ? "bg-gray-900 border-gray-700" : "bg-gray-50 border-gray-200"}`}>
-                            <Text className={`flex-1 mr-3 text-sm ${isDark ? "text-gray-300" : "text-gray-600"}`} numberOfLines={1}>
-                                {invitationLink}
-                            </Text>
-                            <TouchableOpacity
-                                onPress={async () => {
-                                    setCopying(true);
-                                    await Clipboard.setStringAsync(invitationLink);
-                                    setCopying(false);
-                                    showAlert("Success", "Link copied to clipboard");
-                                }}
-                                className="bg-blue-100 dark:bg-blue-900 px-3 py-2 rounded-lg"
-                            >
-                                <Text className="text-blue-600 dark:text-blue-300 font-semibold text-xs">
-                                    {copying ? "Copying..." : "Copy"}
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                ) : null}
-
-                {isAdmin && (
-                    <TouchableOpacity
-                        onPress={handleSubmit}
-                        disabled={saving}
-                        className={`py-4 rounded-xl items-center mb-10 ${saving ? "bg-blue-400" : "bg-blue-600"
-                            }`}
+                {/* Edit Form Overlay */}
+                {isEditing && (
+                    <Animated.View
+                        entering={SlideInUp}
+                        exiting={SlideOutUp}
+                        className={`mx-4 mb-4 p-4 rounded-2xl border ${isDark ? "bg-dark-card border-dark-border" : "bg-white border-border"} z-10 absolute top-20 left-0 right-0 shadow-lg`}
                     >
-                        {saving ? (
-                            <ActivityIndicator color="white" />
-                        ) : (
-                            <Text className="text-white font-bold text-lg">Save Changes</Text>
-                        )}
-                    </TouchableOpacity>
+                        <Text className={`text-lg font-bold mb-4 ${isDark ? "text-dark-textPrimary" : "text-textPrimary"}`}>
+                            Edit Student
+                        </Text>
+                        <ScrollView className="max-h-96" showsVerticalScrollIndicator={true}>
+                            <FormInput
+                                label="Full Name"
+                                placeholder="Student Name"
+                                value={name}
+                                onChangeText={setName}
+                            />
+                            <FormInput
+                                label="Roll Number"
+                                placeholder="101"
+                                value={roll}
+                                onChangeText={setRoll}
+                            />
+                            <FormSelect
+                                label="Course"
+                                value={course}
+                                onChange={(val) => {
+                                    setCourse(val);
+                                    setSelectedClass("");
+                                }}
+                                options={courseOptions}
+                                placeholder="Select Course"
+                            />
+                            <FormSelect
+                                label="Class"
+                                value={selectedClass}
+                                onChange={setSelectedClass}
+                                options={classOptions}
+                                placeholder={course ? "Select Class" : "Select Course first"}
+                                error={course && classOptions.length === 0 ? "No classes found for this course" : undefined}
+                            />
+                            <TouchableOpacity
+                                onPress={handleSubmit}
+                                disabled={saving}
+                                className={`py-4 rounded-xl items-center mt-4 mb-2 ${saving ? "bg-primary/70" : "bg-primary"}`}
+                            >
+                                {saving ? <ActivityIndicator color="white" /> : <Text className="text-white font-bold text-lg">Save Changes</Text>}
+                            </TouchableOpacity>
+                        </ScrollView>
+                    </Animated.View>
                 )}
-            </ScrollView>
-        </View>
+
+                <View className="flex-1 px-4">
+                    <StudentProfileView
+                        student={student}
+                        stats={{
+                            averageScore,
+                            totalAssessments: results.length
+                        }}
+                        results={results}
+                    >
+                        {/* Custom Children: Invite Link */}
+                        {invitationLink ? (
+                            <View className={`mb-6 p-4 rounded-xl border ${isDark ? "bg-blue-900/20 border-blue-800" : "bg-blue-50 border-blue-100"}`}>
+                                <Text className={`font-bold mb-1 ${isDark ? "text-blue-400" : "text-blue-700"}`}>
+                                    Pending Invitation
+                                </Text>
+                                <View className="flex-row items-center mt-2">
+                                    <Text numberOfLines={1} className={`flex-1 mr-2 text-xs opacity-70 ${isDark ? "text-blue-200" : "text-blue-800"}`}>
+                                        {invitationLink}
+                                    </Text>
+                                    <TouchableOpacity
+                                        onPress={async () => {
+                                            setCopying(true);
+                                            await Clipboard.setStringAsync(invitationLink);
+                                            setCopying(false);
+                                            showAlert("Success", "Link copied");
+                                        }}
+                                        className="bg-blue-600 px-3 py-1.5 rounded-lg"
+                                    >
+                                        <Text className="text-white text-xs font-bold">{copying ? "..." : "Copy"}</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        ) : null}
+                    </StudentProfileView>
+                </View>
+            </View>
+        </KeyboardAvoidingView>
     );
 }

@@ -1,5 +1,5 @@
 import { PageHeader } from "@/components/admin/ui/PageHeader";
-import { PhoneDisplay } from "@/components/common/PhoneDisplay";
+import { TeacherProfileView } from "@/components/directory/TeacherProfileView";
 import { assessmentService, scheduleService, teacherService } from "@/services";
 import { attendanceService } from "@/services/attendance.service";
 import { useTheme } from "@/store/hooks/useTheme";
@@ -8,10 +8,9 @@ import { Attendance } from "@/types/attendance.type";
 import { ClassSchedule } from "@/types/schedule.type";
 import { User } from "@/types/user.type";
 import { useInstitutionId } from "@/utils/useInstitutionId";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 
 export default function TeacherDetailScreen() {
     const { id } = useLocalSearchParams();
@@ -61,148 +60,63 @@ export default function TeacherDetailScreen() {
     // B. Academic Assignments
     const uniqueSubjects = Array.from(new Set(schedules.map(s => s.subject?.name).filter(Boolean)));
     const uniqueClasses = Array.from(new Set(schedules.map(s => s.class?.name).filter(Boolean)));
-    const totalLectures = schedules.length;
-
-    // C. Schedule Overview
-    const lecturesPerDay = schedules.reduce((acc, curr) => {
-        const day = curr.dayOfWeek?.substring(0, 3).toUpperCase() || "OTH";
-        acc[day] = (acc[day] || 0) + 1;
-        return acc;
-    }, {} as Record<string, number>);
 
     // D. Assessments
     const assessmentStats = assessments.reduce((acc, curr) => {
-        const type = curr.type || "Other"; // Assuming type exists or default
-        acc[type] = (acc[type] || 0) + 1;
         acc.Total = (acc.Total || 0) + 1;
         return acc;
     }, { Total: 0 } as Record<string, number>);
 
     // E. Attendance
-    const totalSessions = attendance.length;
     const uniqueAttendanceClasses = Array.from(new Set(attendance.map(a => a.class?.name).filter(Boolean)));
+
+    // Combine Schedules for unique Assignment view in Profile
+    const uniqueAssignments = Array.from(new Set(schedules.map(s => `${s.subject?.name}|${s.class?.name}`)))
+        .map(combo => {
+            const [subject, className] = combo.split('|');
+            return { subject, class: className };
+        });
 
 
     if (loading) {
         return (
-            <View className={`flex-1 justify-center items-center ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
-                <ActivityIndicator size="large" color="#2563EB" />
+            <View className={`flex-1 items-center justify-center ${isDark ? "bg-dark-background" : "bg-background"}`}>
+                <ActivityIndicator size="large" color={isDark ? "#4C8DFF" : "#2563EB"} />
             </View>
         );
     }
 
     if (!teacher) {
         return (
-            <View className={`flex-1 justify-center items-center ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+            <View className={`flex-1 items-center justify-center ${isDark ? "bg-dark-background" : "bg-background"}`}>
                 <Text className={isDark ? "text-white" : "text-gray-900"}>Teacher not found</Text>
             </View>
         );
     }
 
-    const StatCard = ({ icon, title, value, color }: any) => (
-        <View className={`flex-1 p-4 rounded-xl border mr-3 min-w-[140px] ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"}`}>
-            <View className={`w-10 h-10 rounded-full items-center justify-center mb-3 ${color} bg-opacity-20`}>
-                <Ionicons name={icon} size={20} color={color.replace('bg-', 'text-').replace('-100', '-600')} />
-            </View>
-            <Text className={`text-2xl font-bold mb-1 ${isDark ? "text-white" : "text-gray-900"}`}>{value}</Text>
-            <Text className={`text-xs ${isDark ? "text-gray-400" : "text-gray-500"}`}>{title}</Text>
-        </View>
-    );
-
-    const SectionHeader = ({ title, icon }: any) => (
-        <View className="flex-row items-center mb-4 mt-6">
-            <MaterialCommunityIcons name={icon} size={20} color={isDark ? "#9CA3AF" : "#4B5563"} />
-            <Text className={`text-lg font-bold ml-2 ${isDark ? "text-white" : "text-gray-800"}`}>{title}</Text>
-        </View>
-    );
-
     return (
-        <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
+        <View className={`flex-1 ${isDark ? "bg-dark-background" : "bg-background"}`}>
             <View className="px-6 pt-6">
                 <PageHeader title="Teacher Details" showBack={true} />
             </View>
 
-            <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={loadData} />} contentContainerStyle={{ paddingBottom: 40, paddingHorizontal: 24 }}>
-
-                {/* A. Profile Card */}
-                <View className={`p-6 rounded-2xl mb-6 items-center ${isDark ? "bg-gray-800" : "bg-white shadow-sm shadow-gray-200"}`}>
-                    <View className={`w-20 h-20 rounded-full items-center justify-center mb-4 ${isDark ? "bg-blue-900/50" : "bg-blue-50"}`}>
-                        <Text className="text-3xl font-bold text-blue-600">{teacher.name?.charAt(0)}</Text>
-                    </View>
-                    <Text className={`text-xl font-bold mb-1 ${isDark ? "text-white" : "text-gray-900"}`}>{teacher.name}</Text>
-                    <Text className={`text-sm mb-4 ${isDark ? "text-gray-400" : "text-gray-500"}`}>{teacher.email}</Text>
-
-                    <View className="flex-row gap-2">
-                        <View className={`px-3 py-1 rounded-full ${isDark ? "bg-gray-700" : "bg-gray-100"}`}>
-                            <Text className={`text-xs font-medium ${isDark ? "text-gray-300" : "text-gray-600"}`}>{teacher.role}</Text>
-                        </View>
-                        {teacher.department && (
-                            <View className={`px-3 py-1 rounded-full ${isDark ? "bg-purple-900/30" : "bg-purple-50"}`}>
-                                <Text className={`text-xs font-medium ${isDark ? "text-purple-300" : "text-purple-700"}`}>{teacher.department}</Text>
-                            </View>
-                        )}
-                    </View>
-                    {teacher.phone && (
-                        <PhoneDisplay phone={teacher.phone} className="mt-4" />
-                    )}
-                </View>
-
-                {/* B. Academic Overview (Stats) */}
-                <SectionHeader title="Academic Snapshot" icon="school-outline" />
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-2">
-                    <StatCard icon="book-outline" title="Subjects" value={uniqueSubjects.length} color="text-blue-600 bg-blue-100" />
-                    <StatCard icon="calendar-outline" title="Total Lectures" value={totalLectures} color="text-pink-600 bg-pink-100" />
-                    <StatCard icon="people-outline" title="Classes" value={uniqueClasses.length} color="text-emerald-600 bg-emerald-100" />
-                    <StatCard icon="clipboard-outline" title="Assessments" value={assessmentStats.Total} color="text-amber-600 bg-amber-100" />
-                </ScrollView>
-
-                {/* C. Assignments List */}
-                <SectionHeader title="Assignments" icon="briefcase-outline" />
-                <View className={`rounded-xl overflow-hidden mb-6 ${isDark ? "bg-gray-800 border border-gray-700" : "bg-white"}`}>
-                    <View className="flex-row p-4 border-b border-gray-200 dark:border-gray-700">
-                        <View className="flex-1"><Text className={`font-semibold ${isDark ? "text-gray-300" : "text-gray-500"}`}>Subject</Text></View>
-                        <View className="flex-1"><Text className={`font-semibold ${isDark ? "text-gray-300" : "text-gray-500"}`}>Class</Text></View>
-                    </View>
-                    {/* Unique combinations of Subject + Class from schedules */}
-                    {Array.from(new Set(schedules.map(s => `${s.subject?.name}|${s.class?.name}`))).map((combo, idx) => {
-                        const [subj, cls] = combo.split('|');
-                        return (
-                            <View key={idx} className="flex-row p-4 border-b border-gray-100 dark:border-gray-800 last:border-0">
-                                <View className="flex-1"><Text className={`font-medium ${isDark ? "text-white" : "text-gray-800"}`}>{subj}</Text></View>
-                                <View className="flex-1"><Text className={isDark ? "text-gray-400" : "text-gray-600"}>{cls}</Text></View>
-                            </View>
-                        )
-                    })}
-                    {schedules.length === 0 && (
-                        <View className="p-4"><Text className="text-gray-400 italic">No assigned schedules.</Text></View>
-                    )}
-                </View>
-
-                {/* D. Schedule Breakdown */}
-                <SectionHeader title="Weekly Workload" icon="clock-time-four-outline" />
-                <View className="flex-row flex-wrap gap-2 mb-6">
-                    {["MON", "TUE", "WED", "THU", "FRI", "SAT"].map((day) => (
-                        <View key={day} className={`flex-1 items-center p-3 rounded-lg min-w-[14%] ${isDark ? "bg-gray-800" : "bg-white border border-gray-100"}`}>
-                            <Text className={`text-xs font-bold mb-1 ${isDark ? "text-gray-500" : "text-gray-400"}`}>{day}</Text>
-                            <Text className={`text-lg font-bold ${isDark ? "text-blue-400" : "text-blue-600"}`}>{lecturesPerDay[day] || 0}</Text>
-                        </View>
-                    ))}
-                </View>
-
-                {/* E. Attendance Activity */}
-                <SectionHeader title="Attendance Activity" icon="checkbox-marked-circle-outline" />
-                <View className={`p-4 rounded-xl mb-6 ${isDark ? "bg-gray-800 border border-gray-700" : "bg-white border border-gray-100"}`}>
-                    <View className="flex-row justify-between items-center mb-2">
-                        <Text className={`text-base ${isDark ? "text-gray-300" : "text-gray-600"}`}>Total Sessions Taken</Text>
-                        <Text className={`text-xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>{totalSessions}</Text>
-                    </View>
-                    <View className="h-px bg-gray-100 dark:bg-gray-700 my-2" />
-                    <Text className={`text-sm ${isDark ? "text-gray-500" : "text-gray-500"}`}>
-                        Across classes: {uniqueAttendanceClasses.join(", ") || "None"}
-                    </Text>
-                </View>
-
-            </ScrollView>
+            <View className="flex-1 px-4">
+                <TeacherProfileView
+                    teacher={teacher}
+                    stats={{
+                        subjects: uniqueSubjects.length,
+                        lectures: schedules.length,
+                        classes: uniqueClasses.length,
+                        assessments: assessmentStats.Total
+                    }}
+                    assignments={uniqueAssignments}
+                    schedules={schedules}
+                    attendanceStats={{
+                        totalSessions: attendance.length,
+                        classes: uniqueAttendanceClasses
+                    }}
+                />
+            </View>
         </View>
     );
 }
