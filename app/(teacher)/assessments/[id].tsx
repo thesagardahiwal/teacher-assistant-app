@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, RefreshControl, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Platform, RefreshControl, Text, TextInput, TouchableOpacity, View } from "react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { assessmentService } from "../../../services/assessment.service";
 import { useAssessmentResults } from "../../../store/hooks/useAssessmentResults";
 import { useAuth } from "../../../store/hooks/useAuth";
@@ -131,105 +132,150 @@ export default function AssessmentDetailsScreen() {
         }
     };
 
-    const renderStudentRow = ({ item }: { item: any }) => {
+    const renderStudentRow = ({ item, index }: { item: any, index: number }) => {
         const hasResult = !!results.find(r => r.student?.$id === item.$id);
 
         return (
-            <View className={`mb-3 p-4 rounded-xl border ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"}`}>
-                <View className="flex-row justify-between items-center mb-3">
-                    <Text className={`font-bold text-lg ${isDark ? "text-white" : "text-gray-900"}`}>{item.name}</Text>
-                    <Text className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>{item.rollNumber}</Text>
-                </View>
+            <Animated.View entering={FadeInDown.delay(index * 50).springify()}>
+                <View className={`mb-4 p-5 rounded-2xl border ${isDark ? "bg-dark-card border-dark-border shadow-sm" : "bg-card border-border shadow-sm"}`}>
+                    <View className="flex-row justify-between items-center mb-4">
+                        <View>
+                            <Text className={`font-bold text-lg ${isDark ? "text-dark-textPrimary" : "text-textPrimary"}`}>{item.name}</Text>
+                            <Text className={`text-sm mt-0.5 ${isDark ? "text-dark-textSecondary" : "text-textSecondary"}`}>{item.rollNumber}</Text>
+                        </View>
+                        <View className={`w-8 h-8 rounded-full items-center justify-center ${hasResult ? "bg-success/20" : "bg-background"}`}>
+                            {hasResult ? (
+                                <Ionicons name="checkmark-circle" size={20} color="#16A34A" />
+                            ) : (
+                                <Ionicons name="ellipse-outline" size={20} color={isDark ? "#6B7280" : "#94A3B8"} />
+                            )}
+                        </View>
+                    </View>
 
-                <View className="flex-row gap-4 items-center">
-                    <View className="flex-1">
-                        <Text className={`text-xs font-medium mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}>Marks (Max {assessment?.maxMarks})</Text>
-                        <TextInput
-                            className={`p-2 rounded-lg border ${isDark ? "bg-gray-700 border-gray-600 text-white" : "bg-gray-50 border-gray-200 text-gray-900"}`}
-                            keyboardType="numeric"
-                            value={marks[item.$id] || ""}
-                            onChangeText={(t) => setMarks(prev => ({ ...prev, [item.$id]: t }))}
-                            placeholder="0"
-                            placeholderTextColor={isDark ? "#9CA3AF" : "#6B7280"}
-                        />
+                    <View className="flex-row gap-4 items-end">
+                        <View className="flex-1">
+                            <Text className={`text-xs font-semibold mb-2 ml-1 ${isDark ? "text-dark-muted" : "text-muted"}`}>
+                                MARKS (Max {assessment?.maxMarks})
+                            </Text>
+                            <View className={`flex-row items-center border rounded-xl overflow-hidden ${isDark ? "bg-dark-background border-dark-border" : "bg-background border-border"}`}>
+                                <TextInput
+                                    className={`flex-1 p-3 font-medium text-center ${isDark ? "text-dark-textPrimary" : "text-textPrimary"}`}
+                                    keyboardType="numeric"
+                                    value={marks[item.$id] || ""}
+                                    onChangeText={(t) => setMarks(prev => ({ ...prev, [item.$id]: t }))}
+                                    placeholder="0"
+                                    placeholderTextColor={isDark ? "#6B7280" : "#94A3B8"}
+                                />
+                            </View>
+                        </View>
+
+                        <View className="flex-[2]">
+                            <Text className={`text-xs font-semibold mb-2 ml-1 ${isDark ? "text-dark-muted" : "text-muted"}`}>
+                                REMARKS
+                            </Text>
+                            <View className={`flex-row items-center border rounded-xl overflow-hidden ${isDark ? "bg-dark-background border-dark-border" : "bg-background border-border"}`}>
+                                <TextInput
+                                    className={`flex-1 p-3 font-medium ${isDark ? "text-dark-textPrimary" : "text-textPrimary"}`}
+                                    value={remarks[item.$id] || ""}
+                                    onChangeText={(t) => setRemarks(prev => ({ ...prev, [item.$id]: t }))}
+                                    placeholder="Good work..."
+                                    placeholderTextColor={isDark ? "#6B7280" : "#94A3B8"}
+                                />
+                            </View>
+                        </View>
+
+                        <TouchableOpacity
+                            onPress={() => handleSave(item.$id)}
+                            disabled={savingStudentId !== null}
+                            className={`h-12 w-12 items-center justify-center rounded-xl shadow-sm ${hasResult
+                                ? "bg-success shadow-success/30"
+                                : "bg-primary shadow-blue-500/30"}`}
+                        >
+                            {savingStudentId === item.$id ? (
+                                <ActivityIndicator size="small" color="white" />
+                            ) : (
+                                <Ionicons name={hasResult ? "save" : "save-outline"} size={22} color="white" />
+                            )}
+                        </TouchableOpacity>
                     </View>
-                    <View className="flex-[2]">
-                        <Text className={`text-xs font-medium mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}>Remarks</Text>
-                        <TextInput
-                            className={`p-2 rounded-lg border ${isDark ? "bg-gray-700 border-gray-600 text-white" : "bg-gray-50 border-gray-200 text-gray-900"}`}
-                            value={remarks[item.$id] || ""}
-                            onChangeText={(t) => setRemarks(prev => ({ ...prev, [item.$id]: t }))}
-                            placeholder="Good work..."
-                            placeholderTextColor={isDark ? "#9CA3AF" : "#6B7280"}
-                        />
-                    </View>
-                    <TouchableOpacity
-                        onPress={() => handleSave(item.$id)}
-                        disabled={savingStudentId !== null}
-                        className={`h-10 w-10 items-center justify-center rounded-lg mt-5 ${hasResult ? "bg-green-100" : "bg-blue-100"}`}
-                    >
-                        {savingStudentId === item.$id ? (
-                            <ActivityIndicator size="small" color="#2563EB" />
-                        ) : (
-                            <Ionicons name={hasResult ? "checkmark" : "save-outline"} size={20} color={hasResult ? "#16A34A" : "#2563EB"} />
-                        )}
-                    </TouchableOpacity>
                 </View>
-            </View>
+            </Animated.View>
         );
     };
 
     if (isLoading || loading || !assessment) {
         return (
-            <View className={`flex-1 items-center justify-center ${isDark ? "bg-gray-900" : "bg-white"}`}>
-                <ActivityIndicator size="large" color="#2563EB" />
+            <View className={`flex-1 items-center justify-center ${isDark ? "bg-dark-background" : "bg-background"}`}>
+                <ActivityIndicator size="large" color={isDark ? "#4C8DFF" : "#1A73E8"} />
             </View>
         );
     }
 
+    // Calculate stats
+    const totalStudents = students.length;
+    const submittedCount = results.length;
+    const totalMarks = results.reduce((acc, curr) => acc + curr.obtainedMarks, 0);
+    const avgMarks = submittedCount > 0 ? (totalMarks / submittedCount).toFixed(1) : "0";
+
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
-            className={`flex-1 ${isDark ? "bg-gray-900" : "bg-white"}`}
+            className={`flex-1 ${isDark ? "bg-dark-background" : "bg-background"}`}
         >
-            {/* Student List with Header */}
-            <FlatList
+            <View className={`px-6 pt-6 pb-2 border-b ${isDark ? "border-dark-border bg-dark-card" : "border-border bg-card"}`}>
+                <View className="flex-row items-center mb-4">
+                    <TouchableOpacity onPress={() => router.back()} className="mr-3 p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
+                        <Ionicons name="arrow-back" size={24} color={isDark ? "#E5E7EB" : "#0F172A"} />
+                    </TouchableOpacity>
+                    <View className="flex-1">
+                        <Text className={`text-xl font-bold ${isDark ? "text-dark-textPrimary" : "text-textPrimary"}`}>{assessment.title}</Text>
+                        <Text className={`text-sm ${isDark ? "text-dark-textSecondary" : "text-textSecondary"}`}>
+                            {assessment.subject?.name} • {assessment.class?.name}
+                        </Text>
+                    </View>
+                    <View className={`px-3 py-1.5 rounded-lg ${isDark ? "bg-dark-primary/30" : "bg-primary/10"}`}>
+                        <Text className={`text-xs font-bold ${isDark ? "text-dark-primary" : "text-primary"}`}>
+                            Max: {assessment.maxMarks}
+                        </Text>
+                    </View>
+                </View>
+
+                {/* Stats Row */}
+                <View className="flex-row gap-4 mb-2">
+                    <View className="flex-1">
+                        <Text className={`text-xs font-medium mb-1 ${isDark ? "text-dark-textSecondary" : "text-textSecondary"}`}>SUBMITTED</Text>
+                        <Text className={`text-lg font-bold ${isDark ? "text-dark-textPrimary" : "text-textPrimary"}`}>
+                            {submittedCount} <Text className={`text-sm font-normal ${isDark ? "text-dark-muted" : "text-muted"}`}>/ {totalStudents}</Text>
+                        </Text>
+                    </View>
+                    <View className="flex-1">
+                        <Text className={`text-xs font-medium mb-1 ${isDark ? "text-dark-textSecondary" : "text-textSecondary"}`}>AVG SCORE</Text>
+                        <Text className={`text-lg font-bold ${isDark ? "text-dark-textPrimary" : "text-textPrimary"}`}>{avgMarks}</Text>
+                    </View>
+                    <View className="flex-1">
+                        <Text className={`text-xs font-medium mb-1 ${isDark ? "text-dark-textSecondary" : "text-textSecondary"}`}>TYPE</Text>
+                        <Text className={`text-lg font-bold ${isDark ? "text-dark-textPrimary" : "text-textPrimary"}`}>{assessment.type}</Text>
+                    </View>
+                </View>
+            </View>
+
+            <Animated.FlatList
                 data={students}
                 keyExtractor={(item) => item.$id}
                 renderItem={renderStudentRow}
-                contentContainerStyle={{ padding: 20 }}
+                contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
                 refreshControl={
                     <RefreshControl
                         refreshing={refreshing}
                         onRefresh={onRefresh}
-                        colors={["#2563EB"]}
-                        tintColor={isDark ? "#ffffff" : "#2563EB"}
+                        colors={["#1A73E8"]}
+                        tintColor={isDark ? "#ffffff" : "#1A73E8"}
                     />
                 }
                 ListHeaderComponent={
-                    <View className="mb-4">
-                        {/* Static Header Content */}
-                        <View className={`mb-6 pb-4 border-b ${isDark ? "border-gray-800" : "border-gray-100"}`}>
-                            <View className="flex-row items-center mb-3">
-                                <TouchableOpacity onPress={() => router.back()} className="mr-3">
-                                    <Ionicons name="arrow-back" size={24} color={isDark ? "white" : "black"} />
-                                </TouchableOpacity>
-                                <Text className={`text-xl font-bold flex-1 ${isDark ? "text-white" : "text-gray-900"}`}>{assessment.title}</Text>
-                            </View>
-                            <View className="flex-row gap-4">
-                                <View className={`px-3 py-1 rounded bg-blue-100 self-start`}>
-                                    <Text className="text-blue-700 font-medium text-xs">{assessment.type}</Text>
-                                </View>
-                                <Text className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>{assessment.subject?.name}</Text>
-                                <Text className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>{assessment.class?.name}</Text>
-                                <Text className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>Max: {assessment.maxMarks}</Text>
-                            </View>
-                        </View>
-
-                        <Text className={`text-lg font-bold mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>
-                            Grade Students ({students.length})
-                        </Text>
-                    </View>
+                    <Text className={`text-sm font-bold mb-4 tracking-wider ${isDark ? "text-dark-muted" : "text-muted"}`}>
+                        STUDENT GRADES
+                    </Text>
                 }
             />
         </KeyboardAvoidingView>

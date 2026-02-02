@@ -28,6 +28,7 @@ export const assessmentService = {
         return databaseService.get<Assessment>(
             COLLECTIONS.ASSESSMENTS,
             id,
+            [query]
         );
     },
 
