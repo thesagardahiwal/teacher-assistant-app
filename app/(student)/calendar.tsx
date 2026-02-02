@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { AddEventModal } from "@/components/calendar/AddEventModal";
 import { EnhancedCalendar } from "@/components/calendar/EnhancedCalendar";
 import { assessmentService, scheduleService, studentService } from "@/services";
@@ -80,20 +81,20 @@ export default function StudentCalendar() {
 
     return (
         <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
-            <View className="flex-row items-center px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 justify-between">
-                <View className="flex-row items-center">
-                    <TouchableOpacity onPress={() => router.back()} className="mr-3">
-                        <Ionicons name="arrow-back" size={24} color={isDark ? "#FFFFFF" : "#000000"} />
-                    </TouchableOpacity>
-                    <Text className={`text-xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>My Calendar</Text>
-                </View>
-                <TouchableOpacity
-                    onPress={() => setModalVisible(true)}
-                    className="flex-row items-center bg-blue-100 dark:bg-blue-900/30 px-3 py-1.5 rounded-full"
-                >
-                    <Ionicons name="add" size={18} color="#2563EB" />
-                    <Text className="ml-1 text-blue-700 dark:text-blue-300 font-semibold text-xs">New Event</Text>
-                </TouchableOpacity>
+            <View className="px-6 pt-6 pb-2">
+                <PageHeader
+                    title="My Calendar"
+                    showBack={true}
+                    rightAction={
+                        <TouchableOpacity
+                            onPress={() => setModalVisible(true)}
+                            className="flex-row items-center bg-blue-100 dark:bg-blue-900/30 px-3 py-1.5 rounded-full"
+                        >
+                            <Ionicons name="add" size={18} color="#2563EB" />
+                            <Text className="ml-1 text-blue-700 dark:text-blue-300 font-semibold text-xs">New Event</Text>
+                        </TouchableOpacity>
+                    }
+                />
             </View>
             <EnhancedCalendar
                 schedules={schedules}

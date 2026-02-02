@@ -73,7 +73,7 @@ export function StudyMaterialDirectory() {
                     }
                 />
 
-                <View className={`flex-row items-center px-4 py-3 rounded-xl border mb-2 ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+                <View className={`flex-row items-center px-4 py-1 rounded-xl border mb-2 ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
                     }`}>
                     <Ionicons name="search" size={20} color={isDark ? "#9CA3AF" : "#6B7280"} />
                     <TextInput
