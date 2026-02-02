@@ -1,5 +1,5 @@
 import { AddEventModal } from "@/components/calendar/AddEventModal";
-import { CalendarAgenda } from "@/components/calendar/CalendarAgenda";
+import { EnhancedCalendar } from "@/components/calendar/EnhancedCalendar";
 import { assessmentService, scheduleService, studentService } from "@/services";
 import { localEventService } from "@/services/local/localEvent.service";
 import { useAuth } from "@/store/hooks/useAuth";
@@ -95,7 +95,7 @@ export default function StudentCalendar() {
                     <Text className="ml-1 text-blue-700 dark:text-blue-300 font-semibold text-xs">New Event</Text>
                 </TouchableOpacity>
             </View>
-            <CalendarAgenda
+            <EnhancedCalendar
                 schedules={schedules}
                 assessments={assessments}
                 localEvents={localEvents}
