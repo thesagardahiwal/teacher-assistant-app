@@ -48,6 +48,20 @@ export function AssessmentDirectory() {
                 <PageHeader
                     title="Assessments"
                     showBack={true}
+                    rightAction={
+                        <TouchableOpacity
+                            onPress={() => {
+                                if (isEligible) {
+                                    router.push("/(teacher)/assessments/create");
+                                } else {
+                                    showAlert("Access Restricted", "You need to be assigned to a class and subject to create assessments.");
+                                }
+                            }}
+                            className={`w-10 h-10 rounded-full items-center justify-center shadow-lg ${isEligible ? "bg-blue-600" : "bg-gray-400"}`}
+                        >
+                            <Ionicons name="add" size={26} color="white" />
+                        </TouchableOpacity>
+                    }
                 />
 
                 {/* Subject Filter Tabs */}
@@ -116,20 +130,6 @@ export function AssessmentDirectory() {
                     }
                 />
             )}
-
-            {/* FAB */}
-            <TouchableOpacity
-                onPress={() => {
-                    if (isEligible) {
-                        router.push("/(teacher)/assessments/create");
-                    } else {
-                        showAlert("Access Restricted", "You need to be assigned to a class and subject to create assessments.");
-                    }
-                }}
-                className={`absolute bottom-8 right-6 w-14 h-14 rounded-full items-center justify-center shadow-lg ${isEligible ? "bg-blue-600" : "bg-gray-400"}`}
-            >
-                <Ionicons name="add" size={30} color="white" />
-            </TouchableOpacity>
         </View>
     );
 }

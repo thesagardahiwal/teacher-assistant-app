@@ -1,7 +1,6 @@
 import { useTheme } from "@/store/hooks/useTheme";
-import { useSafeBack } from "@/utils/navigation";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { Link } from "expo-router";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
@@ -14,20 +13,19 @@ interface PageHeaderProps {
 }
 
 export const PageHeader = ({ title, subtitle, rightAction, showBack = true, onBack }: PageHeaderProps) => {
-    const router = useRouter();
     const { isDark } = useTheme();
-    const { goBack } = useSafeBack();
 
     return (
         <View className="flex-row items-center justify-between mb-6">
             <View className="flex-row items-center flex-1">
                 {showBack && (
-                    <TouchableOpacity
-                        onPress={onBack || goBack}
-                        className={`mr-3 p-2 rounded-full ${isDark ? "bg-gray-800" : "bg-gray-100"}`}
-                    >
-                        <Ionicons name="arrow-back" size={20} color={isDark ? "#FFF" : "#000"} />
-                    </TouchableOpacity>
+                    <Link href=".." asChild>
+                        <TouchableOpacity
+                            className={`mr-3 p-2 rounded-full ${isDark ? "bg-gray-800" : "bg-gray-100"}`}
+                        >
+                            <Ionicons name="arrow-back" size={20} color={isDark ? "#FFF" : "#000"} />
+                        </TouchableOpacity>
+                    </Link>
                 )}
                 <View className="flex-1">
                     <Text className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
