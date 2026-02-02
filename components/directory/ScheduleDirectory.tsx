@@ -12,6 +12,7 @@ import { ScheduleCard } from "./ScheduleCard";
 
 interface ScheduleDirectoryProps {
     showAddButton?: boolean;
+    onAddPress?: () => void;
     onItemPress?: (id: string, item: ClassSchedule) => void;
     readonly?: boolean;
     viewMode?: "list" | "weekly"; // 'list' for admin, 'weekly' for teacher
@@ -23,6 +24,7 @@ const DAYS = ["MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
 export function ScheduleDirectory({
     showAddButton = false,
+    onAddPress,
     onItemPress,
     readonly = false,
     viewMode = "list",
@@ -157,7 +159,7 @@ export function ScheduleDirectory({
                     rightAction={
                         showAddButton ? (
                             <TouchableOpacity
-                                onPress={() => router.push("/(admin)/schedules/create")}
+                                onPress={onAddPress || (() => router.push("/(admin)/schedules/create"))}
                                 className="bg-blue-600 p-2 rounded-full shadow-sm"
                             >
                                 <Ionicons name="add" size={24} color="white" />
@@ -186,18 +188,18 @@ export function ScheduleDirectory({
                                     key={day}
                                     onPress={() => setSelectedDay(day)}
                                     className={`mr-3 px-4 py-2 rounded-full ${selectedDay === day
-                                            ? "bg-blue-600"
-                                            : isDark
-                                                ? "bg-gray-800"
-                                                : "bg-white border border-gray-200"
+                                        ? "bg-blue-600"
+                                        : isDark
+                                            ? "bg-gray-800"
+                                            : "bg-white border border-gray-200"
                                         }`}
                                 >
                                     <Text
                                         className={`font-semibold ${selectedDay === day
-                                                ? "text-white"
-                                                : isDark
-                                                    ? "text-gray-400"
-                                                    : "text-gray-600"
+                                            ? "text-white"
+                                            : isDark
+                                                ? "text-gray-400"
+                                                : "text-gray-600"
                                             }`}
                                     >
                                         {day}

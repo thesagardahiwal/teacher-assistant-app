@@ -9,6 +9,7 @@ import {
     TouchableWithoutFeedback,
     View,
 } from "react-native";
+import Animated, { FadeInDown, SlideInDown } from "react-native-reanimated";
 
 interface Option {
     label: string;
@@ -24,6 +25,7 @@ interface FormSelectProps {
     error?: string;
     editable?: boolean;
     required?: boolean;
+    delay?: number;
 }
 
 export const FormSelect = ({
@@ -35,6 +37,7 @@ export const FormSelect = ({
     error,
     editable = true,
     required = false,
+    delay = 0,
 }: FormSelectProps) => {
     const { isDark } = useTheme();
     const [visible, setVisible] = useState(false);
@@ -42,9 +45,12 @@ export const FormSelect = ({
     const selectedOption = options.find((opt) => opt.value === value);
 
     return (
-        <View className="mb-4">
-            <View className="flex-row mb-1.5">
-                <Text className={`text-sm font-medium ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+        <Animated.View
+            entering={FadeInDown.delay(delay).duration(400)}
+            className="mb-4"
+        >
+            <View className="flex-row mb-2">
+                <Text className={`text-sm font-semibold ${isDark ? "text-gray-300" : "text-gray-700"} ml-1`}>
                     {label}
                 </Text>
                 {required && <Text className="text-red-500 ml-0.5">*</Text>}
@@ -52,15 +58,16 @@ export const FormSelect = ({
 
             <TouchableOpacity
                 onPress={editable ? () => setVisible(true) : undefined}
-                className={`w-full p-3 rounded-xl border flex-row justify-between items-center ${error
+                className={`w-full p-4 rounded-2xl border flex-row justify-between items-center ${error
                     ? "border-red-500 bg-red-50 dark:bg-red-900/10"
                     : isDark
                         ? "bg-gray-800 border-gray-700"
                         : "bg-white border-gray-200"
                     }`}
+                activeOpacity={0.7}
             >
                 <Text
-                    className={`${selectedOption
+                    className={`text-base ${selectedOption
                         ? isDark
                             ? "text-white"
                             : "text-gray-900"
@@ -78,70 +85,90 @@ export const FormSelect = ({
                 />
             </TouchableOpacity>
 
-            {error && <Text className="text-xs text-red-500 mt-1">{error}</Text>}
+            {error && (
+                <Animated.Text
+                    entering={FadeInDown}
+                    className="text-xs text-red-500 mt-1.5 ml-1"
+                >
+                    {error}
+                </Animated.Text>
+            )}
 
             <Modal transparent visible={visible} animationType="fade" onRequestClose={() => setVisible(false)}>
                 <TouchableWithoutFeedback onPress={() => setVisible(false)}>
-                    <View className="flex-1 bg-black/50 justify-end">
+                    <View className="flex-1 bg-black/60 justify-end">
                         <TouchableWithoutFeedback>
-                            <View
-                                className={`rounded-t-3xl max-h-[50%] ${isDark ? "bg-gray-900" : "bg-white"
+                            <Animated.View
+                                entering={SlideInDown.springify().damping(15)}
+                                className={`rounded-t-3xl max-h-[60%] ${isDark ? "bg-gray-900" : "bg-white"
                                     }`}
                             >
-                                <View className="p-4 border-b border-gray-100 dark:border-gray-800 flex-row justify-between items-center">
+                                <View className="p-5 border-b border-gray-100 dark:border-gray-800 flex-row justify-between items-center">
                                     <Text
-                                        className={`text-lg font-bold ${isDark ? "text-white" : "text-gray-900"
+                                        className={`text-xl font-bold ${isDark ? "text-white" : "text-gray-900"
                                             }`}
                                     >
                                         Select {label}
                                     </Text>
-                                    <TouchableOpacity onPress={() => setVisible(false)}>
+                                    <TouchableOpacity
+                                        onPress={() => setVisible(false)}
+                                        className={`p-2 rounded-full ${isDark ? "bg-gray-800" : "bg-gray-100"}`}
+                                    >
                                         <Ionicons
                                             name="close"
-                                            size={24}
+                                            size={20}
                                             color={isDark ? "#FFF" : "#000"}
                                         />
                                     </TouchableOpacity>
                                 </View>
 
-                                <ScrollView contentContainerStyle={{ padding: 16 }}>
-                                    {options.map((option) => (
-                                        <TouchableOpacity
+                                <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
+                                    {options.map((option, index) => (
+                                        <Animated.View
                                             key={option.value}
-                                            onPress={() => {
-                                                onChange(option.value);
-                                                setVisible(false);
-                                            }}
-                                            className={`p-4 mb-2 rounded-xl ${value === option.value
-                                                ? isDark
-                                                    ? "bg-blue-900/30"
-                                                    : "bg-blue-50"
-                                                : isDark
-                                                    ? "bg-gray-800"
-                                                    : "bg-gray-50"
-                                                }`}
+                                            entering={FadeInDown.delay(index * 30)}
                                         >
-                                            <Text
-                                                className={`font-medium ${value === option.value
-                                                    ? "text-blue-600 dark:text-blue-400"
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    onChange(option.value);
+                                                    setVisible(false);
+                                                }}
+                                                className={`p-4 mb-3 rounded-2xl flex-row items-center justify-between ${value === option.value
+                                                    ? isDark
+                                                        ? "bg-blue-600"
+                                                        : "bg-blue-600"
                                                     : isDark
-                                                        ? "text-gray-200"
-                                                        : "text-gray-900"
+                                                        ? "bg-gray-800"
+                                                        : "bg-gray-50 bg-opacity-75"
                                                     }`}
                                             >
-                                                {option.label}
-                                            </Text>
-                                        </TouchableOpacity>
+                                                <Text
+                                                    className={`font-semibold text-base ${value === option.value
+                                                        ? "text-white"
+                                                        : isDark
+                                                            ? "text-gray-200"
+                                                            : "text-gray-800"
+                                                        }`}
+                                                >
+                                                    {option.label}
+                                                </Text>
+                                                {value === option.value && (
+                                                    <View className="bg-white/20 p-1 rounded-full">
+                                                        <Ionicons name="checkmark" size={16} color="white" />
+                                                    </View>
+                                                )}
+                                            </TouchableOpacity>
+                                        </Animated.View>
                                     ))}
                                     {options.length === 0 && (
-                                        <Text className={`text-center py-4 ${isDark ? "text-gray-500" : "text-gray-400"}`}>No options available</Text>
+                                        <Text className={`text-center py-8 ${isDark ? "text-gray-500" : "text-gray-400"}`}>No options available</Text>
                                     )}
                                 </ScrollView>
-                            </View>
+                            </Animated.View>
                         </TouchableWithoutFeedback>
                     </View>
                 </TouchableWithoutFeedback>
             </Modal>
-        </View>
+        </Animated.View>
     );
 };

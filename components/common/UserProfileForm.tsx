@@ -132,7 +132,7 @@ export const UserProfileForm = <T extends Record<string, any>>({
 
     const hasErrors = Object.values(errors).some(Boolean);
 
-    const renderField = (field: ProfileFieldConfig) => {
+    const renderField = (field: ProfileFieldConfig, index: number) => {
         const value = formData[field.name] ?? "";
         const editable = !readOnly && field.editable;
 
@@ -170,6 +170,7 @@ export const UserProfileForm = <T extends Record<string, any>>({
                 }
                 required={field.required}
                 error={errors[field.name]}
+                delay={index * 100}
             />
         );
     };
@@ -184,14 +185,14 @@ export const UserProfileForm = <T extends Record<string, any>>({
 
     return (
         <View>
-            {noSection.map(renderField)}
+            {noSection.map((field, index) => renderField(field, index))}
 
-            {Object.entries(sections).map(([section, fields]) => (
+            {Object.entries(sections).map(([section, fields], sectionIndex) => (
                 <View key={section} className="mb-6">
                     <Text className={`text-lg font-bold mb-4 ${isDark ? "text-white" : "text-gray-800"}`}>
                         {section}
                     </Text>
-                    {fields.map(renderField)}
+                    {fields.map((field, fieldIndex) => renderField(field, noSection.length + (sectionIndex * 5) + fieldIndex))}
                 </View>
             ))}
 
@@ -199,28 +200,24 @@ export const UserProfileForm = <T extends Record<string, any>>({
                 <View className="flex-row gap-3 mt-4 mb-8">
                     {showCancel && onCancel && (
                         <TouchableOpacity
-                            onPress={onCancel}
-                            disabled={saving}
-                            className={`flex-1 py-4 rounded-xl items-center border ${isDark ? "border-gray-700" : "border-gray-300"}`}
+                            className={`flex-1 py-4 rounded-2xl items-center border mr-3 ${isDark ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-white"}`}
                         >
-                            <Text className={`${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                            <Text className={`font-semibold ${isDark ? "text-gray-300" : "text-gray-700"}`}>
                                 Cancel
                             </Text>
                         </TouchableOpacity>
                     )}
 
                     <TouchableOpacity
-                        onPress={handleSubmit}
-                        disabled={saving || !changed || hasErrors}
-                        className={`flex-1 py-4 rounded-xl items-center ${changed && !hasErrors
-                            ? "bg-blue-600"
-                            : "bg-gray-300 dark:bg-gray-800"
+                        className={`flex-1 py-4 rounded-2xl items-center shadow-lg ${changed && !hasErrors
+                            ? "bg-primary shadow-primary/30"
+                            : isDark ? "bg-gray-800" : "bg-gray-200"
                             }`}
                     >
                         {saving ? (
                             <ActivityIndicator color="white" />
                         ) : (
-                            <Text className={`font-bold ${changed ? "text-white" : "text-gray-500"}`}>
+                            <Text className={`font-bold text-lg ${changed && !hasErrors ? "text-white" : "text-gray-400"}`}>
                                 Save Changes
                             </Text>
                         )}

@@ -1,4 +1,5 @@
 import { PageHeader } from "@/components/admin/ui/PageHeader";
+import { StudentAttendanceCard } from "@/components/directory/StudentAttendanceCard";
 import { attendanceService } from "@/services/attendance.service";
 import { attendanceRecordService } from "@/services/attendanceRecord.service";
 import { useAuth } from "@/store/hooks/useAuth";
@@ -8,7 +9,7 @@ import { showAlert } from "@/utils/alert";
 import { useInstitutionId } from "@/utils/useInstitutionId";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, Switch, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 export default function AttendanceDetailScreen() {
     const { id } = useLocalSearchParams();
@@ -167,37 +168,16 @@ export default function AttendanceDetailScreen() {
             </View>
 
             <ScrollView className="flex-1 px-5 pt-4 w-full" contentContainerStyle={{ paddingBottom: 100 }}>
-                {records.map((record) => (
-                    <View
+                {records.map((record, index) => (
+                    <StudentAttendanceCard
                         key={record.$id}
-                        className={`flex-row items-center justify-between p-4 mb-3 rounded-xl border ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-100"}`}
-                    >
-                        <View className="flex-row items-center flex-1">
-                            <View className={`w-10 h-10 rounded-full items-center justify-center mr-3 ${record.present ? "bg-green-100 dark:bg-green-900/40" : "bg-red-100 dark:bg-red-900/40"}`}>
-                                <Text className={`font-bold ${record.present ? "text-green-700 dark:text-green-400" : "text-red-700 dark:text-red-400"}`}>
-                                    {record.student?.name?.charAt(0)}
-                                </Text>
-                            </View>
-                            <View className="flex-1">
-                                <Text className={`font-bold text-base ${isDark ? "text-white" : "text-gray-900"}`}>
-                                    {record.student?.name}
-                                </Text>
-                                <Text className={`text-xs ${record.present ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
-                                    {record.present ? "Present" : "Absent"}
-                                </Text>
-                            </View>
-                        </View>
-
-                        {canEdit && (
-                            <Switch
-                                testID={`switch-${record.$id}`}
-                                value={record.present}
-                                onValueChange={(val) => toggleAttendance(record.$id, val)}
-                                trackColor={{ false: "#EF4444", true: "#22C55E" }}
-                                thumbColor={"#FFFFFF"}
-                            />
-                        )}
-                    </View>
+                        student={record.student}
+                        isPresent={record.present}
+                        onToggle={() => { }}
+                        onSwitchChange={canEdit ? (val) => toggleAttendance(record.$id, val) : undefined}
+                        mode="switch"
+                        index={index}
+                    />
                 ))}
             </ScrollView>
 

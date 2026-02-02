@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import AttendanceReviewModal from "../../../components/Attendance/AttendanceReviewModal";
+import { StudentAttendanceCard } from "../../../components/directory/StudentAttendanceCard";
 import AddScheduleModal from "../../../components/Schedule/AddScheduleModal";
 import StudentDetailsModal from "../../../components/Student/StudentDetailsModal";
 import { TeacherEligibilityGuard } from "../../../components/teacher/TeacherEligibilityGuard";
@@ -216,36 +217,17 @@ export default function TakeAttendanceScreen() {
     return new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   };
 
-  const renderStudentItem = ({ item }: { item: Student }) => {
+  const renderStudentItem = ({ item, index }: { item: Student; index: number }) => {
     const isPresent = studentStatus[item.$id];
     return (
-      <TouchableOpacity
-        onPress={() => toggleStatus(item.$id)}
+      <StudentAttendanceCard
+        student={item}
+        isPresent={isPresent}
+        onToggle={() => toggleStatus(item.$id)}
+        mode="selection"
+        index={index}
         onLongPress={() => handleLongPress(item)}
-        delayLongPress={500}
-        className={`flex-row items-center p-3 mb-2 rounded-xl border ${isPresent
-          ? (isDark ? "bg-gray-800 border-green-500/30" : "bg-white border-green-200")
-          : (isDark ? "bg-gray-800 border-red-500/30" : "bg-red-50 border-red-200")}`}
-      >
-        <View className={`w-10 h-10 rounded-full items-center justify-center mr-3 ${isPresent ? "bg-indigo-100 dark:bg-indigo-900" : "bg-red-100 dark:bg-red-900"}`}>
-          <Text className={`font-bold ${isPresent ? "text-indigo-600 dark:text-indigo-300" : "text-red-600 dark:text-red-300"}`}>
-            {item.name.charAt(0)}
-          </Text>
-        </View>
-        <View className="flex-1">
-          <Text className={`font-medium text-base ${isDark ? "text-white" : "text-gray-900"} ${!isPresent && "text-red-600 dark:text-red-400"}`}>
-            {item.name}
-          </Text>
-          <Text className={`${isDark ? "text-gray-400" : "text-gray-500"}`}>Roll No: {item.rollNumber}</Text>
-        </View>
-        <View className={`w-8 h-8 rounded-full items-center justify-center ${isPresent ? "bg-green-100 dark:bg-green-900/50" : "bg-red-100 dark:bg-red-900/50"}`}>
-          <Ionicons
-            name={isPresent ? "checkmark" : "close"}
-            size={20}
-            color={isPresent ? "#16A34A" : "#DC2626"}
-          />
-        </View>
-      </TouchableOpacity>
+      />
     );
   };
 
