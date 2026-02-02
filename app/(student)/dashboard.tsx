@@ -1,24 +1,35 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import AttendanceCard from "../../components/Student/AttendanceCard";
+import { academicYearService } from "../../services/academicYear.service";
 import { attendanceRecordService } from "../../services/attendanceRecord.service";
 import { useAuth } from "../../store/hooks/useAuth";
+import { useTheme } from "../../store/hooks/useTheme";
 import { AttendanceRecord } from "../../types";
 
 // Helper component for Stat Cards
-const StatCard = ({ label, value, colorClass, textColorClass }: any) => (
-  <View className={`flex-1 p-4 rounded-2xl ${colorClass} mx-1 shadow-sm`}>
-    <Text className={`text-3xl font-bold ${textColorClass} mb-1`}>{value}</Text>
-    <Text className={`text-sm font-medium ${textColorClass} opacity-80`}>{label}</Text>
-  </View>
-);
-
-import { academicYearService } from "../../services/academicYear.service";
+const StatCard = ({ label, value, colorClass, textColorClass, icon, delay = 0 }: any) => {
+  const { isDark } = useTheme();
+  return (
+    <Animated.View
+      entering={FadeInDown.delay(delay).springify()}
+      className={`flex-1 p-4 rounded-3xl mx-1 shadow-sm border ${colorClass} ${isDark ? "border-transparent" : ""}`}
+    >
+      <View className="flex-row justify-between items-start">
+        <Text className={`text-3xl font-bold ${textColorClass} mb-1`}>{value}</Text>
+        {icon && <Ionicons name={icon} size={20} color={isDark ? "#FFF" : "#000"} style={{ opacity: 0.5 }} />}
+      </View>
+      <Text className={`text-xs font-semibold uppercase tracking-wider ${textColorClass} opacity-70`}>{label}</Text>
+    </Animated.View>
+  );
+};
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const { isDark } = useTheme();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
@@ -73,145 +84,134 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <View className="flex-1 bg-background dark:bg-dark-background">
+    <View className={`flex-1 ${isDark ? "bg-gray-900" : "bg-gray-50"}`}>
       <ScrollView
         contentContainerStyle={{ paddingBottom: 100 }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        className="w-full px-6 pt-6"
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#2563EB" />}
+        className="w-full px-6 pt-12"
+        showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <View className="mb-6 flex-row justify-between items-center">
+        <Animated.View entering={FadeInDown.delay(100).springify()} className="mb-8 flex-row justify-between items-center">
           <View>
-            <Text className="text-lg text-textSecondary dark:text-dark-textSecondary font-medium">
+            <Text className={`text-lg font-medium ${isDark ? "text-gray-400" : "text-gray-500"}`}>
               Welcome back,
             </Text>
-            <Text className="text-3xl font-bold text-primary dark:text-dark-primary mt-1">
-              {user?.name}
+            <Text className={`text-3xl font-bold mt-1 ${isDark ? "text-white" : "text-gray-900"}`}>
+              {user?.name?.split(' ')[0]}
             </Text>
-            <Text className="text-sm text-textSecondary dark:text-dark-textSecondary mt-1">
+            <Text className={`text-xs mt-1 ${isDark ? "text-gray-500" : "text-gray-400"}`}>
               Student • {user?.institution?.name || "Institution"}
             </Text>
           </View>
           <Link href="/(student)/profile" asChild>
-            <TouchableOpacity className="bg-card dark:bg-dark-card p-2 rounded-full border border-border dark:border-dark-border">
-              {/* Simple Avatar Icon or Placeholder */}
-              <View className="w-10 h-10 bg-primary/20 rounded-full items-center justify-center">
-                <Text className="text-primary font-bold text-lg">{user?.name?.charAt(0) || "U"}</Text>
+            <TouchableOpacity className={`p-1 rounded-full border ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200 shadow-sm"}`}>
+              <View className="w-12 h-12 bg-blue-600 rounded-full items-center justify-center">
+                <Text className="text-white font-bold text-xl">{user?.name?.charAt(0) || "U"}</Text>
               </View>
             </TouchableOpacity>
           </Link>
-        </View>
+        </Animated.View>
 
         {/* Attendance Summary Card */}
-        <View className="bg-primary dark:bg-dark-primary rounded-3xl p-6 shadow-md mb-6">
-          <Text className="text-white text-lg font-medium opacity-90 mb-2">Overall Attendance</Text>
-          <View className="flex-row items-end">
-            <Text className="text-6xl font-black text-white">{stats.percentage}%</Text>
-            <Text className="text-white text-lg font-medium mb-3 ml-2 opacity-90">Present</Text>
+        <Animated.View entering={FadeInDown.delay(200).springify()} className="bg-blue-600 rounded-[32px] p-6 shadow-xl shadow-blue-500/30 mb-8 overflow-hidden relative">
+          {/* Background decoration */}
+          <View className="absolute -right-10 -top-10 w-40 h-40 bg-blue-500 rounded-full opacity-50" />
+          <View className="absolute -left-10 -bottom-10 w-32 h-32 bg-blue-400 rounded-full opacity-30" />
+
+          <Text className="text-blue-100 text-sm font-semibold uppercase tracking-wider mb-2">Attendance Score</Text>
+          <View className="flex-row items-end mb-4">
+            <Text className="text-6xl font-black text-white">{stats.percentage}</Text>
+            <Text className="text-2xl font-bold text-white mb-3">%</Text>
           </View>
-          <View className="mt-4 flex-row gap-2">
-            <View className="bg-white/20 px-3 py-1 rounded-full">
-              <Text className="text-white text-xs font-semibold">Targets: 75% requires</Text>
+
+          <View className="flex-row items-center justify-between mt-2">
+            <View className="flex-row gap-2">
+              <View className="bg-blue-500/50 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                <Text className="text-white text-xs font-medium">Present: {stats.present}</Text>
+              </View>
+              <View className="bg-blue-500/30 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                <Text className="text-blue-100 text-xs font-medium">Total: {stats.total}</Text>
+              </View>
             </View>
           </View>
-        </View>
+        </Animated.View>
 
         {/* Quick Stats Grid */}
         <View className="flex-row gap-4 mb-8">
           <StatCard
-            label="Total Classes"
-            value={stats.total}
-            colorClass="bg-card dark:bg-dark-card border border-border dark:border-dark-border"
-            textColorClass="text-textPrimary dark:text-dark-textPrimary"
-          />
-          <StatCard
-            label="Present"
+            label="Attended"
             value={stats.present}
-            colorClass="bg-green-100 dark:bg-green-900/40"
-            textColorClass="text-green-700 dark:text-green-400"
+            colorClass={isDark ? "bg-gray-800" : "bg-white border-gray-100"}
+            textColorClass="text-green-500"
+            icon="checkmark-circle"
+            delay={300}
           />
           <StatCard
-            label="Absent"
+            label="Missed"
             value={stats.absent}
-            colorClass="bg-red-100 dark:bg-red-900/40"
-            textColorClass="text-red-700 dark:text-red-400"
+            colorClass={isDark ? "bg-gray-800" : "bg-white border-gray-100"}
+            textColorClass="text-red-500"
+            icon="close-circle"
+            delay={400}
+          />
+          <StatCard
+            label="Total Sessions"
+            value={stats.total}
+            colorClass={isDark ? "bg-gray-800" : "bg-white border-gray-100"}
+            textColorClass={isDark ? "text-gray-200" : "text-gray-700"}
+            icon="list"
+            delay={500}
           />
         </View>
 
         {/* Quick Links Flattened Grid */}
-        <View className="flex-row flex-wrap gap-4 mb-6">
-          <Link href="/(student)/assessments" asChild>
-            <TouchableOpacity className="w-[47%] md:w-[23%] bg-blue-100 dark:bg-blue-900/30 p-4 rounded-2xl items-center flex-row mb-2">
-              <View className="w-10 h-10 bg-blue-500 rounded-full items-center justify-center mr-3">
-                <Text className="text-white text-xl">A</Text>
-              </View>
-              <View className="flex-1">
-                <Text className="font-bold text-blue-900 dark:text-blue-100">My Results</Text>
-                <Text className="text-xs text-blue-700 dark:text-blue-300">Check grades</Text>
-              </View>
-            </TouchableOpacity>
-          </Link>
-
-          <Link href="/(student)/calendar" asChild>
-            <TouchableOpacity className="w-[47%] md:w-[23%] bg-purple-100 dark:bg-purple-900/30 p-4 rounded-2xl items-center flex-row mb-2">
-              <View className="w-10 h-10 bg-purple-500 rounded-full items-center justify-center mr-3">
-                <Ionicons name="calendar-outline" size={24} color="white" />
-              </View>
-              <View className="flex-1">
-                <Text className="font-bold text-purple-900 dark:text-purple-100">Calendar</Text>
-                <Text className="text-xs text-purple-700 dark:text-purple-300">Schedules & Dues</Text>
-              </View>
-            </TouchableOpacity>
-          </Link>
-
-          <Link href="/(student)/study-vault" asChild>
-            <TouchableOpacity className="w-[47%] md:w-[23%] bg-amber-100 dark:bg-amber-900/30 p-4 rounded-2xl items-center flex-row mb-2">
-              <View className="w-10 h-10 bg-amber-500 rounded-full items-center justify-center mr-3">
-                <Ionicons name="folder-open-outline" size={24} color="white" />
-              </View>
-              <View className="flex-1">
-                <Text className="font-bold text-amber-900 dark:text-amber-100">Study Vault</Text>
-                <Text className="text-xs text-amber-700 dark:text-amber-300">Offline Files</Text>
-              </View>
-            </TouchableOpacity>
-          </Link>
-
-          <Link href="/(student)/teachers" asChild>
-            <TouchableOpacity className="w-[47%] md:w-[23%] bg-green-100 dark:bg-green-900/30 p-4 rounded-2xl items-center flex-row mb-2">
-              <View className="w-10 h-10 bg-green-500 rounded-full items-center justify-center mr-3">
-                <Ionicons name="people-outline" size={24} color="white" />
-              </View>
-              <View className="flex-1">
-                <Text className="font-bold text-green-900 dark:text-green-100">Teachers</Text>
-                <Text className="text-xs text-green-700 dark:text-green-300">View Faculty</Text>
-              </View>
-            </TouchableOpacity>
-          </Link>
+        <Text className={`text-lg font-bold mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>Quick Actions</Text>
+        <View className="flex-row flex-wrap gap-4 mb-8">
+          {[
+            { href: "/(student)/assessments", icon: "school", label: "My Results", sub: "Check grades", color: "bg-indigo-500", delay: 600 },
+            { href: "/(student)/calendar", icon: "calendar", label: "Calendar", sub: "Schedules", color: "bg-purple-500", delay: 700 },
+            { href: "/(student)/study-vault", icon: "library", label: "Study Vault", sub: "Materials", color: "bg-amber-500", delay: 800 },
+            { href: "/(student)/teachers", icon: "people", label: "Teachers", sub: "Faculty info", color: "bg-teal-500", delay: 900 },
+          ].map((item, index) => (
+            <Animated.View key={index} entering={FadeInDown.delay(item.delay).springify()} className="w-[47%]">
+              <Link href={item.href as any} asChild>
+                <TouchableOpacity className={`p-4 rounded-3xl ${isDark ? "bg-gray-800" : "bg-white shadow-sm border border-gray-100"}`}>
+                  <View className={`w-12 h-12 rounded-2xl ${item.color} items-center justify-center mb-3 shadow-sm`}>
+                    <Ionicons name={item.icon as any} size={24} color="white" />
+                  </View>
+                  <Text className={`font-bold text-base mb-0.5 ${isDark ? "text-white" : "text-gray-900"}`}>{item.label}</Text>
+                  <Text className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>{item.sub}</Text>
+                </TouchableOpacity>
+              </Link>
+            </Animated.View>
+          ))}
         </View>
 
         {/* Recent Activity Header */}
         <View className="flex-row justify-between items-center mb-4">
-          <Text className="text-xl font-bold text-textPrimary dark:text-dark-textPrimary">
+          <Text className={`text-lg font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
             Recent Activity
           </Text>
-          <Link href="/(student)/attendance" className="text-primary dark:text-dark-primary font-semibold">
+          <Link href="/(student)/attendance" className="text-blue-600 font-semibold text-sm">
             View All
           </Link>
         </View>
 
-
-
         {/* Recent List */}
         {
           loading && !refreshing ? (
-            <ActivityIndicator size="large" className="mt-10" />
+            <ActivityIndicator size="large" color="#2563EB" className="mt-8" />
           ) : records.length > 0 ? (
-            records.slice(0, 5).map(record => (
-              <AttendanceCard key={record.$id} record={record} />
+            records.slice(0, 5).map((record, index) => (
+              <Animated.View key={record.$id} entering={FadeInDown.delay(1000 + (index * 100)).duration(400)}>
+                <AttendanceCard record={record} />
+              </Animated.View>
             ))
           ) : (
-            <View className="items-center py-10 opacity-50">
-              <Text className="text-textSecondary dark:text-dark-textSecondary text-lg">No records found</Text>
+            <View className={`items-center py-12 rounded-3xl ${isDark ? "bg-gray-800" : "bg-gray-50 border border-gray-100"}`}>
+              <Ionicons name="bar-chart-outline" size={48} color={isDark ? "#4B5563" : "#D1D5DB"} />
+              <Text className={`mt-4 text-base ${isDark ? "text-gray-500" : "text-gray-400"}`}>No recent activity</Text>
             </View>
           )
         }
@@ -221,6 +221,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard
-
-const styles = StyleSheet.create({})
+export default Dashboard;
