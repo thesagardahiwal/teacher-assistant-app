@@ -218,6 +218,7 @@ export function ScheduleDirectory({
             ) : (
                 <FlatList
                     data={processedData}
+                    style={{ flex: 1 }}
                     renderItem={({ item, index }) => (
                         <ScheduleCard
                             schedule={item}
@@ -225,12 +226,14 @@ export function ScheduleDirectory({
                             onPress={onItemPress ? () => onItemPress(item.$id, item) : undefined}
                             showDay={viewMode === "list"} // Hide day badge in weekly view since tab shows it
                         />
+
                     )}
+                    ItemSeparatorComponent={() => <View className="h-1 bg-transparent" />}
                     keyExtractor={(item) => item.$id}
                     refreshing={refreshing}
                     onRefresh={onRefresh}
                     showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 100 }}
+                    contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 100, flexGrow: 1 }}
                     ListEmptyComponent={
                         <View className="items-center justify-center mt-20">
                             <Ionicons name="calendar-outline" size={48} color={isDark ? "#374151" : "#D1D5DB"} />

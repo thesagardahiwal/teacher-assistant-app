@@ -16,12 +16,12 @@ export function ScheduleCard({ schedule, index, onPress, showDay = true }: Sched
     const { isDark } = useTheme();
 
     return (
-        <Animated.View entering={FadeInDown.delay(index * 50).springify()}>
+        <Animated.View className="h-36" entering={FadeInDown.delay(index * 50).springify()}>
             <TouchableOpacity
                 onPress={onPress}
                 disabled={!onPress}
                 activeOpacity={onPress ? 0.7 : 1}
-                className={`p-4 mb-3 rounded-2xl border ${isDark ? "bg-dark-card border-dark-border" : "bg-white border-gray-100"} shadow-sm`}
+                className={`p-4 rounded-2xl border ${isDark ? "bg-dark-card border-dark-border" : "bg-white border-gray-100"} shadow-sm`}
             >
                 <View className="flex-row justify-between items-start">
                     {/* Time / Day Column */}
