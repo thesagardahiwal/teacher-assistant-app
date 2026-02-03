@@ -1,3 +1,4 @@
+import { useTheme } from "@/store/hooks/useTheme";
 import { Assessment } from "@/types/assessment.type";
 import { LocalEvent } from "@/types/local-event.type";
 import { ClassSchedule } from "@/types/schedule.type";
@@ -7,7 +8,6 @@ import React, { useMemo, useState } from "react";
 import { FlatList, RefreshControl, Text, TouchableOpacity, View } from "react-native";
 import { Calendar, DateData, LocaleConfig } from "react-native-calendars";
 import Animated, { FadeInDown, Layout } from "react-native-reanimated";
-import { useTheme } from "../../store/hooks/useTheme";
 
 // Configure calendar locale if needed (optional)
 LocaleConfig.locales['en'] = LocaleConfig.locales[''];
@@ -34,10 +34,9 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
     role,
     refreshing,
     onRefresh,
-    onDateSelected
+    onDateSelected,
 }) => {
-    const { isDark } = useTheme();
-
+    const { isDark, colors } = useTheme();
     // State
     const now = new Date();
     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -214,8 +213,9 @@ export const EnhancedCalendar: React.FC<EnhancedCalendarProps> = ({
         <View className="flex-1">
             <View className={`mx-4 mt-2 mb-4 rounded-3xl overflow-hidden shadow-sm ${isDark ? "bg-gray-800" : "bg-white"}`}>
                 <Calendar
+                    key={isDark ? 'dark' : 'light'}
                     theme={{
-                        calendarBackground: isDark ? "#1F2937" : "#FFFFFF",
+                        calendarBackground: colors.background,
                         textSectionTitleColor: isDark ? "#9CA3AF" : "#6B7280",
                         dayTextColor: isDark ? "#E5E7EB" : "#1F2937",
                         todayTextColor: "#2563EB",

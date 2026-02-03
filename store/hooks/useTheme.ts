@@ -1,17 +1,17 @@
-import { useColorScheme } from "react-native";
+import { useColorScheme } from "nativewind";
 
 
 export const useTheme = () => {
-    const theme = useColorScheme();
+    const { colorScheme } = useColorScheme();
     return {
-        isDark: theme === "dark",
-        isLight: theme === "light",
+        isDark: colorScheme === "dark",
+        isLight: colorScheme === "light",
         colors: {
-            primary: theme === "dark" ? "#FFFFFF" : "#000000",
-            background: theme === "dark" ? "#1F2937" : "#FFFFFF",
-            card: theme === "dark" ? "#374151" : "#F3F4F6",
-            text: theme === "dark" ? "#F9FAFB" : "#111827",
-            border: theme === "dark" ? "#4B5563" : "#E5E7EB",
+            primary: colorScheme === "dark" ? "#4C8DFF" : "#1A73E8",
+            background: colorScheme === "dark" ? "#0B1220" : "#F9FAFB",
+            card: colorScheme === "dark" ? "#111827" : "#FFFFFF",
+            text: colorScheme === "dark" ? "#E5E7EB" : "#0F172A",
+            border: colorScheme === "dark" ? "#1F2937" : "#E5E7EB",
         }
     }
 }
