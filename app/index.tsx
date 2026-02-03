@@ -1,7 +1,8 @@
+import WebLanding from "@/components/web/WebLanding";
 import { Ionicons } from "@expo/vector-icons";
 import { Link, useRouter } from "expo-router";
 import { useEffect } from "react";
-import { ActivityIndicator, Image, Text, TouchableOpacity, useColorScheme, View } from "react-native";
+import { ActivityIndicator, Image, Platform, Text, TouchableOpacity, useColorScheme, View } from "react-native";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import { useAuth } from "../store/hooks/useAuth";
 
@@ -36,6 +37,9 @@ export default function Index() {
     );
   }
 
+  if (Platform.OS === "web") {
+    return <WebLanding />
+  }
   // If not authenticated, show Landing Page
   return (
     <View className="flex-1 bg-background dark:bg-dark-background">

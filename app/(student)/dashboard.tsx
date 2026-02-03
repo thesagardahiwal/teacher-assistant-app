@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Platform, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import AttendanceCard from "../../components/Student/AttendanceCard";
 import { academicYearService } from "../../services/academicYear.service";
@@ -173,19 +173,22 @@ const Dashboard = () => {
             { href: "/(student)/calendar", icon: "calendar", label: "Calendar", sub: "Schedules", color: "bg-purple-500", delay: 700 },
             { href: "/(student)/study-vault", icon: "library", label: "Study Vault", sub: "Materials", color: "bg-amber-500", delay: 800 },
             { href: "/(student)/teachers", icon: "people", label: "Teachers", sub: "Faculty info", color: "bg-teal-500", delay: 900 },
-          ].map((item, index) => (
-            <Animated.View key={index} entering={FadeInDown.delay(item.delay).springify()} className="w-[47%]">
-              <Link href={item.href as any} asChild>
-                <TouchableOpacity className={`p-4 rounded-3xl ${isDark ? "bg-gray-800" : "bg-white shadow-sm border border-gray-100"}`}>
-                  <View className={`w-12 h-12 rounded-2xl ${item.color} items-center justify-center mb-3 shadow-sm`}>
-                    <Ionicons name={item.icon as any} size={24} color="white" />
-                  </View>
-                  <Text className={`font-bold text-base mb-0.5 ${isDark ? "text-white" : "text-gray-900"}`}>{item.label}</Text>
-                  <Text className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>{item.sub}</Text>
-                </TouchableOpacity>
-              </Link>
-            </Animated.View>
-          ))}
+          ].map((item, index) => {
+            if (item.label.includes("Study Vault") && Platform.OS === "web") return null;
+            return (
+              <Animated.View key={index} entering={FadeInDown.delay(item.delay).springify()} className="w-[47%]">
+                <Link href={item.href as any} asChild>
+                  <TouchableOpacity className={`p-4 rounded-3xl ${isDark ? "bg-gray-800" : "bg-white shadow-sm border border-gray-100"}`}>
+                    <View className={`w-12 h-12 rounded-2xl ${item.color} items-center justify-center mb-3 shadow-sm`}>
+                      <Ionicons name={item.icon as any} size={24} color="white" />
+                    </View>
+                    <Text className={`font-bold text-base mb-0.5 ${isDark ? "text-white" : "text-gray-900"}`}>{item.label}</Text>
+                    <Text className={`text-xs ${isDark ? "text-gray-500" : "text-gray-400"}`}>{item.sub}</Text>
+                  </TouchableOpacity>
+                </Link>
+              </Animated.View>
+            )
+          })}
         </View>
 
         {/* Recent Activity Header */}

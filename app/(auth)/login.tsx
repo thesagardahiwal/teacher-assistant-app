@@ -61,7 +61,7 @@ const Login = () => {
   const displayError = localError || getErrorMessage(error);
 
   const content = (
-    <View className="flex-1 justify-center px-6">
+    <View className="flex-1 max-w-xl mx-auto w-full justify-center px-6">
       <Animated.View
         entering={FadeInDown.delay(100).springify()}
         className="w-full max-w-sm md:max-w-md self-center"
