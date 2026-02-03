@@ -72,6 +72,30 @@ const AdminDashboard = () => {
 
         <StatsGrid stats={stats as any} isDark={isDark} />
 
+        {/* DIRECTORIES */}
+        <View className="px-5 mb-8">
+          <Text className="text-lg font-bold text-textPrimary dark:text-dark-textPrimary mb-4">
+            Directories
+          </Text>
+
+          <View className="flex-row flex-wrap gap-3">
+            <QuickActionCard
+              className="w-[48%] md:w-[23%]"
+              onPress={() => router.navigate('/(admin)/classes')}
+              icon="google-classroom"
+              label="All Classes"
+              isDark={isDark}
+            />
+            <QuickActionCard
+              className="w-[48%] md:w-[23%]"
+              onPress={() => router.navigate('/(admin)/courses')}
+              icon="book-open-page-variant"
+              label="All Courses"
+              isDark={isDark}
+            />
+          </View>
+        </View>
+
         {/* MANAGEMENT ACTIONS */}
         <View className="px-5 mb-8">
           <Text className="text-lg font-bold text-textPrimary dark:text-dark-textPrimary mb-4">
