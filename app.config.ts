@@ -30,8 +30,15 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         favicon: "./assets/images/favicon.png",
         bundler: "metro"
     },
+    updates: {
+        url: "https://u.expo.dev/7e37d091-6d81-4044-a956-1d952dcb52f7"
+    },
+    runtimeVersion: {
+        policy: "appVersion"
+    },
     plugins: [
         "expo-router",
+        "expo-updates",
         [
             "expo-splash-screen",
             {

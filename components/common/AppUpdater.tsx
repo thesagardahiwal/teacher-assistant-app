@@ -52,7 +52,7 @@ export function AppUpdater() {
             await Updates.fetchUpdateAsync();
             Alert.alert(
                 "Update Ready",
-                "The app has been updated. Relauch to apply changes.",
+                "The app has been updated. Relaunch to apply changes.",
                 [
                     {
                         text: "Restart Now",
