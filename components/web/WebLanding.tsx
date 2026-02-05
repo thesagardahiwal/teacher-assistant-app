@@ -105,7 +105,7 @@ export default function WebLanding() {
                                 icon="cloud-download-outline"
                                 onPress={() => {
                                     if (typeof window !== "undefined") {
-                                        window.open("https://expo.dev/artifacts/eas/5P1bXbhFNXz3RsToZ2K6F2.apk", "_blank");
+                                        window.open("https://expo.dev/artifacts/eas/vdwy1McpaWEXtYR2UsMKpu.apk", "_blank");
                                     }
                                 }}
                             />
@@ -132,7 +132,7 @@ export default function WebLanding() {
                         <View className="mb-20">
                             <Text className="text-primary font-bold tracking-wider uppercase text-sm mb-2">Features</Text>
                             <Text className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white tracking-tight">
-                                Everything you need to run a school.
+                                Everything you need to run a college.
                             </Text>
                         </View>
 
@@ -181,14 +181,15 @@ export default function WebLanding() {
                             <BentoCard
                                 boxClassName="w-full md:w-2/3 p-3"
                                 className="h-[350px] bg-white dark:bg-slate-900"
-                                title="Seamless Communication"
-                                desc="Built-in chat, announcements, and parent notifications directly in the app."
-                                icon="chatbubbles"
+                                title="Effortless Attendance"
+                                desc="Mark and track student attendance globally in seconds. Smart insights for teachers and admins."
+                                icon="checkmark-circle"
                                 gradient="from-purple-500/10 to-pink-500/10"
                             >
                                 <View className="absolute bottom-6 right-6 left-1/3 h-24 bg-slate-50 dark:bg-slate-800 rounded-t-lg border-t border-x border-slate-200 dark:border-slate-700 shadow-sm p-4 flex-row gap-3">
-                                    <View className="w-8 h-8 rounded-full bg-purple-500/20" />
+                                    <View className="w-8 h-8 rounded-full bg-green-500/20" />
                                     <View className="h-2 w-24 bg-slate-200 dark:bg-slate-700 rounded full" />
+                                    <View className="w-8 h-8 rounded-full bg-red-500/20" />
                                 </View>
                             </BentoCard>
                         </View>
