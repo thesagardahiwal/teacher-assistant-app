@@ -7,5 +7,6 @@ export const Env = {
     },
     GEMINI: {
         API_KEY: process.env.EXPO_PUBLIC_GEMINI_API_KEY || "",
-    }
+    },
+    APP_URL: process.env.EXPO_PUBLIC_APP_URL || "https://teachora.netlify.app",
 };

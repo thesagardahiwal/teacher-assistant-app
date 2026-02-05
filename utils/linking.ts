@@ -1,7 +1,5 @@
-import * as Linking from 'expo-linking';
+import { Env } from '@/constants/env';
 
 export const getInviteLink = (token: string) => {
-    return Linking.createURL('/invite', {
-        queryParams: { token },
-    });
+    return `${Env.APP_URL}/invite?token=${token}`;
 };

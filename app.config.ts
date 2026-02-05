@@ -12,7 +12,12 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     newArchEnabled: true,
     ios: {
         supportsTablet: true,
-        bundleIdentifier: "com.thesagardahiwal.teachora"
+        bundleIdentifier: "com.thesagardahiwal.teachora",
+        // Universal Links: only /invite should be handled via apple-app-site-association on the domain.
+        associatedDomains: [
+            "applinks:teachora.netlify.app",
+            "applinks:www.teachora.netlify.app"
+        ]
     },
     android: {
         adaptiveIcon: {
@@ -21,6 +26,25 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
             backgroundImage: "./assets/images/android-icon-background.png",
             monochromeImage: "./assets/images/android-icon-background.png"
         },
+        intentFilters: [
+            {
+                action: "VIEW",
+                autoVerify: true,
+                data: [
+                    {
+                        scheme: "https",
+                        host: "teachora.netlify.app",
+                        pathPrefix: "/invite"
+                    },
+                    {
+                        scheme: "https",
+                        host: "www.teachora.netlify.app",
+                        pathPrefix: "/invite"
+                    }
+                ],
+                category: ["BROWSABLE", "DEFAULT"]
+            }
+        ],
         edgeToEdgeEnabled: true,
         predictiveBackGestureEnabled: false,
         package: "com.thesagardahiwal.teachora"
