@@ -6,8 +6,6 @@ import {
     Pressable,
     ScrollView,
     Text,
-    useColorScheme,
-    useWindowDimensions,
     View
 } from "react-native";
 import Animated, {
@@ -17,30 +15,6 @@ import Animated, {
 
 export default function WebLanding() {
     const router = useRouter();
-    const colorScheme = useColorScheme();
-    const isDark = colorScheme === "dark";
-    const { width } = useWindowDimensions();
-    const isMobile = width < 768;
-
-    const logoSource = isDark
-        ? require("../../assets/images/DarkMode.png")
-        : require("../../assets/images/LightMode.png");
-
-    // Premium Background Logic
-    const backgroundStyle = Platform.OS === 'web' ? {
-        backgroundImage: isDark
-            ? "radial-gradient(circle at 50% 0%, #1e293b 0%, #020617 70%)"
-            : "radial-gradient(circle at 50% 0%, #f1f5f9 0%, #ffffff 70%)",
-        backgroundAttachment: 'fixed'
-    } : {};
-
-    const dotPattern = Platform.OS === 'web' ? {
-        backgroundImage: isDark
-            ? "radial-gradient(#334155 1px, transparent 1px)"
-            : "radial-gradient(#e2e8f0 1.5px, transparent 1.5px)",
-        backgroundSize: "40px 40px",
-        opacity: 0.4
-    } : {};
 
     return (
         <ScrollView
@@ -48,9 +22,9 @@ export default function WebLanding() {
             contentContainerStyle={Platform.OS === 'web' ? { flexGrow: 1 } : undefined}
             showsVerticalScrollIndicator={false}
         >
-            <View style={backgroundStyle} className="flex-1 relative overflow-hidden">
+            <View className="flex-1 relative overflow-hidden bg-[radial-gradient(circle_at_50%_0%,_#f1f5f9_0%,_#ffffff_70%)] dark:bg-[radial-gradient(circle_at_50%_0%,_#1e293b_0%,_#020617_70%)]">
                 {/* Dotted Overlay */}
-                <View style={dotPattern} className="absolute inset-0 pointer-events-none" />
+                <View className="absolute inset-0 pointer-events-none opacity-40 bg-[radial-gradient(#e2e8f0_1.5px,_transparent_1.5px)] dark:bg-[radial-gradient(#334155_1px,_transparent_1px)] [background-size:40px_40px]" />
 
                 {/* Glow Orbs */}
                 <View className="absolute top-[-20%] left-[20%] w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] opacity-40 pointer-events-none" />
@@ -64,10 +38,18 @@ export default function WebLanding() {
                     <View className="max-w-5xl p-4 mx-auto w-full">
                         <View className="flex-row items-center justify-between px-6 py-3 rounded-full bg-white/70 dark:bg-slate-900/70 border border-white/20 dark:border-white/10 shadow-sm backdrop-blur-xl supports-[backdrop-filter]:backdrop-blur-xl">
                             <View className="flex-row items-center gap-3">
+                                {/* Logo Switching via CSS classes */}
                                 <Image
-                                    source={logoSource}
-                                    style={{ width: 32, height: 32 }}
+                                    source={require("../../assets/images/LightMode.png")}
+                                    className="w-8 h-8 dark:hidden block"
                                     resizeMode="contain"
+                                    style={{ width: 32, height: 32 }}
+                                />
+                                <Image
+                                    source={require("../../assets/images/DarkMode.png")}
+                                    className="w-8 h-8 hidden dark:block"
+                                    resizeMode="contain"
+                                    style={{ width: 32, height: 32 }}
                                 />
                                 <Text className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
                                     Teachora
@@ -134,12 +116,11 @@ export default function WebLanding() {
                             <Text className="text-xs uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-4 font-semibold">
                                 Trusted by forward-thinking institutes
                             </Text>
-                            {/* Placeholder for logos - implementing as simple text for now */}
                             <View className="flex-row gap-8 justify-center items-center grayscale opacity-70">
-                                <Ionicons name="school" size={24} color={isDark ? "white" : "black"} />
-                                <Ionicons name="business" size={24} color={isDark ? "white" : "black"} />
-                                <Ionicons name="library" size={24} color={isDark ? "white" : "black"} />
-                                <Ionicons name="globe" size={24} color={isDark ? "white" : "black"} />
+                                <Ionicons name="school" size={24} className="text-black dark:text-white" />
+                                <Ionicons name="business" size={24} className="text-black dark:text-white" />
+                                <Ionicons name="library" size={24} className="text-black dark:text-white" />
+                                <Ionicons name="globe" size={24} className="text-black dark:text-white" />
                             </View>
                         </View>
                     </Animated.View>
@@ -165,7 +146,6 @@ export default function WebLanding() {
                                 icon="calendar"
                                 gradient="from-blue-500/10 to-indigo-500/10"
                             >
-                                {/* Visualization Mockup */}
                                 <View className="absolute bottom-6 right-6 left-6 h-40 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 opacity-50 overflow-hidden">
                                     <View className="grid grid-cols-4 gap-2 p-2">
                                         {[1, 2, 3, 4].map(i => <View key={i} className="h-8 bg-blue-500/20 rounded md:h-20" />)}
@@ -260,12 +240,6 @@ export default function WebLanding() {
 
 /* ================= COMPONENT DEFINITIONS ================= */
 
-const NavButton = ({ label }: { label: string }) => (
-    <Pressable className="hover:opacity-70 transition-opacity">
-        <Text className="text-slate-600 dark:text-slate-300 font-medium text-sm">{label}</Text>
-    </Pressable>
-);
-
 const PremiumButton = ({ label, icon, primary, onPress }: any) => {
     return (
         <Pressable
@@ -278,8 +252,7 @@ const PremiumButton = ({ label, icon, primary, onPress }: any) => {
             <Text className={`font-bold text-base ${primary ? 'text-white dark:text-slate-900' : 'text-slate-700 dark:text-white'}`}>
                 {label}
             </Text>
-            {icon && <Ionicons name={icon} size={18} color={primary ? (Platform.OS === 'web' && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'black' : 'white') : '#64748b'} style={{ opacity: 0.9 }} />}
-            {/* Note: Icon color logic is simplified here, ideally uses context */}
+            {icon && <Ionicons name={icon} size={18} className={`opacity-90 ${primary ? "text-white dark:text-black" : "text-slate-500"}`} />}
         </Pressable>
     )
 }
@@ -314,8 +287,8 @@ const RoleItem = ({ icon, title, desc, active, onPress }: any) => (
         className={`p-6 rounded-2xl border transition-all hover:scale-[1.02] ${active ? 'bg-slate-900 border-slate-900 dark:bg-white dark:border-white' : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}
     >
         <View className="flex-row items-center justify-between mb-4">
-            <Ionicons name={icon} size={28} color={active ? '#94a3b8' : '#64748b'} />
-            <Ionicons name="arrow-forward" size={20} color={active ? 'white' : '#64748b'} className={active ? 'dark:text-slate-900' : ''} />
+            <Ionicons name={icon} size={28} className={active ? 'text-slate-400 dark:text-slate-600' : 'text-slate-500'} />
+            <Ionicons name="arrow-forward" size={20} className={active ? 'text-white dark:text-slate-900' : 'text-slate-500'} />
         </View>
         <Text className={`text-xl font-bold mb-1 ${active ? 'text-white dark:text-slate-900' : 'text-slate-900 dark:text-white'}`}>{title}</Text>
         <Text className={`font-medium ${active ? 'text-slate-400 dark:text-slate-600' : 'text-slate-500'}`}>{desc}</Text>
