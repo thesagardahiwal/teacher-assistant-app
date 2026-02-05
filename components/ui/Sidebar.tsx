@@ -48,7 +48,7 @@ export const Sidebar = ({ items, header, compact, onNavigate }: SidebarProps) =>
     };
 
     return (
-        <View className={`h-full border-r ${isDark ? "bg-[#020617] border-slate-800" : "bg-white border-slate-200"}`}>
+        <View className={`h-full border-r dark:bg-[#020617] dark:border-slate-800 bg-white border-slate-200`}>
             {header && <View className="p-6">{header}</View>}
 
             <ScrollView className="flex-1 px-4 py-2" showsVerticalScrollIndicator={false}>

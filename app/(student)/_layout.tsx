@@ -20,7 +20,7 @@ export default function StudentLayout() {
 
   return (
     <ProtectedRoute allowedRoles={["STUDENT"]}>
-      <View className="flex-1 flex-row">
+      <View className="flex-1 bg-background dark:bg-dark-background flex-row">
         {Platform.OS === "web" && (
           <ResponsiveSidebar
             items={sidebarItems as any}

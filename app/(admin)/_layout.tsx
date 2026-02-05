@@ -23,7 +23,7 @@ export default function AdminLayout() {
 
   return (
     <ProtectedRoute allowedRoles={["ADMIN"]}>
-      <View className="flex-1 flex-row">
+      <View className="flex-1 bg-background dark:bg-dark-background flex-row">
         {Platform.OS === "web" && (
           <ResponsiveSidebar
             items={sidebarItems as any}
