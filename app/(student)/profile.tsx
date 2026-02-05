@@ -1,6 +1,7 @@
 import { FormInput } from "@/components/admin/ui/FormInput";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { AppUpdater } from "@/components/common/AppUpdater";
+import WebStudentProfile from "@/components/web/WebStudentProfile";
 import { studentService } from "@/services/student.service";
 import { useAuth } from "@/store/hooks/useAuth";
 import { useTheme } from "@/store/hooks/useTheme";
@@ -102,6 +103,10 @@ const Profile = () => {
                 <ActivityIndicator size="large" color="#2563EB" />
             </View>
         );
+    }
+
+    if (Platform.OS === 'web') {
+        return <WebStudentProfile />;
     }
 
     return (

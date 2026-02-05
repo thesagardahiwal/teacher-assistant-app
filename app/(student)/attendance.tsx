@@ -27,7 +27,14 @@ const StatBox = ({ label, value, color, icon, delay }: any) => {
   )
 }
 
+import WebStudentAttendance from "@/components/web/WebStudentAttendance";
+import { Platform } from "react-native";
+
 const Attendance = () => {
+  if (Platform.OS === 'web') {
+    return <WebStudentAttendance />;
+  }
+
   const { user } = useAuth();
   const { isDark } = useTheme();
   const [loading, setLoading] = useState(true);

@@ -1,5 +1,5 @@
 import { ModernTabBar } from "@/components/ui/ModernTabBar";
-import { Sidebar } from "@/components/ui/Sidebar";
+import { ResponsiveSidebar } from "@/components/ui/ResponsiveSidebar";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import React from "react";
@@ -14,7 +14,6 @@ export default function StudentLayout() {
     { label: "Dashboard", icon: "view-dashboard", route: "/(student)/dashboard" },
     { label: "Teachers", icon: "school-outline", iconLibrary: "Ionicons", route: "/(student)/teachers" },
     { label: "Calendar", icon: "calendar", iconLibrary: "Ionicons", route: "/(student)/calendar" },
-    { label: "Study Vault", icon: "folder-open", iconLibrary: "Ionicons", route: "/(student)/study-vault" },
     { label: "Results", icon: "clipboard-text", route: "/(student)/assessments" },
     { label: "Attendance", icon: "clipboard-check", route: "/(student)/attendance" },
   ];
@@ -23,7 +22,7 @@ export default function StudentLayout() {
     <ProtectedRoute allowedRoles={["STUDENT"]}>
       <View className="flex-1 flex-row">
         {Platform.OS === "web" && (
-          <Sidebar
+          <ResponsiveSidebar
             items={sidebarItems as any}
             header={
               <View className="flex-row items-center gap-2 mb-2">

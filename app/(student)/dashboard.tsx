@@ -27,7 +27,13 @@ const StatCard = ({ label, value, colorClass, textColorClass, icon, delay = 0 }:
   );
 };
 
+import WebStudentDashboard from "@/components/web/WebStudentDashboard";
+
 const Dashboard = () => {
+  if (Platform.OS === 'web') {
+    return <WebStudentDashboard />;
+  }
+
   const { user } = useAuth();
   const { isDark } = useTheme();
   const [loading, setLoading] = useState(true);
