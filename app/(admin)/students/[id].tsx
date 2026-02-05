@@ -2,6 +2,7 @@ import { FormInput } from "@/components/admin/ui/FormInput";
 import { FormSelect } from "@/components/admin/ui/FormSelect";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { StudentProfileView } from "@/components/directory/StudentProfileView";
+import WebStudentDetails from "@/components/web/WebStudentDetails";
 import { studentService } from "@/services";
 import { assessmentResultService } from "@/services/assessmentResult.service";
 import { invitationService } from "@/services/invitation.service";
@@ -209,6 +210,58 @@ export default function EditStudent() {
             </View>
         )
     }
+
+    if (Platform.OS === 'web') {
+        return (
+            <>
+                <View className="px-8 bg-background dark:bg-dark-background pt-6 pb-2 border-b border-gray-200 dark:border-gray-800">
+                    <PageHeader
+                        title="Student Details"
+                        showBack={true}
+                    />
+                </View>
+                <WebStudentDetails
+                    student={student}
+                    stats={{
+                        averageScore,
+                        totalAssessments: results.length
+                    }}
+                    results={results}
+                    onEdit={() => setIsEditing(true)}
+                    invitationLink={invitationLink}
+                    onCopyInvite={async () => {
+                        await Clipboard.setStringAsync(invitationLink);
+                        showAlert("Success", "Link copied");
+                    }}
+                />
+                {/* Reusing existing Edit Modal logic but making it compatible with web overlay if needed. */}
+                {isEditing && (
+                    <View className="absolute inset-0 z-50 flex items-center justify-center bg-black/50">
+                        <View className={`w-full max-w-2xl p-6 rounded-2xl ${isDark ? "bg-slate-900" : "bg-white"}`}>
+                            <View className="flex-row justify-between items-center mb-6">
+                                <Text className={`text-xl font-bold ${isDark ? "text-white" : "text-slate-900"}`}>Edit Student</Text>
+                                <TouchableOpacity onPress={() => setIsEditing(false)}>
+                                    <Ionicons name="close" size={24} color={isDark ? "#94a3b8" : "#64748b"} />
+                                </TouchableOpacity>
+                            </View>
+                            <ScrollView className="max-h-[80vh]">
+                                <View className="gap-4">
+                                    <FormInput label="Full Name" placeholder="Student Name" value={name} onChangeText={setName} />
+                                    <FormInput label="Roll Number" placeholder="101" value={roll} onChangeText={setRoll} />
+                                    <FormSelect label="Course" value={course} onChange={(val) => { setCourse(val); setSelectedClass(""); }} options={courseOptions} placeholder="Select Course" />
+                                    <FormSelect label="Class" value={selectedClass} onChange={setSelectedClass} options={classOptions} placeholder={course ? "Select Class" : "Select Course first"} error={course && classOptions.length === 0 ? "No classes found for this course" : undefined} />
+                                    <TouchableOpacity onPress={handleSubmit} disabled={saving} className={`py-4 rounded-xl items-center mt-4 mb-2 ${saving ? "bg-indigo-400" : "bg-indigo-600"}`}>
+                                        {saving ? <ActivityIndicator color="white" /> : <Text className="text-white font-bold text-lg">Save Changes</Text>}
+                                    </TouchableOpacity>
+                                </View>
+                            </ScrollView>
+                        </View>
+                    </View>
+                )}
+            </>
+        );
+    }
+
 
     const isAdmin = user?.role === "ADMIN";
 

@@ -21,18 +21,22 @@ export const PageHeader = ({ title, subtitle, rightAction, showBack = true, onBa
                 {showBack && (
                     <Link href=".." asChild>
                         <TouchableOpacity
-                            className={`mr-3 p-2 rounded-full ${isDark ? "bg-gray-800" : "bg-gray-100"}`}
+                            className="mr-3 p-2 rounded-full bg-gray-100 dark:bg-gray-800"
                         >
-                            <Ionicons name="arrow-back" size={20} color={isDark ? "#FFF" : "#000"} />
+                            <Ionicons
+                                name="arrow-back"
+                                size={20}
+                                color={isDark ? "white" : "black"}
+                            />
                         </TouchableOpacity>
                     </Link>
                 )}
                 <View className="flex-1">
-                    <Text className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
+                    <Text className="text-2xl font-bold text-gray-900 dark:text-white">
                         {title}
                     </Text>
                     {subtitle && (
-                        <Text className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                        <Text className="text-sm text-gray-500 dark:text-gray-400">
                             {subtitle}
                         </Text>
                     )}

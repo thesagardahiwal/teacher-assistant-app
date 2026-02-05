@@ -1,10 +1,11 @@
 import { PageHeader } from "@/components/admin/ui/PageHeader";
+import WebTakeAttendance from "@/components/web/WebTakeAttendance";
 import { GeminiAttendanceResult } from "@/services/ai/gemini.service";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, FlatList, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, FlatList, Platform, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AttendanceReviewModal from "../../../components/Attendance/AttendanceReviewModal";
@@ -27,6 +28,11 @@ export default function TakeAttendanceScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const { isDark } = useTheme();
+
+  if (Platform.OS === 'web') {
+    return <WebTakeAttendance />;
+  }
+
   const institutionId = useInstitutionId();
   const { user } = useAuth();
 
@@ -377,7 +383,7 @@ export default function TakeAttendanceScreen() {
               />
             </Animated.View>
           ) : (
-            <Animated.View entering={FadeInUp.delay(200).springify()} className="flex-1 items-center justify-center -mt-20">
+            <Animated.View entering={FadeInUp.delay(200).springify()} className="flex-1 flex items-center justify-center -mt-20">
               <View className={`w-20 h-20 rounded-full items-center justify-center mb-6 shadow-sm ${isDark ? "bg-gray-800" : "bg-white"}`}>
                 <MaterialCommunityIcons name="gesture-tap" size={40} color={isDark ? "#60A5FA" : "#3B82F6"} />
               </View>

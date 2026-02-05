@@ -2,6 +2,7 @@ import { FormInput } from "@/components/admin/ui/FormInput";
 import { FormSelect } from "@/components/admin/ui/FormSelect";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { TeacherProfileView } from "@/components/directory/TeacherProfileView";
+import WebTeacherDetails from "@/components/web/WebTeacherDetails";
 import { assessmentService, scheduleService } from "@/services";
 import { assignmentService } from "@/services/assignment.service";
 import { attendanceService } from "@/services/attendance.service";
@@ -183,6 +184,91 @@ export default function EditTeacher() {
             <View className={`flex-1 items-center justify-center ${isDark ? "bg-dark-background" : "bg-background"}`}>
                 <ActivityIndicator size="large" color={isDark ? "#4C8DFF" : "#2563EB"} />
             </View>
+        );
+    }
+
+    if (Platform.OS === 'web') {
+        const inviteLink = invitation && !teacher?.isActive ? getInviteLink(invitation.token) : undefined;
+        return (
+            <>
+                <View className="px-8 bg-background dark:bg-dark-background pt-6 pb-2 border-b border-gray-200 dark:border-gray-800">
+                    <PageHeader
+                        title="Teacher Details"
+                        showBack={true}
+
+                    />
+                </View>
+                <WebTeacherDetails
+                    teacher={teacher}
+                    stats={{
+                        subjects: uniqueSubjects.length,
+                        lectures: schedules.length,
+                        classes: uniqueClasses.length,
+                        assessments: assessmentStats.Total
+                    }}
+                    assignments={uniqueAssignments}
+                    schedules={schedules}
+                    attendanceStats={{
+                        totalSessions: attendance.length,
+                        classes: uniqueAttendanceClasses
+                    }}
+                    onEdit={() => setIsEditing(true)}
+                    invitationLink={inviteLink}
+                    onCopyInvite={copyInviteLink}
+                />
+                {/* Reusing existing Edit Modal logic but making it compatible with web overlay if needed. 
+                     For now, existing modal logic inside KeyboardAvoidingView might need adjustment for Web.
+                     Actually, the Form Logic is below. I should probably refactor the Form to be a separate component 
+                     or ensure `isEditing` works here too.
+                     
+                     The current `isEditing` state toggles a view inside the main layout. 
+                     For Web, unique layout is used. I'll add the Edit Form overlay here too if `isEditing` is true.
+                 */}
+                {isEditing && (
+                    <View className="absolute inset-0 z-50 flex items-center justify-center bg-black/50">
+                        <View className={`w-full max-w-2xl p-6 rounded-2xl ${isDark ? "bg-slate-900" : "bg-white"}`}>
+                            <View className="flex-row justify-between items-center mb-6">
+                                <Text className={`text-xl font-bold ${isDark ? "text-white" : "text-slate-900"}`}>Edit Profile</Text>
+                                <TouchableOpacity onPress={() => setIsEditing(false)}>
+                                    <Ionicons name="close" size={24} color={isDark ? "#94a3b8" : "#64748b"} />
+                                </TouchableOpacity>
+                            </View>
+                            <ScrollView className="max-h-[80vh]">
+                                <View className="gap-4">
+                                    <FormInput label="Full Name" value={name} onChangeText={setName} placeholder="Name" />
+                                    <FormInput label="Department" value={department} onChangeText={setDepartment} placeholder="Department" />
+                                    <FormInput label="Designation" value={designation} onChangeText={setDesignation} placeholder="Designation" />
+                                    <FormInput label="Phone" value={phone} onChangeText={setPhone} placeholder="Phone" />
+                                    <FormInput label="Address" value={address} onChangeText={setAddress} placeholder="Address" />
+                                    <FormSelect
+                                        label="Status"
+                                        value={isActive ? "Active" : "Inactive"}
+                                        options={[{ label: "Active", value: "Active" }, { label: "Inactive", value: "Inactive" }]}
+                                        onChange={(val) => setIsActive(val === "Active")}
+                                    />
+                                    <FormSelect
+                                        label="Role"
+                                        value={role}
+                                        options={[
+                                            { label: "Teacher", value: "TEACHER" },
+                                            { label: "Principal", value: "PRINCIPAL" },
+                                            { label: "Vice Principal", value: "VICE_PRINCIPAL" }
+                                        ]}
+                                        onChange={setRole}
+                                    />
+                                    <TouchableOpacity
+                                        onPress={handleUpdate}
+                                        disabled={saving}
+                                        className={`mt-4 py-3 rounded-xl items-center ${saving ? "bg-blue-400" : "bg-blue-600"}`}
+                                    >
+                                        <Text className="text-white font-bold">{saving ? "Saving..." : "Save Changes"}</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </ScrollView>
+                        </View>
+                    </View>
+                )}
+            </>
         );
     }
 

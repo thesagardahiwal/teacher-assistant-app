@@ -1,10 +1,12 @@
-import { Redirect, Stack } from "expo-router";
+import { Redirect, Stack, useSegments } from "expo-router";
 import { useAuth } from "../../store/hooks/useAuth";
 
 export default function AuthLayout() {
   const { isAuthenticated } = useAuth();
+  const segments = useSegments();
+  const isInviteRoute = segments.some(segment => segment === 'invite');
 
-  if (isAuthenticated) {
+  if (isAuthenticated && !isInviteRoute) {
     return <Redirect href="/" />;
   }
 

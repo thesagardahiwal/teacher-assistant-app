@@ -48,11 +48,11 @@ export const Sidebar = ({ items, header, compact, onNavigate }: SidebarProps) =>
     };
 
     return (
-        <View className={`h-full border-r ${isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"}`}>
+        <View className={`h-full border-r ${isDark ? "bg-[#020617] border-slate-800" : "bg-white border-slate-200"}`}>
             {header && <View className="p-6">{header}</View>}
 
-            <ScrollView className="flex-1 px-4 py-4">
-                <Text className={`text-xs font-bold mb-4 uppercase ${isDark ? "text-gray-500" : "text-gray-400"}`}>
+            <ScrollView className="flex-1 px-4 py-2" showsVerticalScrollIndicator={false}>
+                <Text className={`text-xs font-bold mb-4 px-2 uppercase tracking-wider ${isDark ? "text-slate-500" : "text-slate-400"}`}>
                     Menu
                 </Text>
 
@@ -67,46 +67,53 @@ export const Sidebar = ({ items, header, compact, onNavigate }: SidebarProps) =>
                                 router.push(item.route as any);
                                 onNavigate?.();
                             }}
-                            className={`flex-row items-center p-3 mb-2 rounded-xl transition-colors ${active
-                                ? isDark ? "bg-blue-600/20" : "bg-blue-50"
-                                : "hover:bg-gray-100 dark:hover:bg-gray-800"
+                            className={`flex-row items-center p-3 mb-2 rounded-xl transition-all duration-200 group ${active
+                                ? isDark ? "bg-blue-500/10" : "bg-blue-50"
+                                : "hover:bg-slate-50 dark:hover:bg-white/5"
                                 }`}
                         >
-                            <View className={`${active ? "" : "opacity-70"}`}>
+                            <View className={`${active ? "" : "opacity-70 group-hover:opacity-100 transition-opacity"}`}>
                                 <IconComponent
                                     name={item.icon as any}
-                                    size={22}
-                                    color={active ? "#2563EB" : (isDark ? "#9CA3AF" : "#6B7280")}
+                                    size={20}
+                                    color={active ? "#2563EB" : (isDark ? "#94a3b8" : "#64748b")}
                                 />
                             </View>
                             <Text
-                                className={`ml-3 font-medium ${compact ? "hidden" : ""
+                                className={`ml-3 font-medium text-sm ${compact ? "hidden" : ""
                                     } ${active
-                                        ? isDark ? "text-blue-400" : "text-blue-700"
-                                        : isDark ? "text-gray-400" : "text-gray-600"
+                                        ? isDark ? "text-blue-400 font-bold" : "text-blue-600 font-bold"
+                                        : isDark ? "text-slate-400 group-hover:text-slate-200" : "text-slate-600 group-hover:text-slate-900"
                                     }`}
                             >
                                 {item.label}
                             </Text>
 
                             {active && (
-                                <View className={`absolute left-0 w-1 h-6 rounded-r-full bg-blue-600`} />
+                                <View className={`absolute left-0 w-1 h-6 rounded-r-full bg-blue-600 shadow-sm shadow-blue-500/50`} />
                             )}
                         </TouchableOpacity>
                     );
                 })}
 
 
-                <View className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-800">
-                    <Text className={`text-xs font-bold mb-4 ${compact ? "hidden" : ""} uppercase ${isDark ? "text-gray-500" : "text-gray-400"}`}>
+                <View className="mt-auto pt-6 border-t border-slate-200 dark:border-slate-800 pb-8">
+                    <Text className={`text-xs font-bold mb-4 px-2 uppercase tracking-wider ${compact ? "hidden" : ""} ${isDark ? "text-slate-500" : "text-slate-400"}`}>
                         System
                     </Text>
                     <TouchableOpacity
-                        onPress={handleLogout} // Or logout logic
-                        className="flex-row items-center p-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/10"
+                        onPress={handleLogout}
+                        className="flex-row items-center p-3 rounded-xl transition-all duration-200 hover:bg-red-50 dark:hover:bg-red-900/10 group"
                     >
-                        <MaterialCommunityIcons name="logout" size={22} color={isDark ? "#EF4444" : "#DC2626"} />
-                        <Text className={`ml-3 ${compact ? "hidden" : ""} font-medium ${isDark ? "text-red-400" : "text-red-600"}`}>Logout</Text>
+                        <MaterialCommunityIcons
+                            name="logout"
+                            size={20}
+                            className="text-slate-400 group-hover:text-red-500 transition-colors"
+                            color={isDark ? "#94a3b8" : "#94a3b8"}
+                        />
+                        <Text className={`ml-3 ${compact ? "hidden" : ""} font-medium text-sm text-slate-500 dark:text-slate-400 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors`}>
+                            Logout
+                        </Text>
                     </TouchableOpacity>
                 </View>
 

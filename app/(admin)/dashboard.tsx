@@ -2,6 +2,7 @@ import StatusRow from "@/components/admin/StatusRow";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { QuickActionCard } from "@/components/dashboard/QuickActionCard";
 import { StatsGrid } from "@/components/dashboard/StatsGrid";
+import WebAdminDashboard from "@/components/web/WebAdminDashboard";
 import { useClasses } from "@/store/hooks/useClasses";
 import { useCourses } from "@/store/hooks/useCourses";
 import { useStudents } from "@/store/hooks/useStudents";
@@ -10,7 +11,7 @@ import { useTheme } from "@/store/hooks/useTheme";
 import { institutionStorage } from "@/utils/institutionStorage";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
-import { RefreshControl, ScrollView, Text, View } from "react-native";
+import { Platform, RefreshControl, ScrollView, Text, View } from "react-native";
 import { useAuth } from "../../store/hooks/useAuth";
 
 const AdminDashboard = () => {
@@ -50,6 +51,10 @@ const AdminDashboard = () => {
     await loadData();
     setRefreshing(false);
   }, [user]);
+
+  if (Platform.OS === 'web') {
+    return <WebAdminDashboard />;
+  }
 
   const stats = [
     { label: "Courses", value: courses?.length || 0, icon: "book-open-variant" },

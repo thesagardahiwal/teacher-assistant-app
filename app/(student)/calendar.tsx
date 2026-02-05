@@ -12,7 +12,7 @@ import { useInstitutionId } from "@/utils/useInstitutionId";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
-import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Platform, Text, TouchableOpacity, View } from "react-native";
 
 export default function StudentCalendar() {
     const router = useRouter();
@@ -86,13 +86,15 @@ export default function StudentCalendar() {
                     title="My Calendar"
                     showBack={true}
                     rightAction={
-                        <TouchableOpacity
-                            onPress={() => setModalVisible(true)}
-                            className="flex-row items-center bg-blue-100 dark:bg-blue-900/30 px-3 py-1.5 rounded-full"
-                        >
-                            <Ionicons name="add" size={18} color="#2563EB" />
-                            <Text className="ml-1 text-blue-700 dark:text-blue-300 font-semibold text-xs">New Event</Text>
-                        </TouchableOpacity>
+                        Platform.OS !== "web" && (
+                            <TouchableOpacity
+                                onPress={() => setModalVisible(true)}
+                                className="flex-row items-center bg-blue-100 dark:bg-blue-900/30 px-3 py-1.5 rounded-full"
+                            >
+                                <Ionicons name="add" size={18} color="#2563EB" />
+                                <Text className="ml-1 text-blue-700 dark:text-blue-300 font-semibold text-xs">New Event</Text>
+                            </TouchableOpacity>
+                        )
                     }
                 />
             </View>

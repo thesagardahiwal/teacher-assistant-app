@@ -2,10 +2,11 @@ import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { QuickActionCard } from "@/components/dashboard/QuickActionCard";
 import { StatsGrid } from "@/components/dashboard/StatsGrid";
 import { NextClassCard } from "@/components/teacher/NextClassCard";
+import WebTeacherDashboard from "@/components/web/WebTeacherDashboard";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
-import { RefreshControl, ScrollView, Text, View } from "react-native";
+import { Platform, RefreshControl, ScrollView, Text, View } from "react-native";
 import { scheduleService } from "../../services";
 import { useAssignments } from "../../store/hooks/useAssignments";
 import { useAttendance } from "../../store/hooks/useAttendance";
@@ -35,6 +36,10 @@ export default function TeacherDashboard() {
     const [nextClass, setNextClass] = useState<ClassScheduleWithStatus | null>(null);
 
     const isPrincipal = user?.role === "PRINCIPAL" || user?.role === "VICE_PRINCIPAL";
+
+    if (Platform.OS === 'web') {
+        return <WebTeacherDashboard />;
+    }
 
     const loadData = async () => {
         if (!institutionId) return;
