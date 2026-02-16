@@ -93,6 +93,23 @@ export default function AssessmentDetailsScreen() {
     }, [results]);
 
     const [savingStudentId, setSavingStudentId] = useState<string | null>(null);
+    const [savingAll, setSavingAll] = useState(false);
+
+    // Ensure default marks are 0 for all students
+    useEffect(() => {
+        if (!students || students.length === 0) return;
+        setMarks(prev => {
+            let changed = false;
+            const next = { ...prev };
+            students.forEach((s: any) => {
+                if (next[s.$id] === undefined) {
+                    next[s.$id] = "0";
+                    changed = true;
+                }
+            });
+            return changed ? next : prev;
+        });
+    }, [students]);
 
     const handleSave = async (studentId: string) => {
         if (!assessment || !user?.$id || !institutionId) return;
@@ -100,13 +117,8 @@ export default function AssessmentDetailsScreen() {
         const obtained = marks[studentId];
         const remark = remarks[studentId];
 
-        if (!obtained) {
-            console.log("Marks empty");
-            showAlert("Error", "Please enter marks");
-            return;
-        }
-
-        const numMarks = parseFloat(obtained);
+        const normalized = obtained === undefined || obtained.trim() === "" ? "0" : obtained;
+        const numMarks = parseFloat(normalized);
         if (isNaN(numMarks) || numMarks < 0 || numMarks > assessment.maxMarks) {
             showAlert("Error", `Marks must be between 0 and ${assessment.maxMarks}`);
             return;
@@ -129,6 +141,61 @@ export default function AssessmentDetailsScreen() {
             showAlert("Error", "Failed to save grade");
         } finally {
             setSavingStudentId(null);
+        }
+    };
+
+    const handleSaveAll = async () => {
+        if (!assessment || !user?.$id || !institutionId) return;
+        if (!students || students.length === 0) {
+            showAlert("Error", "No students found for this class.");
+            return;
+        }
+
+        // Validate all entries first
+        for (const s of students) {
+            const raw = marks[s.$id];
+            const normalized = raw === undefined || raw.trim() === "" ? "0" : raw;
+            const numMarks = parseFloat(normalized);
+            if (isNaN(numMarks) || numMarks < 0 || numMarks > assessment.maxMarks) {
+                showAlert("Error", `Invalid marks for ${s.name || "a student"}. Marks must be between 0 and ${assessment.maxMarks}`);
+                return;
+            }
+        }
+
+        setSavingAll(true);
+        try {
+            const payloads = students.map((s) => {
+                const raw = marks[s.$id];
+                const normalized = raw === undefined || raw.trim() === "" ? "0" : raw;
+                const numMarks = parseFloat(normalized);
+                return {
+                    institution: institutionId as any,
+                    assessment: assessment.$id as any,
+                    student: s.$id as any,
+                    evaluatedBy: user.$id as any,
+                    obtainedMarks: numMarks,
+                    totalMarks: assessment.maxMarks,
+                    remarks: remarks[s.$id] || "",
+                    evaluatedAt: new Date().toISOString()
+                };
+            });
+
+            await Promise.all(payloads.map((p) => saveResult(p)));
+            // Ensure blanks display as 0 after save
+            setMarks(prev => {
+                const next = { ...prev };
+                students.forEach((s) => {
+                    if (next[s.$id] === undefined || next[s.$id].trim() === "") {
+                        next[s.$id] = "0";
+                    }
+                });
+                return next;
+            });
+            showAlert("Success", "All grades saved successfully");
+        } catch (error) {
+            showAlert("Error", "Failed to save all grades");
+        } finally {
+            setSavingAll(false);
         }
     };
 
@@ -273,9 +340,25 @@ export default function AssessmentDetailsScreen() {
                     />
                 }
                 ListHeaderComponent={
-                    <Text className={`text-sm font-bold mb-4 tracking-wider ${isDark ? "text-dark-muted" : "text-muted"}`}>
-                        STUDENT GRADES
-                    </Text>
+                    <View className="flex-row items-center justify-between mb-4">
+                        <Text className={`text-sm font-bold tracking-wider ${isDark ? "text-dark-muted" : "text-muted"}`}>
+                            STUDENT GRADES
+                        </Text>
+                        <TouchableOpacity
+                            onPress={handleSaveAll}
+                            disabled={savingAll}
+                            className={`px-4 py-2 rounded-lg ${savingAll ? "bg-primary/60" : "bg-primary"}`}
+                        >
+                            {savingAll ? (
+                                <View className="flex-row items-center gap-2">
+                                    <ActivityIndicator size="small" color="white" />
+                                    <Text className="text-white font-semibold text-xs">Saving...</Text>
+                                </View>
+                            ) : (
+                                <Text className="text-white font-semibold text-xs">Save All</Text>
+                            )}
+                        </TouchableOpacity>
+                    </View>
                 }
             />
         </KeyboardAvoidingView>

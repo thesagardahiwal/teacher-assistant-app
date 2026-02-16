@@ -18,6 +18,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
+  RefreshControl,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -72,6 +73,7 @@ export default function CreateStudent() {
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [inviteLink, setInviteLink] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
 
   /* ---------- BULK UPLOAD STATE ---------- */
   const [parsedData, setParsedData] = useState<ParsedStudent[]>([]);
@@ -85,6 +87,20 @@ export default function CreateStudent() {
       fetchAcademicYears(institutionId);
     }
   }, [institutionId]);
+
+  const onRefresh = async () => {
+    if (!institutionId) return;
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        fetchCourses(institutionId),
+        fetchClasses(institutionId),
+        fetchAcademicYears(institutionId),
+      ]);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   // Dependency Blocker
   const missingDependency = useMemo(() => {
@@ -352,7 +368,17 @@ export default function CreateStudent() {
   );
 
   const renderManualForm = () => (
-    <ScrollView showsVerticalScrollIndicator={false}>
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: 120 }}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={isDark ? "#ffffff" : "#2563EB"}
+        />
+      }
+    >
       {renderSharedSelectors()}
 
       <View className={`p-6 rounded-2xl mb-6 ${isDark ? "bg-gray-800" : "bg-white"}`}>
@@ -449,8 +475,19 @@ export default function CreateStudent() {
   );
 
   const renderBulkUpload = () => (
-    <View className="flex-1">
-      {renderSharedSelectors()}
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={isDark ? "#ffffff" : "#2563EB"}
+        />
+      }
+      contentContainerStyle={{ flexGrow: 1, paddingBottom: 120 }}
+    >
+      <View className="flex-1">
+        {renderSharedSelectors()}
 
       {/* Summary View */}
       {bulkSummary && (
@@ -464,8 +501,8 @@ export default function CreateStudent() {
         </View>
       )}
 
-      {parsedData.length === 0 ? (
-        <View className={`flex-1 justify-center items-center p-6 border-2 border-dashed rounded-xl ${isDark ? "border-gray-700 bg-gray-800" : "border-gray-300 bg-gray-50"}`}>
+        {parsedData.length === 0 ? (
+          <View className={`flex-1 justify-center items-center p-6 border-2 border-dashed rounded-xl ${isDark ? "border-gray-700 bg-gray-800" : "border-gray-300 bg-gray-50"}`}>
           <Ionicons name="cloud-upload-outline" size={48} color={isDark ? "#9CA3AF" : "#6B7280"} />
           <Text className={`text-lg font-semibold mt-4 mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>
             Upload Student CSV
@@ -480,8 +517,8 @@ export default function CreateStudent() {
             <Text className="text-white font-semibold">Select CSV File</Text>
           </TouchableOpacity>
         </View>
-      ) : (
-        <View className="flex-1">
+        ) : (
+          <View className="flex-1">
           <View className="flex-row justify-between items-center mb-4">
             <Text className={`font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
               Preview ({parsedData.length} rows)
@@ -491,7 +528,10 @@ export default function CreateStudent() {
             </TouchableOpacity>
           </View>
 
-          <ScrollView className={`flex-1 rounded-xl border ${isDark ? "border-gray-700" : "border-gray-200"}`}>
+            <ScrollView
+              className={`flex-1 rounded-xl border ${isDark ? "border-gray-700" : "border-gray-200"}`}
+              nestedScrollEnabled
+            >
             {parsedData.map((row, i) => (
               <View key={i} className={`flex-row p-3 border-b ${isDark ? "border-gray-700" : "border-gray-100"} items-center`}>
                 <View className={`w-2 h-2 rounded-full mr-3 ${row.status === "VALID" ? "bg-green-500" : "bg-red-500"}`} />
@@ -523,9 +563,10 @@ export default function CreateStudent() {
               </Text>
             )}
           </TouchableOpacity>
-        </View>
-      )}
-    </View>
+          </View>
+        )}
+      </View>
+    </ScrollView>
   );
 
   return (

@@ -36,7 +36,7 @@ export const FormInput = ({ label, error, required, style, delay = 0, ...props }
                         : isDark
                             ? "bg-gray-800 border-gray-700 text-white"
                             : "bg-white border-gray-200 text-gray-900"
-                    } ${isFocused ? "shadow-sm shadow-primary/20" : ""}`}
+                    } ${isFocused ? "shadow-sm" : "shadow-none"} shadow-primary/20`}
                 style={{ fontSize: 16 }}
                 {...props}
             />

@@ -233,55 +233,56 @@ export default function AddScheduleModal({
                                             {loadingAssignments ? (
                                                 <ActivityIndicator color="#2563EB" />
                                             ) : (
-                                                assignments.map((assignment, index) => (
-                                                    <Animated.View
-                                                        key={assignment.$id}
-                                                        entering={FadeInDown.delay(100 + index * 50)}
-                                                    >
-                                                        <TouchableOpacity
-                                                            onPress={() =>
-                                                                handleClassSelect(
-                                                                    assignment.class.$id,
-                                                                    assignment.subject.$id
-                                                                )
-                                                            }
-                                                            className={`mr-3 p-4 rounded-2xl border w-40 h-28 justify-between shadow-sm ${selectedClassId === assignment.class.$id
-                                                                ? isDark
-                                                                    ? "bg-blue-600 border-blue-500"
-                                                                    : "bg-blue-600 border-blue-600"
-                                                                : isDark
-                                                                    ? "bg-gray-800 border-gray-700"
-                                                                    : "bg-white border-gray-100"
-                                                                }`}
+                                                assignments.map((assignment, index) => {
+                                                    const isSelected =
+                                                        selectedClassId === assignment.class.$id &&
+                                                        selectedSubjectId === assignment.subject.$id;
+                                                    return (
+                                                        <Animated.View
+                                                            key={assignment.$id}
+                                                            entering={FadeInDown.delay(100 + index * 50)}
                                                         >
-                                                            <View>
-                                                                <Text
-                                                                    className={`font-bold text-lg leading-6 ${selectedClassId ===
-                                                                        assignment.class.$id
-                                                                        ? "text-white"
-                                                                        : isDark
+                                                            <TouchableOpacity
+                                                                onPress={() =>
+                                                                    handleClassSelect(
+                                                                        assignment.class.$id,
+                                                                        assignment.subject.$id
+                                                                    )
+                                                                }
+                                                                className={`mr-3 p-4 rounded-2xl border w-40 h-28 justify-between shadow-sm ${isSelected
+                                                                    ? isDark
+                                                                        ? "bg-blue-600 border-blue-500"
+                                                                        : "bg-blue-600 border-blue-600"
+                                                                    : isDark
+                                                                        ? "bg-gray-800 border-gray-700"
+                                                                        : "bg-white border-gray-100"
+                                                                    }`}
+                                                            >
+                                                                <View>
+                                                                    <Text
+                                                                        className={`font-bold text-lg leading-6 ${isSelected
                                                                             ? "text-white"
-                                                                            : "text-gray-900"
-                                                                        }`}
-                                                                    numberOfLines={1}
-                                                                >
-                                                                    {assignment.class.name}
-                                                                </Text>
-                                                                <Text
-                                                                    className={`text-sm mt-1 ${selectedClassId ===
-                                                                        assignment.class.$id
-                                                                        ? "text-blue-100"
-                                                                        : isDark
-                                                                            ? "text-gray-400"
-                                                                            : "text-gray-500"
-                                                                        }`}
-                                                                    numberOfLines={1}
-                                                                >
-                                                                    {assignment.subject.name}
-                                                                </Text>
-                                                            </View>
-                                                            {selectedClassId ===
-                                                                assignment.class.$id && (
+                                                                            : isDark
+                                                                                ? "text-white"
+                                                                                : "text-gray-900"
+                                                                            }`}
+                                                                        numberOfLines={1}
+                                                                    >
+                                                                        {assignment.class.name}
+                                                                    </Text>
+                                                                    <Text
+                                                                        className={`text-sm mt-1 ${isSelected
+                                                                            ? "text-blue-100"
+                                                                            : isDark
+                                                                                ? "text-gray-400"
+                                                                                : "text-gray-500"
+                                                                            }`}
+                                                                        numberOfLines={1}
+                                                                    >
+                                                                        {assignment.subject.name}
+                                                                    </Text>
+                                                                </View>
+                                                                {isSelected && (
                                                                     <View className="self-end bg-white/20 p-1 rounded-full">
                                                                         <Ionicons
                                                                             name="checkmark"
@@ -290,9 +291,10 @@ export default function AddScheduleModal({
                                                                         />
                                                                     </View>
                                                                 )}
-                                                        </TouchableOpacity>
-                                                    </Animated.View>
-                                                ))
+                                                            </TouchableOpacity>
+                                                        </Animated.View>
+                                                    );
+                                                })
                                             )}
                                             {!loadingAssignments && assignments.length === 0 && (
                                                 <Text className="text-gray-500 italic">

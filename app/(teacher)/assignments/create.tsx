@@ -13,6 +13,7 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
+    RefreshControl,
     ScrollView,
     Text,
     TouchableOpacity,
@@ -36,6 +37,7 @@ export default function CreateAssignment() {
     const [subject, setSubject] = useState("");
 
     const [loading, setLoading] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
 
     useEffect(() => {
         if (institutionId) {
@@ -45,6 +47,21 @@ export default function CreateAssignment() {
             fetchSubjects(institutionId);
         }
     }, [institutionId]);
+
+    const onRefresh = async () => {
+        if (!institutionId) return;
+        setRefreshing(true);
+        try {
+            await Promise.all([
+                fetchTeachers(institutionId),
+                fetchCourses(institutionId),
+                fetchClasses(institutionId),
+                fetchSubjects(institutionId),
+            ]);
+        } finally {
+            setRefreshing(false);
+        }
+    };
 
     const handleSubmit = async () => {
         if (!teacher || !selectedClass || !subject || !institutionId) {
@@ -88,7 +105,17 @@ export default function CreateAssignment() {
         <View className={`flex-1 px-6 pt-6 ${isDark ? "bg-dark-background" : "bg-background"}`}>
             <PageHeader title="New Assignment" />
 
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 120 }}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        tintColor={isDark ? "#ffffff" : "#2563EB"}
+                    />
+                }
+            >
                 <View className={`p-6 rounded-2xl mb-6 ${isDark ? "bg-gray-800" : "bg-white"}`}>
 
                     <View className="mb-4">

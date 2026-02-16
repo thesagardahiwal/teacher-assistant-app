@@ -15,6 +15,7 @@ import {
     ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
+    RefreshControl,
     ScrollView,
     Switch,
     Text,
@@ -49,93 +50,113 @@ export default function EditSchedule() {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [loadingAssignments, setLoadingAssignments] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
 
     /* ---------- LOAD ACADEMIC YEARS ---------- */
     useEffect(() => {
         if (!institutionId) return;
-
-        academicYearService.list(institutionId).then((res) => {
-            setAcademicYears(
-                res.documents.map((ay: any) => ({
-                    label: ay.label,
-                    value: ay.$id,
-                }))
-            );
-        });
+        loadAcademicYears();
     }, [institutionId]);
+
+    const loadAcademicYears = async () => {
+        if (!institutionId) return;
+        const res = await academicYearService.list(institutionId);
+        setAcademicYears(
+            res.documents.map((ay: any) => ({
+                label: ay.label,
+                value: ay.$id,
+            }))
+        );
+    };
 
     /* ---------- LOAD SCHEDULE ---------- */
     useEffect(() => {
         if (!scheduleId) return;
 
-        (async () => {
-            try {
-                const schedule = await scheduleService.get(scheduleId);
-
-                // Helper to extract ID safely from Object, Array, or String
-                const getID = (item: any): string => {
-                    if (!item) return "";
-                    if (Array.isArray(item)) return item.length > 0 ? getID(item[0]) : "";
-                    if (typeof item === 'object') return item.$id || "";
-                    return String(item);
-                };
-
-                const ayId = getID(schedule.academicYear);
-                const classId = getID(schedule.class);
-                const teacherId = getID(schedule.teacher);
-                const subjectId = getID(schedule.subject);
-
-                setAcademicYear(ayId);
-                setSelectedClass(classId);
-                setTeacher(teacherId);
-                setSubject(subjectId);
-                setDayOfWeek(schedule.dayOfWeek);
-                setStartTime(schedule.startTime);
-                setEndTime(schedule.endTime);
-                setIsActive(schedule.isActive);
-
-                // --- SEED OPTIONS IMMEDIATELY ---
-                // Populates dropdowns with current values so they aren't empty while lists load
-
-                if (schedule.class) {
-                    const cItem = Array.isArray(schedule.class) ? schedule.class[0] : schedule.class;
-                    if (cItem && typeof cItem === 'object') {
-                        setClassOptions([{
-                            label: cItem.name || `Class ${cItem.year}-${cItem.division}`,
-                            value: cItem.$id
-                        }]);
-                    }
-                }
-
-                if (schedule.teacher) {
-                    const tItem = Array.isArray(schedule.teacher) ? schedule.teacher[0] : schedule.teacher;
-                    if (tItem && typeof tItem === 'object') {
-                        setTeacherOptions([{
-                            label: tItem.name,
-                            value: tItem.$id
-                        }]);
-                    }
-                }
-
-                if (schedule.subject) {
-                    const sItem = Array.isArray(schedule.subject) ? schedule.subject[0] : schedule.subject;
-                    if (sItem && typeof sItem === 'object') {
-                        setSubjectOptions([{
-                            label: sItem.name + (sItem.code ? ` (${sItem.code})` : ''),
-                            value: sItem.$id
-                        }]);
-                    }
-                }
-
-            } catch (error) {
-                console.error("Failed to fetch schedule details", error);
-                showAlert("Error", "Failed to load schedule");
-                router.back();
-            } finally {
-                setLoading(false);
-            }
-        })();
+        loadSchedule();
     }, [scheduleId]);
+
+    const loadSchedule = async () => {
+        try {
+            const schedule = await scheduleService.get(scheduleId);
+
+            // Helper to extract ID safely from Object, Array, or String
+            const getID = (item: any): string => {
+                if (!item) return "";
+                if (Array.isArray(item)) return item.length > 0 ? getID(item[0]) : "";
+                if (typeof item === 'object') return item.$id || "";
+                return String(item);
+            };
+
+            const ayId = getID(schedule.academicYear);
+            const classId = getID(schedule.class);
+            const teacherId = getID(schedule.teacher);
+            const subjectId = getID(schedule.subject);
+
+            setAcademicYear(ayId);
+            setSelectedClass(classId);
+            setTeacher(teacherId);
+            setSubject(subjectId);
+            setDayOfWeek(schedule.dayOfWeek);
+            setStartTime(schedule.startTime);
+            setEndTime(schedule.endTime);
+            setIsActive(schedule.isActive);
+
+            // --- SEED OPTIONS IMMEDIATELY ---
+            // Populates dropdowns with current values so they aren't empty while lists load
+
+            if (schedule.class) {
+                const cItem = Array.isArray(schedule.class) ? schedule.class[0] : schedule.class;
+                if (cItem && typeof cItem === 'object') {
+                    setClassOptions([{
+                        label: cItem.name || `Class ${cItem.year}-${cItem.division}`,
+                        value: cItem.$id
+                    }]);
+                }
+            }
+
+            if (schedule.teacher) {
+                const tItem = Array.isArray(schedule.teacher) ? schedule.teacher[0] : schedule.teacher;
+                if (tItem && typeof tItem === 'object') {
+                    setTeacherOptions([{
+                        label: tItem.name,
+                        value: tItem.$id
+                    }]);
+                }
+            }
+
+            if (schedule.subject) {
+                const sItem = Array.isArray(schedule.subject) ? schedule.subject[0] : schedule.subject;
+                if (sItem && typeof sItem === 'object') {
+                    setSubjectOptions([{
+                        label: sItem.name + (sItem.code ? ` (${sItem.code})` : ''),
+                        value: sItem.$id
+                    }]);
+                }
+            }
+
+        } catch (error) {
+            console.error("Failed to fetch schedule details", error);
+            showAlert("Error", "Failed to load schedule");
+            router.back();
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        try {
+            await Promise.all([
+                loadAcademicYears(),
+                loadSchedule(),
+            ]);
+        } catch (error) {
+            console.error("Failed to refresh schedule", error);
+        } finally {
+            setRefreshing(false);
+        }
+    };
 
     /* ---------- LOAD CLASSES ---------- */
     useEffect(() => {
@@ -315,7 +336,17 @@ export default function EditSchedule() {
             <View style={{ flex: 1 }}>
                 <PageHeader title="Edit Schedule" />
 
-                <ScrollView className="px-6 bg-card dark:bg-dark-card rounded-xl py-4">
+                <ScrollView
+                    className="px-6 bg-card dark:bg-dark-card rounded-xl py-4"
+                    contentContainerStyle={{ paddingBottom: 120 }}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={onRefresh}
+                            tintColor={isDark ? "#ffffff" : "#2563EB"}
+                        />
+                    }
+                >
                     <FormSelect
                         label="Academic Year"
                         value={academicYear}

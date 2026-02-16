@@ -6,7 +6,7 @@ import { AssessmentPayload } from "@/types/assessment.type";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Platform, RefreshControl, ScrollView, View } from "react-native";
 import { useAcademicYears } from "../../../store/hooks/useAcademicYears";
 import { useAssessments } from "../../../store/hooks/useAssessments";
 import { useAuth } from "../../../store/hooks/useAuth";
@@ -35,6 +35,7 @@ export default function CreateAssessmentScreen() {
     const { data: subjects, fetchSubjectsByTeacher } = useSubjects();
     const { data: classes, fetchClassesByTeacher } = useClasses();
     const { isEligible, isLoading: loadingEligibility } = useTeacherEligibility();
+    const [refreshing, setRefreshing] = useState(false);
 
     useEffect(() => {
         if (!loadingEligibility && !isEligible) {
@@ -66,6 +67,20 @@ export default function CreateAssessmentScreen() {
             fetchClassesByTeacher(institutionId, user.$id);
         }
     }, [institutionId, user?.$id]);
+
+    const onRefresh = async () => {
+        if (!institutionId || !user?.$id) return;
+        setRefreshing(true);
+        try {
+            await Promise.all([
+                fetchAcademicYears(institutionId),
+                fetchSubjectsByTeacher(institutionId, user.$id),
+                fetchClassesByTeacher(institutionId, user.$id),
+            ]);
+        } finally {
+            setRefreshing(false);
+        }
+    };
 
     // Set active academic year automatically
     useEffect(() => {
@@ -146,7 +161,17 @@ export default function CreateAssessmentScreen() {
                     }
                 />
 
-                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 50 }}>
+                <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{ paddingBottom: 120 }}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={onRefresh}
+                            tintColor={isDark ? "#ffffff" : "#2563EB"}
+                        />
+                    }
+                >
                     <FormInput
                         label="Assessment Title"
                         placeholder="e.g. Mid-term Exam"

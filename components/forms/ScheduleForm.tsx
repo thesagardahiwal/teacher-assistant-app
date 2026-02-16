@@ -23,11 +23,13 @@ interface ScheduleFormProps {
     institutionId: string;
     initialTeacherId?: string; // If provided, locks the teacher field (for Teacher View)
     onSuccess: () => void;
+    refreshToken?: number;
+    onRefreshed?: () => void;
 }
 
 
 
-export const ScheduleForm = ({ institutionId, initialTeacherId, onSuccess }: ScheduleFormProps) => {
+export const ScheduleForm = ({ institutionId, initialTeacherId, onSuccess, refreshToken, onRefreshed }: ScheduleFormProps) => {
     const { isDark } = useTheme();
     const { fetchTeachers } = useTeachers();
 
@@ -79,28 +81,79 @@ export const ScheduleForm = ({ institutionId, initialTeacherId, onSuccess }: Sch
         }
     };
 
+    const loadClasses = async (yearId: string, resetSelection = true) => {
+        if (!yearId || !institutionId) {
+            setAvailableClasses([]);
+            return;
+        }
+
+        try {
+            const res = await classService.listByAcademicYear(institutionId, yearId);
+            const options = res.documents.map((c: any) => ({
+                label: c.name || `Class ${c.year}-${c.division}`,
+                value: c.$id
+            }));
+            setAvailableClasses(options);
+        } catch (err) {
+            console.error("Failed to fetch classes", err);
+        }
+
+        if (resetSelection) {
+            setSelectedClass("");
+            if (!initialTeacherId) setTeacher(""); // Only reset teacher if not locked
+            setSubject("");
+        }
+    };
+
     /* ---------------- LOAD CLASSES ---------------- */
     useEffect(() => {
         if (!academicYear || !institutionId) {
             setAvailableClasses([]);
             return;
         }
-
-        classService.listByAcademicYear(institutionId, academicYear)
-            .then(res => {
-                const options = res.documents.map((c: any) => ({
-                    label: c.name || `Class ${c.year}-${c.division}`,
-                    value: c.$id
-                }));
-                setAvailableClasses(options);
-            })
-            .catch(err => console.error("Failed to fetch classes", err));
-
-        // Reset
-        setSelectedClass("");
-        if (!initialTeacherId) setTeacher(""); // Only reset teacher if not locked
-        setSubject("");
+        loadClasses(academicYear, true);
     }, [academicYear, institutionId]);
+
+    const loadAssignments = async (classId: string, resetSelection = true) => {
+        if (!classId || !institutionId) {
+            setTeacherOptions([]);
+            setSubjectOptions([]);
+            setClassAssignments([]);
+            return;
+        }
+
+        setLoadingAssignments(true);
+        try {
+            const res = await assignmentService.listByClass(institutionId, classId);
+            const assignments = res.documents;
+            setClassAssignments(assignments);
+
+            // Teachers Options
+            if (!initialTeacherId) {
+                const tMap = new Map();
+                assignments.forEach((a: any) => {
+                    if (a.teacher && a.teacher.$id) {
+                        tMap.set(a.teacher.$id, {
+                            label: a.teacher.name,
+                            value: a.teacher.$id
+                        });
+                    }
+                });
+                setTeacherOptions(Array.from(tMap.values()));
+                if (resetSelection) setTeacher("");
+            } else {
+                // If teacher is locked, just ensure valid
+                setTeacher(initialTeacherId);
+            }
+        } catch (err) {
+            console.error("Failed to fetch assignments", err);
+            showAlert("Error", "Failed to fetch class assignments");
+        } finally {
+            setLoadingAssignments(false);
+        }
+
+        if (resetSelection) setSubject("");
+    };
 
     /* ---------------- LOAD ASSIGNMENTS ---------------- */
     useEffect(() => {
@@ -110,39 +163,34 @@ export const ScheduleForm = ({ institutionId, initialTeacherId, onSuccess }: Sch
             setClassAssignments([]);
             return;
         }
-
-        setLoadingAssignments(true);
-        assignmentService.listByClass(institutionId, selectedClass)
-            .then((res) => {
-                const assignments = res.documents;
-                setClassAssignments(assignments);
-
-                // Teachers Options
-                if (!initialTeacherId) {
-                    const tMap = new Map();
-                    assignments.forEach((a: any) => {
-                        if (a.teacher && a.teacher.$id) {
-                            tMap.set(a.teacher.$id, {
-                                label: a.teacher.name,
-                                value: a.teacher.$id
-                            });
-                        }
-                    });
-                    setTeacherOptions(Array.from(tMap.values()));
-                    setTeacher("");
-                } else {
-                    // If teacher is locked, just ensure valid
-                    setTeacher(initialTeacherId);
-                }
-            })
-            .catch(err => {
-                console.error("Failed to fetch assignments", err);
-                showAlert("Error", "Failed to fetch class assignments");
-            })
-            .finally(() => setLoadingAssignments(false));
-
-        setSubject("");
+        loadAssignments(selectedClass, true);
     }, [selectedClass, institutionId]);
+
+    /* ---------------- REFRESH (PULL TO REFRESH) ---------------- */
+    useEffect(() => {
+        if (refreshToken === undefined) return;
+
+        const run = async () => {
+            if (!institutionId) return;
+            await Promise.all([
+                fetchTeachers(institutionId),
+                fetchAcademicYears(institutionId),
+            ]);
+
+            if (academicYear) {
+                await loadClasses(academicYear, false);
+            }
+            if (selectedClass) {
+                await loadAssignments(selectedClass, false);
+            }
+        };
+
+        run()
+            .catch(err => console.error("Failed to refresh schedule form", err))
+            .finally(() => {
+                onRefreshed?.();
+            });
+    }, [refreshToken, institutionId, academicYear, selectedClass]);
 
     /* ---------------- UPDATE SUBJECTS ---------------- */
     useEffect(() => {

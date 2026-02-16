@@ -10,6 +10,7 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  RefreshControl,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -29,12 +30,23 @@ export default function CreateSubject() {
   const [semester, setSemester] = useState("");
 
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (institutionId) {
       fetchCourses(institutionId);
     }
   }, [institutionId]);
+
+  const onRefresh = async () => {
+    if (!institutionId) return;
+    setRefreshing(true);
+    try {
+      await fetchCourses(institutionId);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!name || !code || !course || !semester || !institutionId) {
@@ -68,7 +80,17 @@ export default function CreateSubject() {
     <View className={`flex-1 px-6 pt-6 ${isDark ? "bg-dark-background" : "bg-background"}`}>
       <PageHeader title="New Subject" />
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 120 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={isDark ? "#ffffff" : "#2563EB"}
+          />
+        }
+      >
         <View className={`p-6 rounded-2xl mb-6 ${isDark ? "bg-gray-800" : "bg-white"}`}>
 
           <FormSelect

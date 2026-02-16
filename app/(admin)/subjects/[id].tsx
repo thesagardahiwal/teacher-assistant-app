@@ -13,6 +13,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
+    RefreshControl,
     ScrollView,
     Text,
     TouchableOpacity,
@@ -36,6 +37,7 @@ export default function EditSubject() {
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
 
     useEffect(() => {
         if (institutionId) {
@@ -48,6 +50,19 @@ export default function EditSubject() {
             loadData();
         }
     }, [id]);
+
+    const onRefresh = async () => {
+        if (!institutionId || !id) return;
+        setRefreshing(true);
+        try {
+            await Promise.all([
+                fetchCourses(institutionId),
+                loadData(),
+            ]);
+        } finally {
+            setRefreshing(false);
+        }
+    };
 
     const loadData = async () => {
         try {
@@ -130,7 +145,17 @@ export default function EditSubject() {
                 }
             />
 
-            <ScrollView showsVerticalScrollIndicator={false}>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 120 }}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        tintColor={isDark ? "#ffffff" : "#2563EB"}
+                    />
+                }
+            >
                 <View className={`p-6 rounded-2xl mb-6 ${isDark ? "bg-gray-800" : "bg-white"}`}>
 
                     <FormSelect

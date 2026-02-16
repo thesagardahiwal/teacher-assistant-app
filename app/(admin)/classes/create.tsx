@@ -12,6 +12,7 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  RefreshControl,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -33,6 +34,7 @@ export default function CreateClass() {
   const [academicYear, setAcademicYear] = useState("");
 
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (institutionId) {
@@ -41,6 +43,19 @@ export default function CreateClass() {
       fetchAcademicYears(institutionId);
     }
   }, [institutionId]);
+
+  const onRefresh = async () => {
+    if (!institutionId) return;
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        fetchCourses(institutionId),
+        fetchAcademicYears(institutionId),
+      ]);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   // Set default Academic Year to CURRENT
   useEffect(() => {
@@ -98,74 +113,90 @@ export default function CreateClass() {
     <View className={`flex-1 px-6 pt-6 ${isDark ? "bg-dark-background" : "bg-background"}`}>
       <PageHeader title="New Class" />
 
-      {academicYears.length === 0 ? (
-        <View className="flex-1 justify-center items-center p-6">
-          <Text className={`text-lg text-center mb-4 ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-            You cannot create a class without an Academic Year.
-          </Text>
-          <TouchableOpacity
-            onPress={() => router.push("/(admin)/academic-years/create")}
-            className="bg-blue-600 px-6 py-3 rounded-xl"
-          >
-            <Text className="text-white font-bold">Create Academic Year</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View className={`p-6 rounded-2xl mb-6 ${isDark ? "bg-gray-800" : "bg-white"}`}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={isDark ? "#ffffff" : "#2563EB"}
+          />
+        }
+        contentContainerStyle={
+          academicYears.length === 0
+            ? { flexGrow: 1, paddingBottom: 120 }
+            : { paddingBottom: 120 }
+        }
+      >
+        {academicYears.length === 0 ? (
+          <View className="flex-1 justify-center items-center p-6">
+            <Text className={`text-lg text-center mb-4 ${isDark ? "text-gray-300" : "text-gray-600"}`}>
+              You cannot create a class without an Academic Year.
+            </Text>
+            <TouchableOpacity
+              onPress={() => router.push("/(admin)/academic-years/create")}
+              className="bg-blue-600 px-6 py-3 rounded-xl"
+            >
+              <Text className="text-white font-bold">Create Academic Year</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <>
+            <View className={`p-6 rounded-2xl mb-6 ${isDark ? "bg-gray-800" : "bg-white"}`}>
 
-            <FormSelect
-              label="Course"
-              value={course}
-              onChange={setCourse}
-              options={courseOptions}
-              placeholder="Select Course"
-            />
+              <FormSelect
+                label="Course"
+                value={course}
+                onChange={setCourse}
+                options={courseOptions}
+                placeholder="Select Course"
+              />
 
-            <FormSelect
-              label="Academic Year"
-              value={academicYear}
-              onChange={setAcademicYear}
-              options={academicYearOptions}
-              placeholder="Select Academic Year"
-            />
+              <FormSelect
+                label="Academic Year"
+                value={academicYear}
+                onChange={setAcademicYear}
+                options={academicYearOptions}
+                placeholder="Select Academic Year"
+              />
 
-            <View className="flex-row justify-between">
-              <View className="flex-1 ml-2">
-                <FormInput
-                  label="Semester"
-                  placeholder="1"
-                  value={semester}
-                  onChangeText={setSemester}
-                  keyboardType="numeric"
-                />
+              <View className="flex-row justify-between">
+                <View className="flex-1 ml-2">
+                  <FormInput
+                    label="Semester"
+                    placeholder="1"
+                    value={semester}
+                    onChangeText={setSemester}
+                    keyboardType="numeric"
+                  />
+                </View>
+                <View className="flex-1 ml-2">
+                  <FormInput
+                    label="Name"
+                    placeholder="Class Name"
+                    value={name}
+                    onChangeText={setName}
+                  />
+                </View>
               </View>
-              <View className="flex-1 ml-2">
-                <FormInput
-                  label="Name"
-                  placeholder="Class Name"
-                  value={name}
-                  onChangeText={setName}
-                />
-              </View>
+
             </View>
 
-          </View>
-
-          <TouchableOpacity
-            onPress={handleSubmit}
-            disabled={loading}
-            className={`py-4 rounded-xl items-center mb-10 ${loading ? "bg-blue-400" : "bg-blue-600"
-              }`}
-          >
-            {loading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text className="text-white font-bold text-lg">Create Class</Text>
-            )}
-          </TouchableOpacity>
-        </ScrollView>
-      )}
+            <TouchableOpacity
+              onPress={handleSubmit}
+              disabled={loading}
+              className={`py-4 rounded-xl items-center mb-10 ${loading ? "bg-blue-400" : "bg-blue-600"
+                }`}
+            >
+              {loading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text className="text-white font-bold text-lg">Create Class</Text>
+              )}
+            </TouchableOpacity>
+          </>
+        )}
+      </ScrollView>
     </View>
   );
 }

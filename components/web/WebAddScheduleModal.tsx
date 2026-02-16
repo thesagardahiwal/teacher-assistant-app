@@ -259,7 +259,9 @@ export default function WebAddScheduleModal({
                         ) : (
                             <View className="flex-row flex-wrap gap-3 mb-8">
                                 {assignments.map((assignment) => {
-                                    const isSelected = selectedClassId === assignment.class.$id;
+                                    const isSelected =
+                                        selectedClassId === assignment.class.$id &&
+                                        selectedSubjectId === assignment.subject.$id;
                                     return (
                                         <TouchableOpacity
                                             key={assignment.$id}
