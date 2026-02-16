@@ -3,6 +3,7 @@ import { useSafeBack } from "@/utils/navigation";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
+import { AppUpdater } from "@/components/common/AppUpdater";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -116,7 +117,7 @@ const AdminProfile = () => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       className="flex-1 bg-gray-50 dark:bg-gray-900"
     >
-      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 40 }}>
+      <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 120 }}>
         {/* Header */}
         <View className="h-64 bg-blue-600 dark:bg-blue-900 relative">
           <View className="absolute inset-0 bg-black/10" />
@@ -286,6 +287,9 @@ const AdminProfile = () => {
                 </TouchableOpacity>
               </View>
             )}
+            <View className="mt-6">
+              <AppUpdater />
+            </View>
           </View>
         </View>
 

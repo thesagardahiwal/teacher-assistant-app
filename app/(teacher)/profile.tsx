@@ -1,4 +1,5 @@
 import { FormInput } from "@/components/admin/ui/FormInput";
+import { AppUpdater } from "@/components/common/AppUpdater";
 import { useAuth } from "@/store/hooks/useAuth";
 import { useTheme } from "@/store/hooks/useTheme";
 import { showAlert } from "@/utils/alert";
@@ -87,7 +88,7 @@ export default function ProfileScreen() {
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             className={`flex-1 ${isDark ? "bg-gray-950" : "bg-gray-50"}`}
         >
-            <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+            <ScrollView contentContainerStyle={{ paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
                 {/* Header */}
                 <View className="h-64 bg-blue-600 dark:bg-blue-900 relative">
                     <View className="absolute inset-0 bg-black/10" />
@@ -211,6 +212,9 @@ export default function ProfileScreen() {
                             </View>
                         </TouchableOpacity>
 
+                        <View className="mt-6">
+                            <AppUpdater />
+                        </View>
                     </View>
                 </View>
             </ScrollView>

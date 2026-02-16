@@ -129,7 +129,7 @@ const Profile = () => {
                 />
             </View>
 
-            <ScrollView className="" contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+            <ScrollView className="" contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
 
                 {/* Avatar Section */}
                 <Animated.View entering={FadeInDown.delay(100).springify()} className="items-center mb-8">
