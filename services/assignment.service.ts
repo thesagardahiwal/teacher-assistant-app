@@ -46,19 +46,20 @@ export const assignmentService = {
   // ... existing imports
 
   async create(data: Partial<TeacherAssignmentPayload>) {
-    // Check for duplicates: Same Class + Same Subject
-    if (data.class && data.subject && data.institution) {
+    // Check for duplicates: Same Class + Same Subject + Same Teacher
+    if (data.class && data.subject && data.teacher && data.institution) {
       const existing = await databaseService.list<TeacherAssignment>(
         COLLECTIONS.TEACHER_ASSIGNMENTS,
         [
           Query.equal("institution", data.institution),
           Query.equal("class", data.class),
           Query.equal("subject", data.subject),
+          Query.equal("teacher", data.teacher),
         ]
       );
 
       if (existing.documents.length > 0) {
-        throw new Error("This subject is already assigned to a teacher for this class.");
+        throw new Error("This teacher is already assigned to this subject for this class.");
       }
     }
 

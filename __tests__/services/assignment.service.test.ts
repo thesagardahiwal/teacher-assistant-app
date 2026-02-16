@@ -137,7 +137,7 @@ describe("Assignment Service", () => {
 
         await expect(assignmentService.create(payload as any))
             .rejects
-            .toThrow("This subject is already assigned to a teacher for this class.");
+            .toThrow("This teacher is already assigned to this subject for this class.");
 
         expect(databases.listDocuments).toHaveBeenCalledWith(
             expect.anything(),
@@ -146,6 +146,7 @@ describe("Assignment Service", () => {
                 expect.objectContaining({ method: "equal", attr: "institution", val: "inst1" }),
                 expect.objectContaining({ method: "equal", attr: "class", val: "c1" }),
                 expect.objectContaining({ method: "equal", attr: "subject", val: "s1" }),
+                expect.objectContaining({ method: "equal", attr: "teacher", val: "t1" }),
             ])
         );
         expect(databases.createDocument).not.toHaveBeenCalled();

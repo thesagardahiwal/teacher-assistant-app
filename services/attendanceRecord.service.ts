@@ -30,7 +30,14 @@ export const attendanceRecordService = {
             COLLECTIONS.ATTENDANCE_RECORDS,
             [
                 Query.equal("student", studentId),
-                Query.select(["*", "attendance.*", "attendance.subject.*", "student.*", "institution.*"]),
+                Query.select([
+                    "*",
+                    "attendance.*",
+                    "attendance.subject.*",
+                    "attendance.class.*",
+                    "student.*",
+                    "institution.*"
+                ]),
                 Query.orderDesc("$createdAt"), // Show recent first
             ]
         );
