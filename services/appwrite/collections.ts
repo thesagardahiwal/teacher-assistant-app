@@ -17,5 +17,5 @@ export const COLLECTIONS = {
   INVITATIONS: 'invitations',
   ASSESSMENTS: 'assessments',
   ASSESSMENT_RESULTS: 'assessment_results',
+  TEACHER_LEAVES: 'teacher_leaves',
 };
-

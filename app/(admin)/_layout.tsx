@@ -19,6 +19,8 @@ export default function AdminLayout() {
     { label: "Subjects", icon: "book-outline", iconLibrary: "Ionicons", route: "/(admin)/subjects" },
     { label: "Academic Years", icon: "calendar-check", route: "/(admin)/academic-years" },
     { label: "Schedules", icon: "calendar-clock", route: "/(admin)/schedules" },
+    { label: "Leaves", icon: "calendar-outline", iconLibrary: "Ionicons", route: "/(admin)/leaves" },
+    { label: "Study Vault", icon: "folder-open-outline", iconLibrary: "Ionicons", route: "/(admin)/study-vault" },
   ];
 
   return (
@@ -110,6 +112,8 @@ export default function AdminLayout() {
             <Tabs.Screen name="academic-years/index" options={{ href: null }} />
             <Tabs.Screen name="schedules/index" options={{ href: null }} />
             <Tabs.Screen name="assignments/index" options={{ href: null }} />
+            <Tabs.Screen name="leaves/index" options={{ href: null }} />
+            <Tabs.Screen name="study-vault/index" options={{ href: null }} />
 
             <Tabs.Screen name="profile" options={{ href: null }} />
 

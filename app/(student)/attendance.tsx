@@ -1,10 +1,16 @@
 import { PageHeader } from "@/components/admin/ui/PageHeader";
+import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
+import WebStudentAttendance from "@/components/web/WebStudentAttendance";
+import { pdfService } from "@/services/local/pdf.service";
 import { academicYearService } from "@/services/academicYear.service";
 import { useTheme } from "@/store/hooks/useTheme";
+import { pdfTemplates } from "@/utils/pdf/pdfTemplates";
+import { toSafeFileName } from "@/utils/pdf/pdfUtils";
+import { getVaultRouteForRole } from "@/utils/vault";
 import { Ionicons } from "@expo/vector-icons";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, RefreshControl, Text, View } from "react-native";
+import { ActivityIndicator, Platform, RefreshControl, Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import AttendanceCard from "../../components/Student/AttendanceCard";
 import { attendanceRecordService } from "../../services/attendanceRecord.service";
@@ -27,9 +33,6 @@ const StatBox = ({ label, value, color, icon, delay }: any) => {
   )
 }
 
-import WebStudentAttendance from "@/components/web/WebStudentAttendance";
-import { Platform } from "react-native";
-
 const Attendance = () => {
   if (Platform.OS === 'web') {
     return <WebStudentAttendance />;
@@ -37,10 +40,14 @@ const Attendance = () => {
 
   const { user } = useAuth();
   const { isDark } = useTheme();
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [stats, setStats] = useState({ present: 0, absent: 0, total: 0 });
+  const [exporting, setExporting] = useState(false);
+  const [vaultModalVisible, setVaultModalVisible] = useState(false);
+  const [savedFileName, setSavedFileName] = useState("");
 
   const fetchAttendance = async () => {
     try {
@@ -89,7 +96,61 @@ const Attendance = () => {
       <Stack.Screen options={{ headerShown: false }} />
 
       <View className="flex-1 px-6 pt-6">
-        <PageHeader title="Attendance History" subtitle="Track your daily attendance" />
+        <PageHeader
+          title="Attendance History"
+          subtitle="Track your daily attendance"
+          rightAction={
+            exporting ? (
+              <ActivityIndicator size="small" color="#2563EB" />
+            ) : (
+              <TouchableOpacity
+                onPress={async () => {
+                  if (!records.length || !user) return;
+                  try {
+                    setExporting(true);
+                    const institutionName =
+                      typeof user.institution === "object" ? user.institution?.name || "" : "";
+
+                    const html = pdfTemplates.attendanceHistoryReport({
+                      studentName: user.name || "Student",
+                      institutionName,
+                      records: records.map((r) => ({
+                        date: r.attendance?.date || "",
+                        subject: r.attendance?.subject?.name || "-",
+                        className: r.attendance?.class?.name || "-",
+                        teacher:
+                          typeof r.attendance?.teacher === "object"
+                            ? r.attendance.teacher.name
+                            : "-",
+                        status: r.present ? "PRESENT" : "ABSENT",
+                      })),
+                      stats,
+                    });
+
+                    const fileName = `${toSafeFileName(user.name || "Student")}_Attendance_Report_${new Date().toISOString().split("T")[0]}.pdf`;
+
+                    const result = await pdfService.exportAndSave({
+                      html,
+                      fileName,
+                      addedByRole: user.role as any,
+                      tags: ["attendance", "report"],
+                    });
+
+                    setSavedFileName(result.file.fileName);
+                    setVaultModalVisible(true);
+                  } catch (error) {
+                    console.error(error);
+                  } finally {
+                    setExporting(false);
+                  }
+                }}
+                className="bg-blue-600 p-2 rounded-full"
+              >
+                <Ionicons name="download-outline" size={20} color="white" />
+              </TouchableOpacity>
+            )
+          }
+        />
 
         {/* Stats Row */}
         <View className="flex-row gap-3 mb-6">
@@ -122,6 +183,19 @@ const Attendance = () => {
           />
         )}
       </View>
+
+      <ConfirmationModal
+        visible={vaultModalVisible}
+        title="Saved to Study Vault"
+        message={savedFileName ? `${savedFileName} was saved to your vault.` : "PDF saved to your vault."}
+        confirmText="Open Vault"
+        cancelText="Close"
+        onConfirm={() => {
+          setVaultModalVisible(false);
+          router.push(getVaultRouteForRole(user?.role) as any);
+        }}
+        onCancel={() => setVaultModalVisible(false)}
+      />
     </View>
   );
 };

@@ -1,10 +1,16 @@
 import { PageHeader } from "@/components/admin/ui/PageHeader";
+import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 import { academicYearService } from "@/services/academicYear.service";
 import { attendanceRecordService } from "@/services/attendanceRecord.service";
+import { pdfService } from "@/services/local/pdf.service";
 import { useAuth } from "@/store/hooks/useAuth";
 import { useTheme } from "@/store/hooks/useTheme";
 import { AttendanceRecord } from "@/types";
+import { pdfTemplates } from "@/utils/pdf/pdfTemplates";
+import { toSafeFileName } from "@/utils/pdf/pdfUtils";
+import { getVaultRouteForRole } from "@/utils/vault";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
@@ -29,10 +35,14 @@ const WebStatBox = ({ label, value, color, icon, delay }: any) => {
 const WebStudentAttendance = () => {
     const { user } = useAuth();
     const { isDark } = useTheme();
+    const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [records, setRecords] = useState<AttendanceRecord[]>([]);
     const [stats, setStats] = useState({ present: 0, absent: 0, total: 0 });
     const [filter, setFilter] = useState<'All' | 'Present' | 'Absent'>('All');
+    const [exporting, setExporting] = useState(false);
+    const [vaultModalVisible, setVaultModalVisible] = useState(false);
+    const [savedFileName, setSavedFileName] = useState("");
 
     const fetchAttendance = async () => {
         try {
@@ -105,7 +115,61 @@ const WebStudentAttendance = () => {
                 <ResponsiveContainer className="p-8">
                     {/* Header */}
                     <View className="mb-8 w-full">
-                        <PageHeader title="Attendance History" subtitle="Track your daily attendance" />
+                        <PageHeader
+                            title="Attendance History"
+                            subtitle="Track your daily attendance"
+                            rightAction={
+                                exporting ? (
+                                    <ActivityIndicator size="small" color="#2563EB" />
+                                ) : (
+                                    <TouchableOpacity
+                                        onPress={async () => {
+                                            if (!records.length || !user) return;
+                                            try {
+                                                setExporting(true);
+                                                const institutionName =
+                                                    typeof user.institution === "object" ? user.institution?.name || "" : "";
+
+                                                const html = pdfTemplates.attendanceHistoryReport({
+                                                    studentName: user.name || "Student",
+                                                    institutionName,
+                                                    records: records.map((r) => ({
+                                                        date: r.attendance?.date || "",
+                                                        subject: r.attendance?.subject?.name || "-",
+                                                        className: r.attendance?.class?.name || "-",
+                                                        teacher:
+                                                            typeof r.attendance?.teacher === "object"
+                                                                ? r.attendance.teacher.name
+                                                                : "-",
+                                                        status: r.present ? "PRESENT" : "ABSENT",
+                                                    })),
+                                                    stats,
+                                                });
+
+                                                const fileName = `${toSafeFileName(user.name || "Student")}_Attendance_Report_${new Date().toISOString().split("T")[0]}.pdf`;
+
+                                                const result = await pdfService.exportAndSave({
+                                                    html,
+                                                    fileName,
+                                                    addedByRole: user.role as any,
+                                                    tags: ["attendance", "report"],
+                                                });
+
+                                                setSavedFileName(result.file.fileName);
+                                                setVaultModalVisible(true);
+                                            } catch (error) {
+                                                console.error(error);
+                                            } finally {
+                                                setExporting(false);
+                                            }
+                                        }}
+                                        className="bg-blue-600 p-2 rounded-full"
+                                    >
+                                        <Ionicons name="download-outline" size={20} color="white" />
+                                    </TouchableOpacity>
+                                )
+                            }
+                        />
                     </View>
 
                     {/* Stats Row */}
@@ -191,6 +255,19 @@ const WebStudentAttendance = () => {
                     </View>
                 </ResponsiveContainer>
             </ScrollView>
+
+            <ConfirmationModal
+                visible={vaultModalVisible}
+                title="Saved to Study Vault"
+                message={savedFileName ? `${savedFileName} was saved to your vault.` : "PDF saved to your vault."}
+                confirmText="Open Vault"
+                cancelText="Close"
+                onConfirm={() => {
+                    setVaultModalVisible(false);
+                    router.push(getVaultRouteForRole(user?.role) as any);
+                }}
+                onCancel={() => setVaultModalVisible(false)}
+            />
         </View>
     );
 };

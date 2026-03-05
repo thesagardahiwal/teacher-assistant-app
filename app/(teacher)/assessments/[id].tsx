@@ -1,3 +1,8 @@
+import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
+import { pdfService } from "@/services/local/pdf.service";
+import { pdfTemplates } from "@/utils/pdf/pdfTemplates";
+import { toSafeFileName } from "@/utils/pdf/pdfUtils";
+import { getVaultRouteForRole } from "@/utils/vault";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -26,6 +31,9 @@ export default function AssessmentDetailsScreen() {
     const [assessment, setAssessment] = useState<Assessment | null>(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [exporting, setExporting] = useState(false);
+    const [vaultModalVisible, setVaultModalVisible] = useState(false);
+    const [savedFileName, setSavedFileName] = useState("");
 
     const { data: students, fetchStudents } = useStudents();
     const { results, getResultsByAssessment, saveResult, isLoading } = useAssessmentResults();
@@ -300,10 +308,62 @@ export default function AssessmentDetailsScreen() {
                             {assessment.subject?.name} • {assessment.class?.name}
                         </Text>
                     </View>
-                    <View className={`px-3 py-1.5 rounded-lg ${isDark ? "bg-dark-primary/30" : "bg-primary/10"}`}>
-                        <Text className={`text-xs font-bold ${isDark ? "text-dark-primary" : "text-primary"}`}>
-                            Max: {assessment.maxMarks}
-                        </Text>
+                    <View className="flex-row items-center gap-2">
+                        <View className={`px-3 py-1.5 rounded-lg ${isDark ? "bg-dark-primary/30" : "bg-primary/10"}`}>
+                            <Text className={`text-xs font-bold ${isDark ? "text-dark-primary" : "text-primary"}`}>
+                                Max: {assessment.maxMarks}
+                            </Text>
+                        </View>
+                        <TouchableOpacity
+                            onPress={async () => {
+                                if (!assessment || !students.length || !user) return;
+                                try {
+                                    setExporting(true);
+                                    const html = pdfTemplates.gradeSheet({
+                                        title: assessment.title,
+                                        className: assessment.class?.name || "-",
+                                        subject: assessment.subject?.name || "-",
+                                        maxMarks: assessment.maxMarks,
+                                        date: assessment.dueDate || assessment.$createdAt,
+                                        records: students.map((s: any) => {
+                                            const raw = Number.parseFloat(marks[s.$id] || "0");
+                                            const obtained = Number.isNaN(raw) ? 0 : raw;
+                                            return {
+                                                name: s.name || "-",
+                                                rollNumber: s.rollNumber,
+                                                obtained,
+                                                remarks: remarks[s.$id] || "",
+                                            };
+                                        }),
+                                    });
+
+                                    const fileName = `${toSafeFileName(assessment.title)}_Grade_Sheet_${new Date().toISOString().split("T")[0]}.pdf`;
+
+                                    const result = await pdfService.exportAndSave({
+                                        html,
+                                        fileName,
+                                        addedByRole: user.role as any,
+                                        tags: ["assessment", "grades"],
+                                        classId: assessment.class?.$id,
+                                        subjectId: assessment.subject?.$id,
+                                    });
+
+                                    setSavedFileName(result.file.fileName);
+                                    setVaultModalVisible(true);
+                                } catch (error) {
+                                    console.error(error);
+                                } finally {
+                                    setExporting(false);
+                                }
+                            }}
+                            className={`p-2 rounded-full ${isDark ? "bg-gray-800" : "bg-gray-100"}`}
+                        >
+                            {exporting ? (
+                                <ActivityIndicator size="small" color={isDark ? "#60A5FA" : "#2563EB"} />
+                            ) : (
+                                <Ionicons name="download-outline" size={18} color={isDark ? "#60A5FA" : "#2563EB"} />
+                            )}
+                        </TouchableOpacity>
                     </View>
                 </View>
 
@@ -360,6 +420,19 @@ export default function AssessmentDetailsScreen() {
                         </TouchableOpacity>
                     </View>
                 }
+            />
+
+            <ConfirmationModal
+                visible={vaultModalVisible}
+                title="Saved to Study Vault"
+                message={savedFileName ? `${savedFileName} was saved to your vault.` : "PDF saved to your vault."}
+                confirmText="Open Vault"
+                cancelText="Close"
+                onConfirm={() => {
+                    setVaultModalVisible(false);
+                    router.push(getVaultRouteForRole(user?.role) as any);
+                }}
+                onCancel={() => setVaultModalVisible(false)}
             />
         </KeyboardAvoidingView>
     );

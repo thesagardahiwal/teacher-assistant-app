@@ -7,9 +7,9 @@ export * from "./class.service";
 export * from "./course.service";
 export * from "./institution.service";
 export * from "./invitation.service";
+export * from "./leave.service";
 export * from "./schedule.service";
 export * from "./student.service";
 export * from "./subject.service";
 export * from "./teacher.service";
 export * from "./user.service";
-

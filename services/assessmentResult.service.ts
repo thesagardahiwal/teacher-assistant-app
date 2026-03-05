@@ -51,6 +51,15 @@ export const assessmentResultService = {
             ]
         );
     },
+    listByInstitution(institutionId: string) {
+        return databaseService.list<AssessmentResult>(
+            COLLECTIONS.ASSESSMENT_RESULTS,
+            [
+                Query.equal("institution", institutionId),
+                query
+            ]
+        );
+    },
     delete(resultId: string) {
         return databaseService.delete(
             COLLECTIONS.ASSESSMENT_RESULTS,

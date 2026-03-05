@@ -1,12 +1,18 @@
 import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { StudentAttendanceCard } from "@/components/directory/StudentAttendanceCard";
+import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 import { attendanceService } from "@/services/attendance.service";
 import { attendanceRecordService } from "@/services/attendanceRecord.service";
+import { pdfService } from "@/services/local/pdf.service";
 import { useAuth } from "@/store/hooks/useAuth";
 import { useTheme } from "@/store/hooks/useTheme";
 import { Attendance, AttendanceRecord } from "@/types";
 import { showAlert } from "@/utils/alert";
+import { pdfTemplates } from "@/utils/pdf/pdfTemplates";
+import { toSafeFileName } from "@/utils/pdf/pdfUtils";
 import { useInstitutionId } from "@/utils/useInstitutionId";
+import { getVaultRouteForRole } from "@/utils/vault";
+import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from "react-native";
@@ -23,6 +29,9 @@ export default function AttendanceDetailScreen() {
     const [originalRecords, setOriginalRecords] = useState<AttendanceRecord[]>([]); // To check for changes
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [exporting, setExporting] = useState(false);
+    const [vaultModalVisible, setVaultModalVisible] = useState(false);
+    const [savedFileName, setSavedFileName] = useState("");
 
     // Track local changes: RecordID -> boolean (present/absent)
     const [changes, setChanges] = useState<Record<string, boolean>>({});
@@ -137,7 +146,57 @@ export default function AttendanceDetailScreen() {
     return (
         <View className={`flex-1 ${isDark ? "bg-dark-background" : "bg-background"}`}>
             <View className={`px-5 pt-4 ${isDark ? "bg-gray-900" : "bg-white"} border-b ${isDark ? "border-gray-800" : "border-gray-200"}`}>
-                <PageHeader title="Attendance Details" showBack={true} />
+                <PageHeader
+                    title="Attendance Details"
+                    showBack={true}
+                    rightAction={
+                        exporting ? (
+                            <ActivityIndicator size="small" color="#2563EB" />
+                        ) : (
+                            <TouchableOpacity
+                                onPress={async () => {
+                                    if (!attendance || !records.length || !user) return;
+                                    try {
+                                        setExporting(true);
+                                        const html = pdfTemplates.attendanceSheet({
+                                            title: "Attendance Sheet",
+                                            className: attendance.class?.name || "-",
+                                            subject: attendance.subject?.name || "-",
+                                            teacher: user.name || "Teacher",
+                                            date: attendance.date,
+                                            records: records.map((r) => ({
+                                                name: r.student?.name || "-",
+                                                rollNumber: r.student?.rollNumber,
+                                                status: r.present ? "PRESENT" : "ABSENT",
+                                            })),
+                                        });
+
+                                        const fileName = `${toSafeFileName(attendance.class?.name || "Class")}_${toSafeFileName(attendance.subject?.name || "Subject")}_Attendance_${attendance.date}.pdf`;
+
+                                        const result = await pdfService.exportAndSave({
+                                            html,
+                                            fileName,
+                                            addedByRole: user.role as any,
+                                            tags: ["attendance", "sheet"],
+                                            classId: attendance.class?.$id,
+                                            subjectId: attendance.subject?.$id,
+                                        });
+
+                                        setSavedFileName(result.file.fileName);
+                                        setVaultModalVisible(true);
+                                    } catch (error) {
+                                        console.error(error);
+                                    } finally {
+                                        setExporting(false);
+                                    }
+                                }}
+                                className="bg-blue-600 p-2 rounded-full"
+                            >
+                                <Ionicons name="download-outline" size={20} color="white" />
+                            </TouchableOpacity>
+                        )
+                    }
+                />
 
                 <View className="mb-4">
                     <Text className={`text-xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}>
@@ -206,6 +265,19 @@ export default function AttendanceDetailScreen() {
                     </View>
                 </View>
             )}
+
+            <ConfirmationModal
+                visible={vaultModalVisible}
+                title="Saved to Study Vault"
+                message={savedFileName ? `${savedFileName} was saved to your vault.` : "PDF saved to your vault."}
+                confirmText="Open Vault"
+                cancelText="Close"
+                onConfirm={() => {
+                    setVaultModalVisible(false);
+                    router.push(getVaultRouteForRole(user?.role) as any);
+                }}
+                onCancel={() => setVaultModalVisible(false)}
+            />
         </View>
     );
 }

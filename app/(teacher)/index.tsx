@@ -198,6 +198,14 @@ export default function TeacherDashboard() {
                             />
                             <QuickActionCard
                                 className="w-[48%] md:w-[23%]"
+                                icon="calendar-outline"
+                                iconLibrary="Ionicons"
+                                label="Leaves"
+                                isDark={isDark}
+                                onPress={() => router.push("/(teacher)/leaves")}
+                            />
+                            <QuickActionCard
+                                className="w-[48%] md:w-[23%]"
                                 icon="clipboard-text-outline"
                                 label="Assessments"
                                 isDark={isDark}

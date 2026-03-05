@@ -1,10 +1,15 @@
 import { PageHeader } from "@/components/admin/ui/PageHeader";
+import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
+import { pdfService } from "@/services/local/pdf.service";
 import { useTheme } from "@/store/hooks/useTheme";
 import { useInstitutionId } from "@/utils/useInstitutionId";
+import { pdfTemplates } from "@/utils/pdf/pdfTemplates";
+import { toSafeFileName } from "@/utils/pdf/pdfUtils";
+import { getVaultRouteForRole } from "@/utils/vault";
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, RefreshControl, Text, View } from "react-native";
+import { ActivityIndicator, RefreshControl, Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useAssessmentResults } from "../../store/hooks/useAssessmentResults";
 import { useAuth } from "../../store/hooks/useAuth";
@@ -105,6 +110,9 @@ export default function StudentAssessmentsScreen() {
 
     const { results, getResultsByStudent, isLoading } = useAssessmentResults();
     const [refreshing, setRefreshing] = useState(false);
+    const [exporting, setExporting] = useState(false);
+    const [vaultModalVisible, setVaultModalVisible] = useState(false);
+    const [savedFileName, setSavedFileName] = useState("");
 
     useEffect(() => {
         loadData();
@@ -121,7 +129,59 @@ export default function StudentAssessmentsScreen() {
             <Stack.Screen options={{ headerShown: false }} />
 
             <View className="flex-1 px-6 pt-6">
-                <PageHeader title="My Results" subtitle="Check your assessment scores" />
+                <PageHeader
+                    title="My Results"
+                    subtitle="Check your assessment scores"
+                    rightAction={
+                        exporting ? (
+                            <ActivityIndicator size="small" color="#2563EB" />
+                        ) : (
+                            <TouchableOpacity
+                                onPress={async () => {
+                                    if (!results.length || !user) return;
+                                    try {
+                                        setExporting(true);
+                                        const institutionName =
+                                            typeof user.institution === "object" ? user.institution?.name || "" : "";
+
+                                        const html = pdfTemplates.resultsReport({
+                                            studentName: user.name || "Student",
+                                            institutionName,
+                                            results: results.map((r) => ({
+                                                assessment: r.assessment?.title || "Assessment",
+                                                subject: r.assessment?.subject?.name || "-",
+                                                type: r.assessment?.type || "-",
+                                                obtained: r.obtainedMarks,
+                                                total: r.totalMarks,
+                                                evaluatedAt: r.evaluatedAt,
+                                                remarks: r.remarks,
+                                            })),
+                                        });
+
+                                        const fileName = `${toSafeFileName(user.name || "Student")}_Results_Report_${new Date().toISOString().split("T")[0]}.pdf`;
+
+                                        const result = await pdfService.exportAndSave({
+                                            html,
+                                            fileName,
+                                            addedByRole: user.role as any,
+                                            tags: ["results", "performance"],
+                                        });
+
+                                        setSavedFileName(result.file.fileName);
+                                        setVaultModalVisible(true);
+                                    } catch (error) {
+                                        console.error(error);
+                                    } finally {
+                                        setExporting(false);
+                                    }
+                                }}
+                                className="bg-blue-600 p-2 rounded-full"
+                            >
+                                <Ionicons name="download-outline" size={20} color="white" />
+                            </TouchableOpacity>
+                        )
+                    }
+                />
 
                 {isLoading && results.length === 0 ? (
                     <View className="flex-1 items-center justify-center">
@@ -148,6 +208,19 @@ export default function StudentAssessmentsScreen() {
                     />
                 )}
             </View>
+
+            <ConfirmationModal
+                visible={vaultModalVisible}
+                title="Saved to Study Vault"
+                message={savedFileName ? `${savedFileName} was saved to your vault.` : "PDF saved to your vault."}
+                confirmText="Open Vault"
+                cancelText="Close"
+                onConfirm={() => {
+                    setVaultModalVisible(false);
+                    router.push(getVaultRouteForRole(user?.role) as any);
+                }}
+                onCancel={() => setVaultModalVisible(false)}
+            />
         </View>
     );
 }

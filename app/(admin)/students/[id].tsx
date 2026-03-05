@@ -3,9 +3,11 @@ import { FormSelect } from "@/components/admin/ui/FormSelect";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { StudentProfileView } from "@/components/directory/StudentProfileView";
 import WebStudentDetails from "@/components/web/WebStudentDetails";
+import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 import { studentService } from "@/services";
 import { assessmentResultService } from "@/services/assessmentResult.service";
 import { invitationService } from "@/services/invitation.service";
+import { pdfService } from "@/services/local/pdf.service";
 import { useAuth } from "@/store/hooks/useAuth";
 import { useClasses } from "@/store/hooks/useClasses";
 import { useCourses } from "@/store/hooks/useCourses";
@@ -13,8 +15,11 @@ import { useStudents } from "@/store/hooks/useStudents";
 import { useTheme } from "@/store/hooks/useTheme";
 import { AssessmentResult } from "@/types/assessmentResult.type";
 import { showAlert } from "@/utils/alert";
+import { pdfTemplates } from "@/utils/pdf/pdfTemplates";
+import { toSafeFileName } from "@/utils/pdf/pdfUtils";
 import { useSafeBack } from "@/utils/navigation";
 import { useInstitutionId } from "@/utils/useInstitutionId";
+import { getVaultRouteForRole } from "@/utils/vault";
 import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from 'expo-clipboard';
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -61,6 +66,9 @@ export default function EditStudent() {
     const [copying, setCopying] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+    const [exporting, setExporting] = useState(false);
+    const [vaultModalVisible, setVaultModalVisible] = useState(false);
+    const [savedFileName, setSavedFileName] = useState("");
 
     useEffect(() => {
         if (institutionId) {
@@ -202,6 +210,63 @@ export default function EditStudent() {
         ? (results.reduce((acc, curr) => acc + (curr.obtainedMarks / curr.totalMarks * 100), 0) / results.length).toFixed(1)
         : "0";
 
+    const handleDownload = async () => {
+        if (!student || !user) return;
+        try {
+            setExporting(true);
+            const institutionName =
+                typeof user.institution === "object" ? user.institution?.name || "" : "";
+
+            const html = pdfTemplates.studentPerformanceReport({
+                studentName: student.name || "Student",
+                institutionName,
+                stats: {
+                    averageScore: `${averageScore}%`,
+                    totalAssessments: results.length,
+                },
+                results: results.map((r) => ({
+                    assessment: r.assessment?.title || "Assessment",
+                    subject: r.assessment?.subject?.name || "-",
+                    obtained: r.obtainedMarks,
+                    total: r.totalMarks,
+                    remarks: r.remarks,
+                })),
+            });
+
+            const fileName = `${toSafeFileName(student.name || "Student")}_Performance_Report_${new Date().toISOString().split("T")[0]}.pdf`;
+
+            const saved = await pdfService.exportAndSave({
+                html,
+                fileName,
+                addedByRole: user.role as any,
+                tags: ["performance", "student"],
+                classId: student.class?.$id,
+            });
+
+            setSavedFileName(saved.file.fileName);
+            setVaultModalVisible(true);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setExporting(false);
+        }
+    };
+
+    const vaultModal = (
+        <ConfirmationModal
+            visible={vaultModalVisible}
+            title="Saved to Study Vault"
+            message={savedFileName ? `${savedFileName} was saved to your vault.` : "PDF saved to your vault."}
+            confirmText="Open Vault"
+            cancelText="Close"
+            onConfirm={() => {
+                setVaultModalVisible(false);
+                router.push(getVaultRouteForRole(user?.role) as any);
+            }}
+            onCancel={() => setVaultModalVisible(false)}
+        />
+    );
+
 
     if (loading) {
         return (
@@ -218,6 +283,18 @@ export default function EditStudent() {
                     <PageHeader
                         title="Student Details"
                         showBack={true}
+                        rightAction={
+                            exporting ? (
+                                <ActivityIndicator size="small" color="#2563EB" />
+                            ) : (
+                                <TouchableOpacity
+                                    onPress={handleDownload}
+                                    className="bg-blue-600 p-2 rounded-full"
+                                >
+                                    <Ionicons name="download-outline" size={20} color="white" />
+                                </TouchableOpacity>
+                            )
+                        }
                     />
                 </View>
                 <WebStudentDetails
@@ -258,6 +335,7 @@ export default function EditStudent() {
                         </View>
                     </View>
                 )}
+                {vaultModal}
             </>
         );
     }
@@ -278,6 +356,16 @@ export default function EditStudent() {
                         rightAction={
                             isAdmin ? (
                                 <View className="flex-row gap-2">
+                                    <TouchableOpacity
+                                        onPress={handleDownload}
+                                        className="bg-blue-600 p-2 rounded-full"
+                                    >
+                                        {exporting ? (
+                                            <ActivityIndicator size="small" color="white" />
+                                        ) : (
+                                            <Ionicons name="download-outline" size={20} color="white" />
+                                        )}
+                                    </TouchableOpacity>
                                     <TouchableOpacity
                                         onPress={() => setIsEditing(!isEditing)}
                                         className={`p-2 rounded-full ${isEditing ? "bg-red-100 dark:bg-red-900" : "bg-blue-100 dark:bg-blue-900"}`}
@@ -385,6 +473,7 @@ export default function EditStudent() {
                     </StudentProfileView>
                 </View>
             </View>
+            {vaultModal}
         </KeyboardAvoidingView>
     );
 }

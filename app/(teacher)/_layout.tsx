@@ -38,6 +38,7 @@ export default function TeacherLayout() {
     items.push(
       { label: "Calendar", icon: "calendar", iconLibrary: "Ionicons", route: "/(teacher)/calendar" },
       { label: "Attendance", icon: "clipboard-check", iconLibrary: "MaterialCommunityIcons", route: "/(teacher)/attendance" },
+      { label: "Leaves", icon: "calendar-outline", iconLibrary: "Ionicons", route: "/(teacher)/leaves" },
     );
 
     return items;
@@ -116,6 +117,14 @@ export default function TeacherLayout() {
                   <MaterialCommunityIcons name="clipboard-check" size={size} color={color} />
                 ),
               }}
+            />
+            <Tabs.Screen
+              name="leaves/index"
+              options={{ href: null }}
+            />
+            <Tabs.Screen
+              name="leaves/apply"
+              options={{ href: null }}
             />
             <Tabs.Screen
               name="profile"

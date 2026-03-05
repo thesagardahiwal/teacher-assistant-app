@@ -14,6 +14,7 @@ import attendanceReducer from "./slices/attendance.slice";
 import assessmentReducer from "./slices/assessment.slice";
 import assessmentResultReducer from "./slices/assessmentResult.slice";
 import performanceReducer from "./slices/performance.slice";
+import leaveReducer from "./slices/leave.slice";
 
 export const store = configureStore({
   reducer: {
@@ -29,7 +30,8 @@ export const store = configureStore({
     adminOnboarding: adminOnboardingReducer,
     assessments: assessmentReducer,
     assessmentResults: assessmentResultReducer,
-    performance: performanceReducer
+    performance: performanceReducer,
+    leaves: leaveReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false }),

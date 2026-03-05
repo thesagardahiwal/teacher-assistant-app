@@ -129,7 +129,7 @@ export const AddFileModal: React.FC<AddFileModalProps> = ({ visible, onClose, on
                 fileType: selectedFile.mimeType || 'unknown',
                 localPath: localPath,
                 fileSize: selectedFile.size || 0,
-                addedByRole: user.role as "TEACHER" | "STUDENT" || "TEACHER",
+                addedByRole: (user.role as StudyFile["addedByRole"]) || "TEACHER",
                 addedAt: new Date().toISOString(),
                 tags: tags.split(',').map(t => t.trim()).filter(t => t.length > 0),
             };

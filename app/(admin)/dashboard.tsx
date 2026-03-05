@@ -117,6 +117,14 @@ const AdminDashboard = () => {
             />
             <QuickActionCard
               className="w-[48%] md:w-[23%]"
+              onPress={() => router.navigate('/(admin)/leaves')}
+              icon="calendar-outline"
+              iconLibrary="Ionicons"
+              isDark={isDark}
+              label="Leave Requests"
+            />
+            <QuickActionCard
+              className="w-[48%] md:w-[23%]"
               onPress={() => router.navigate('/(admin)/students/create')}
               icon="school-outline"
               iconLibrary="Ionicons"

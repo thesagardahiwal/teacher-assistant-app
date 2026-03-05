@@ -3,12 +3,15 @@ import { FormSelect } from "@/components/admin/ui/FormSelect";
 import { PageHeader } from "@/components/admin/ui/PageHeader";
 import { TeacherProfileView } from "@/components/directory/TeacherProfileView";
 import WebTeacherDetails from "@/components/web/WebTeacherDetails";
+import { ConfirmationModal } from "@/components/ui/ConfirmationModal";
 import { assessmentService, scheduleService } from "@/services";
 import { assignmentService } from "@/services/assignment.service";
 import { attendanceService } from "@/services/attendance.service";
 import { invitationService } from "@/services/invitation.service";
+import { pdfService } from "@/services/local/pdf.service";
 import { teacherService } from "@/services/teacher.service";
 import { userService } from "@/services/user.service";
+import { useAuth } from "@/store/hooks/useAuth";
 import { useTeachers } from "@/store/hooks/useTeachers";
 import { useTheme } from "@/store/hooks/useTheme";
 import { Assessment } from "@/types/assessment.type";
@@ -18,12 +21,15 @@ import { ClassSchedule } from "@/types/schedule.type";
 import { TeacherAssignment } from "@/types/teacher-assignment.type";
 import { User } from "@/types/user.type";
 import { showAlert } from "@/utils/alert";
+import { pdfTemplates } from "@/utils/pdf/pdfTemplates";
+import { toSafeFileName } from "@/utils/pdf/pdfUtils";
 import { getInviteLink } from "@/utils/linking";
 import { useSafeBack } from "@/utils/navigation";
 import { useInstitutionId } from "@/utils/useInstitutionId";
+import { getVaultRouteForRole } from "@/utils/vault";
 import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from 'expo-clipboard';
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     ActivityIndicator,
@@ -39,9 +45,11 @@ import Animated, { SlideInUp, SlideOutUp } from "react-native-reanimated";
 export default function EditTeacher() {
     const { goBack } = useSafeBack();
     const { id } = useLocalSearchParams();
+    const router = useRouter();
     const { isDark } = useTheme();
     const institutionId = useInstitutionId();
     const { fetchTeachers } = useTeachers();
+    const { user } = useAuth();
 
     const [teacher, setTeacher] = useState<User | null>(null);
     const [invitation, setInvitation] = useState<Invitation | null>(null);
@@ -55,6 +63,9 @@ export default function EditTeacher() {
     const [refreshing, setRefreshing] = useState(false);
     const [saving, setSaving] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+    const [exporting, setExporting] = useState(false);
+    const [vaultModalVisible, setVaultModalVisible] = useState(false);
+    const [savedFileName, setSavedFileName] = useState("");
 
     // Form State
     const [name, setName] = useState("");
@@ -178,6 +189,66 @@ export default function EditTeacher() {
             return { subject, class: className };
         });
 
+    const handleDownload = async () => {
+        if (!teacher || !user) return;
+        try {
+            setExporting(true);
+            const institutionName =
+                typeof user.institution === "object" ? user.institution?.name || "" : "";
+
+            const html = pdfTemplates.teacherActivityReport({
+                teacherName: teacher.name || "Teacher",
+                institutionName,
+                summary: {
+                    totalClasses: uniqueClasses.length,
+                    attendanceSessions: attendance.length,
+                    assessments: assessments.length,
+                },
+                attendanceRows: attendance.map((session) => ({
+                    date: session.date,
+                    className: session.class?.name || "-",
+                    subject: session.subject?.name || "-",
+                })),
+                assessmentRows: assessments.map((assessment) => ({
+                    title: assessment.title,
+                    subject: assessment.subject?.name || "-",
+                    className: assessment.class?.name || "-",
+                })),
+            });
+
+            const fileName = `${toSafeFileName(teacher.name || "Teacher")}_Activity_Report_${new Date().toISOString().split("T")[0]}.pdf`;
+
+            const saved = await pdfService.exportAndSave({
+                html,
+                fileName,
+                addedByRole: user.role as any,
+                tags: ["teacher", "activity"],
+            });
+
+            setSavedFileName(saved.file.fileName);
+            setVaultModalVisible(true);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setExporting(false);
+        }
+    };
+
+    const vaultModal = (
+        <ConfirmationModal
+            visible={vaultModalVisible}
+            title="Saved to Study Vault"
+            message={savedFileName ? `${savedFileName} was saved to your vault.` : "PDF saved to your vault."}
+            confirmText="Open Vault"
+            cancelText="Close"
+            onConfirm={() => {
+                setVaultModalVisible(false);
+                router.push(getVaultRouteForRole(user?.role) as any);
+            }}
+            onCancel={() => setVaultModalVisible(false)}
+        />
+    );
+
 
     if (loading) {
         return (
@@ -195,7 +266,18 @@ export default function EditTeacher() {
                     <PageHeader
                         title="Teacher Details"
                         showBack={true}
-
+                        rightAction={
+                            exporting ? (
+                                <ActivityIndicator size="small" color="#2563EB" />
+                            ) : (
+                                <TouchableOpacity
+                                    onPress={handleDownload}
+                                    className="bg-blue-600 p-2 rounded-full"
+                                >
+                                    <Ionicons name="download-outline" size={20} color="white" />
+                                </TouchableOpacity>
+                            )
+                        }
                     />
                 </View>
                 <WebTeacherDetails
@@ -268,6 +350,7 @@ export default function EditTeacher() {
                         </View>
                     </View>
                 )}
+                {vaultModal}
             </>
         );
     }
@@ -283,16 +366,28 @@ export default function EditTeacher() {
                         title="Teacher Details"
                         showBack={true}
                         rightAction={
-                            <TouchableOpacity
-                                onPress={() => setIsEditing(!isEditing)}
-                                className={`p-2 rounded-full ${isEditing ? "bg-red-100" : "bg-blue-100"}`}
-                            >
-                                <Ionicons
-                                    name={isEditing ? "close" : "create-outline"}
-                                    size={24}
-                                    color={isEditing ? "#EF4444" : "#2563EB"}
-                                />
-                            </TouchableOpacity>
+                            <View className="flex-row gap-2">
+                                <TouchableOpacity
+                                    onPress={handleDownload}
+                                    className="bg-blue-600 p-2 rounded-full"
+                                >
+                                    {exporting ? (
+                                        <ActivityIndicator size="small" color="white" />
+                                    ) : (
+                                        <Ionicons name="download-outline" size={20} color="white" />
+                                    )}
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={() => setIsEditing(!isEditing)}
+                                    className={`p-2 rounded-full ${isEditing ? "bg-red-100" : "bg-blue-100"}`}
+                                >
+                                    <Ionicons
+                                        name={isEditing ? "close" : "create-outline"}
+                                        size={24}
+                                        color={isEditing ? "#EF4444" : "#2563EB"}
+                                    />
+                                </TouchableOpacity>
+                            </View>
                         }
                     />
                 </View>
@@ -412,6 +507,7 @@ export default function EditTeacher() {
                     </TeacherProfileView>
                 </View>
             </View>
+            {vaultModal}
         </KeyboardAvoidingView>
     );
 }

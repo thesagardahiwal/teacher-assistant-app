@@ -4,7 +4,7 @@ export interface StudyFile {
     fileType: string;        // "pdf", "jpg"
     localPath: string;       // relative path e.g., "study_vault/uuid.pdf" (sandbox relative)
     fileSize: number;        // bytes
-    addedByRole: "TEACHER" | "STUDENT";
+    addedByRole: "TEACHER" | "STUDENT" | "ADMIN" | "PRINCIPAL" | "VICE_PRINCIPAL";
     addedAt: string;         // ISO timestamp
     tags: string[];          // ["math", "homework"]
 

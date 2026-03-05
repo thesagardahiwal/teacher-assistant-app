@@ -15,6 +15,7 @@ interface StudentDirectoryProps {
     hideFilter?: boolean;
     title?: string;
     filterClassIds?: string[]; // If provided, only show students from these classes
+    rightAction?: React.ReactNode;
 }
 
 export function StudentDirectory({
@@ -22,7 +23,8 @@ export function StudentDirectory({
     onItemPress,
     hideFilter = false,
     title = "Students",
-    filterClassIds
+    filterClassIds,
+    rightAction
 }: StudentDirectoryProps) {
     const router = useRouter();
     const { isDark } = useTheme();
@@ -110,14 +112,14 @@ export function StudentDirectory({
                 <PageHeader
                     title={title}
                     rightAction={
-                        showAddButton ? (
+                        rightAction ?? (showAddButton ? (
                             <TouchableOpacity
                                 onPress={() => router.push("/(admin)/students/create")}
                                 className="bg-blue-600 p-2 rounded-full shadow-sm"
                             >
                                 <Ionicons name="add" size={24} color="white" />
                             </TouchableOpacity>
-                        ) : null
+                        ) : null)
                     }
                 />
                 {!hideFilter && (
