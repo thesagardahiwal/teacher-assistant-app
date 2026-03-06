@@ -105,7 +105,7 @@ export default function WebLanding() {
                                 icon="cloud-download-outline"
                                 onPress={() => {
                                     if (typeof window !== "undefined") {
-                                        window.open("https://expo.dev/artifacts/eas/vdwy1McpaWEXtYR2UsMKpu.apk", "_blank");
+                                        window.open("https://expo.dev/artifacts/eas/oySbPfcZKeL3vpVjXWWUNd.apk", "_blank");
                                     }
                                 }}
                             />
